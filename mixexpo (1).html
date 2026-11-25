@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MixExpo v1 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
+<meta name="author" content="German Cano-Sancho">
+<meta name="description" content="MixExpo v1 (25.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f6f5f1; --surface-1:#ffffff; --surface-2:#f1f0eb; --line:#e3e1da; --line-strong:#cfccc2;
+  --text-primary:#1d1d1b; --text-secondary:#5f5e58; --text-muted:#8a887f;
+  --accent:#1b64be; --accent-soft:#e6f0fc;
+  --series-1:#257de0; --series-2:#f47230; --series-3:#00b894; --series-4:#f2a600;
+  --good:#0aac23; --good-ink:#006c10; --warning:#fbb315; --warning-ink:#8a5a00; --critical:#dc3c3d; --critical-ink:#b0282a;
+  --seq-0:#f3f7fc; --seq-1:#cce3fd; --seq-2:#9dc8f7; --seq-3:#6aabf1; --seq-4:#338ced; --seq-5:#2370cd; --seq-6:#1757ac; --seq-7:#0e3d7e;
+  --grid:#ecebe6; --radius:10px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --bg:#121212; --surface-1:#1b1b1b; --surface-2:#232323; --line:#2e2e2e; --line-strong:#3c3c3c;
+    --text-primary:#efefef; --text-secondary:#a9a9a9; --text-muted:#7d7d7d;
+    --accent:#519ced; --accent-soft:#1a2a3d;
+    --series-1:#338ced; --series-2:#e76624; --series-3:#00a888; --series-4:#d28e05;
+    --good-ink:#3fcf55; --warning-ink:#fbb315; --critical-ink:#f07071;
+    --seq-0:#1d232b; --seq-1:#0e3d7e; --seq-2:#0f4a96; --seq-3:#1757ac; --seq-4:#2370cd; --seq-5:#338ced; --seq-6:#6aabf1; --seq-7:#b6d5f8;
+    --grid:#2a2a2a;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text-primary);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--accent)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+header.top{background:var(--surface-1);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.top-row{display:flex;align-items:center;gap:18px;padding:12px 0;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;line-height:1.2;margin-right:auto}
+.brand b{font-size:18px;letter-spacing:-.01em}
+.brand span{font-size:12.5px;color:var(--text-secondary)}
+.brand .ver{font-size:11.5px;font-weight:600;color:var(--text-secondary);background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+.brand .byline{font-size:12px;color:var(--text-muted)}
+.ctrl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)}
+.ctrl input[type=number]{width:72px}
+input[type=number],input[type=text],select{background:var(--surface-1);border:1px solid var(--line-strong);border-radius:7px;padding:5px 8px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:5px 10px;cursor:pointer;font-size:13px}
+.seg button[aria-pressed=true]{background:var(--text-primary);color:var(--surface-1)}
+nav.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{border:0;background:none;padding:10px 14px 11px;cursor:pointer;color:var(--text-secondary);border-bottom:2px solid transparent;white-space:nowrap;font-size:14px}
+nav.tabs button .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--surface-2);font-size:11.5px;margin-right:6px;color:var(--text-secondary)}
+nav.tabs button[aria-selected=true]{color:var(--text-primary);border-bottom-color:var(--text-primary);font-weight:600}
+nav.tabs button[aria-selected=true] .n{background:var(--text-primary);color:var(--surface-1)}
+main{padding:22px 0 60px}
+section.view{display:none}
+section.view.on{display:block}
+h2{font-size:21px;margin:0 0 4px;letter-spacing:-.01em}
+h3{font-size:15.5px;margin:0 0 10px}
+p.lead{margin:0 0 18px;color:var(--text-secondary);max-width:80ch}
+.card{background:var(--surface-1);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.grid-diet{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr);gap:18px;align-items:start}
+.side{position:sticky;top:120px}
+@media (max-width:980px){.grid-diet{grid-template-columns:1fr}.side{position:static}}
+@media (max-width:700px){header.top{position:static}.top-row{gap:10px}.item{grid-template-columns:1fr 14px 1fr 28px}.item .nm{grid-column:1/-1}.kpi .v{font-size:20px}}
+.stack{display:flex;flex-direction:column;gap:14px}
+.meal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.meal-head h3{margin:0;display:flex;align-items:center;gap:8px}
+.meal-head .tot{font-size:12.5px;color:var(--text-muted)}
+.items{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:minmax(0,1fr) 78px 18px 74px 28px;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .nm{min-width:0}
+.item .nm b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .nm small{color:var(--text-muted);font-size:12px}
+.item input{width:100%;padding:4px 6px;text-align:right}
+.item .x{border:0;background:none;cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;border-radius:6px;padding:3px}
+.item .x:hover{background:var(--surface-2);color:var(--critical-ink)}
+.unitlbl{font-size:11px;color:var(--text-muted);text-align:center}
+.empty{color:var(--text-muted);font-size:13px;padding:6px 0}
+.adder{position:relative;margin-top:8px}
+.adder input{width:100%;padding:7px 10px;border-style:dashed}
+.dd{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface-1);border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.14);max-height:340px;overflow:auto;z-index:30;display:none}
+.dd.open{display:block}
+.dd .grp{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:8px 10px 3px;background:var(--surface-2);position:sticky;top:0}
+.dd .opt{padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.dd .opt small{color:var(--text-muted);white-space:nowrap}
+.dd .opt.act,.dd .opt:hover{background:var(--accent-soft)}
+.cov{display:inline-flex;gap:1px;vertical-align:middle;margin-left:4px}
+.cov i{width:4px;height:9px;border-radius:1px;background:var(--line-strong)}
+.cov i.y{background:var(--text-secondary)}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.btn{border:1px solid var(--line-strong);background:var(--surface-1);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13.5px}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--text-primary);color:var(--surface-1);border-color:var(--text-primary)}
+.btn.small{padding:3px 9px;font-size:12.5px}
+.chk{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary)}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.kpi{background:var(--surface-2);border-radius:8px;padding:10px 12px}
+.kpi .v{font-size:24px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12px;color:var(--text-secondary)}
+.status{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:550;white-space:nowrap}
+.status .dot{width:14px;height:14px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-size:10px;font-weight:700}
+.st-ok{color:var(--good-ink)} .st-ok .dot{background:var(--good)}
+.st-unc{color:var(--warning-ink)} .st-unc .dot{background:var(--warning);color:#3a2700}
+.st-hi{color:var(--critical-ink)} .st-hi .dot{background:var(--critical)}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-weight:600;color:var(--text-secondary);font-size:12px;border-bottom:1px solid var(--line-strong);padding:7px 8px;vertical-align:bottom}
+table.t td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t tr.fam td{background:var(--surface-2);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding:4px 8px}
+.muted{color:var(--text-muted)} .sec{color:var(--text-secondary)}
+.small{font-size:12.5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:980px){.two{grid-template-columns:1fr}}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{fill:var(--text-secondary);font-size:11.5px}
+.chart .lbl{fill:var(--text-primary);font-size:12.5px}
+.chart .ax{stroke:var(--line-strong)}
+.chart .gl{stroke:var(--grid)}
+.chart .thr{stroke:var(--text-primary);stroke-dasharray:4 3;stroke-width:1.5}
+.chart .hit{fill:transparent;cursor:default}
+.chart .hit:hover{fill:var(--text-primary);fill-opacity:.04}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--text-secondary);margin:4px 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+#tip{position:fixed;pointer-events:none;background:var(--text-primary);color:var(--surface-1);font-size:12.5px;line-height:1.4;padding:7px 10px;border-radius:7px;max-width:300px;z-index:100;opacity:0;transition:opacity .08s}
+#tip b{font-weight:650}
+.heat{overflow:auto}
+.heat table{border-collapse:separate;border-spacing:2px;font-size:12px}
+.heat th{font-weight:550;color:var(--text-secondary);padding:2px 4px;white-space:nowrap}
+.heat th.sub{writing-mode:vertical-rl;transform:rotate(180deg);height:118px;vertical-align:bottom;text-align:left;cursor:pointer}
+.heat th.sub.sel{color:var(--text-primary);text-decoration:underline}
+.heat th.fd{text-align:right;max-width:230px;overflow:hidden;text-overflow:ellipsis}
+.heat td{width:44px;min-width:44px;height:26px;text-align:center;border-radius:4px;font-variant-numeric:tabular-nums;cursor:default}
+.heat td.na{background:repeating-linear-gradient(135deg,var(--surface-2) 0 3px,var(--surface-1) 3px 6px);color:var(--text-muted)}
+.scale{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);margin-top:8px}
+.scale .bar{display:flex;height:10px;border-radius:3px;overflow:hidden}
+.scale .bar i{width:26px}
+.note{background:var(--surface-2);border-left:3px solid var(--line-strong);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px;color:var(--text-secondary);margin:12px 0}
+.note.warn{border-left-color:var(--warning)}
+.pill{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:20px;background:var(--surface-2);color:var(--text-secondary);white-space:nowrap}
+.mix-row{display:grid;grid-template-columns:210px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.mix-row:first-of-type{border-top:0}
+.mix-row .gname b{display:block;font-weight:600}
+.mix-row .gname small{color:var(--text-muted)}
+@media (max-width:760px){.mix-row{grid-template-columns:1fr}}
+.scen-list{display:flex;flex-direction:column;gap:6px}
+.scen{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.scen i{width:12px;height:12px;border-radius:3px;flex:none}
+.scen input{flex:1;min-width:0;border:0;background:transparent;padding:2px 0;font-weight:550}
+.scen small{color:var(--text-muted);white-space:nowrap}
+details.method{border-top:1px solid var(--line);padding:10px 0}
+details.method summary{cursor:pointer;font-weight:600}
+details.method[open] summary{margin-bottom:8px}
+.rpin{width:110px!important;text-align:right}
+footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px solid var(--line)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media print{
+  header.top{position:static} nav.tabs,.toolbar,.adder,.item .x,#tip{display:none!important}
+  section.view{display:block!important;page-break-after:always} body{background:#fff}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><b>MixExpo <span class="ver">v1 · 25.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
+      <label class="ctrl"><span data-i18n="bw"></span> <input id="bw" type="number" min="10" max="200" step="1" value="70"> kg</label>
+      <div class="ctrl"><span data-i18n="bound"></span>
+        <div class="seg" id="boundSeg" role="group">
+          <button data-b="lb">LB</button><button data-b="mb">MB</button><button data-b="ub">UB</button>
+        </div>
+      </div>
+      <div class="ctrl">
+        <div class="seg" id="langSeg" role="group" aria-label="Language">
+          <button data-l="es">ES</button><button data-l="fr">FR</button><button data-l="en">EN</button>
+        </div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-v="diet"><span class="n">1</span><span data-i18n="tab_diet"></span></button>
+      <button role="tab" data-v="expo"><span class="n">2</span><span data-i18n="tab_expo"></span></button>
+      <button role="tab" data-v="contrib"><span class="n">3</span><span data-i18n="tab_contrib"></span></button>
+      <button role="tab" data-v="risk"><span class="n">4</span><span data-i18n="tab_risk"></span></button>
+      <button role="tab" data-v="compare"><span class="n">5</span><span data-i18n="tab_compare"></span></button>
+      <button role="tab" data-v="methods"><span class="n">i</span><span data-i18n="tab_methods"></span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- 1 DIET -->
+  <section class="view" id="v-diet">
+    <h2 data-i18n="diet_h"></h2>
+    <p class="lead" data-i18n="diet_lead"></p>
+    <div class="toolbar">
+      <select id="preset"></select>
+      <button class="btn" id="btnClear" data-i18n="clear"></button>
+      <span style="flex:1"></span>
+      <label class="chk"><input type="checkbox" id="allFoods"> <span data-i18n="all_foods"></span></label>
+    </div>
+    <div class="grid-diet">
+      <div class="stack" id="meals"></div>
+      <div class="stack side">
+        <div class="card">
+          <h3 data-i18n="live_h"></h3>
+          <div class="kpis">
+            <div class="kpi"><div class="v" id="kGrams">0</div><div class="l" data-i18n="k_grams"></div></div>
+            <div class="kpi"><div class="v" id="kExceed">0</div><div class="l" data-i18n="k_exceed"></div></div>
+            <div class="kpi"><div class="v" id="kHI">0</div><div class="l" data-i18n="k_hi"></div></div>
+            <div class="kpi"><div class="v" id="kMOET">–</div><div class="l" data-i18n-html="k_moet"></div></div>
+          </div>
+          <div class="chart" id="liveChart"></div>
+          <p class="small muted" style="margin:8px 0 0" data-i18n-html="live_note"></p>
+        </div>
+        <div class="card small sec" data-i18n-html="portion_help"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 EXPOSURE -->
+  <section class="view" id="v-expo">
+    <h2 data-i18n="expo_h"></h2>
+    <p class="lead" data-i18n-html="expo_lead"></p>
+    <div class="card" style="margin-bottom:18px">
+      <div class="toolbar" style="margin-bottom:4px"><h3 style="margin:0;flex:1" data-i18n="rq_chart_h"></h3>
+        <span class="ctrl"><span data-i18n="sort_lbl"></span><span class="seg" id="sortSeg"><button data-s="fam" data-i18n="sort_fam"></button><button data-s="expo" data-i18n="sort_expo"></button><button data-s="rq" data-i18n="sort_rq"></button></span></span></div>
+      <div class="legend" id="rqLegend"></div>
+      <div class="chart" id="rqChart"></div>
+      <div class="note" id="rankNote"></div>
+    </div>
+    <div class="card">
+      <div class="toolbar" style="margin-bottom:6px"><h3 style="margin:0;flex:1" data-i18n="expo_table_h"></h3><button class="btn small" id="btnCSV" data-i18n="export_csv"></button></div>
+      <div style="overflow:auto"><table class="t" id="expoTable"></table></div>
+      <div class="note" data-i18n-html="censor_note"></div>
+    </div>
+  </section>
+
+  <!-- 3 CONTRIBUTIONS -->
+  <section class="view" id="v-contrib">
+    <h2 data-i18n="contrib_h"></h2>
+    <p class="lead" data-i18n="contrib_lead"></p>
+    <div class="two">
+      <div class="card">
+        <h3 data-i18n="heat_h"></h3>
+        <div class="heat" id="heat"></div>
+        <div class="scale" id="heatScale"></div>
+      </div>
+      <div class="card">
+        <h3 id="detailH"></h3>
+        <select id="subSel" style="margin-bottom:10px"></select>
+        <div class="chart" id="contribChart"></div>
+        <div class="note" id="contribNote"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 RISK & MIXTURES -->
+  <section class="view" id="v-risk">
+    <h2 data-i18n="risk_h"></h2>
+    <p class="lead" data-i18n-html="risk_lead"></p>
+    <div class="two" style="margin-bottom:18px">
+      <div class="card">
+        <h3 data-i18n="tier0_h"></h3>
+        <div class="kpis" style="grid-template-columns:1fr 1fr">
+          <div class="kpi"><div class="v" id="hiAll">–</div><div class="l" data-i18n="hi_all"></div></div>
+          <div class="kpi"><div class="v" id="moetCarc">–</div><div class="l" data-i18n-html="moet_carc"></div></div>
+        </div>
+        <p class="small sec" data-i18n-html="tier0_text"></p>
+      </div>
+      <div class="card">
+        <h3 data-i18n="drivers_h"></h3>
+        <div class="chart" id="driversChart"></div>
+        <p class="small muted" data-i18n="drivers_note"></p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 data-i18n="groups_h"></h3>
+      <p class="small sec" style="margin-top:-4px" data-i18n="groups_lead"></p>
+      <div id="mixRows"></div>
+      <div class="note warn" data-i18n-html="mix_caveat"></div>
+    </div>
+  </section>
+
+  <!-- 5 COMPARE -->
+  <section class="view" id="v-compare">
+    <h2 data-i18n="cmp_h"></h2>
+    <p class="lead" data-i18n="cmp_lead"></p>
+    <div class="grid-diet">
+      <div class="card">
+        <h3 data-i18n="cmp_chart_h"></h3>
+        <div class="legend" id="cmpLegend"></div>
+        <div class="chart" id="cmpChart"></div>
+        <div style="overflow:auto;margin-top:14px"><table class="t" id="cmpTable"></table></div>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <h3 data-i18n="scen_h"></h3>
+          <div class="toolbar"><button class="btn primary" id="btnSave" data-i18n="save_scen"></button></div>
+          <div class="scen-list" id="scenList"></div>
+          <p class="small muted" data-i18n="scen_note"></p>
+        </div>
+        <div class="card">
+          <h3 data-i18n="io_h"></h3>
+          <div class="toolbar" style="margin:0">
+            <button class="btn" id="btnExport" data-i18n="export_json"></button>
+            <label class="btn"><span data-i18n="import_json"></span><input type="file" id="fileIn" accept=".json,application/json" hidden></label>
+            <button class="btn" id="btnPrint" data-i18n="print"></button>
+          </div>
+          <p class="small sec" id="ioMsg" role="status" style="margin:8px 0 0"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 METHODS -->
+  <section class="view" id="v-methods">
+    <h2 data-i18n="m_h"></h2>
+    <p class="lead" data-i18n-html="m_lead"></p>
+    <div class="card" style="margin-bottom:18px">
+      <div class="toolbar" style="margin-bottom:6px"><h3 style="margin:0;flex:1" data-i18n="ref_h"></h3><button class="btn small" id="btnResetRP" data-i18n="reset_rp"></button></div>
+      <div style="overflow:auto"><table class="t" id="refTable"></table></div>
+    </div>
+    <div class="card">
+      <details class="method" open><summary data-i18n="m1_s"></summary><div data-i18n-html="m1"></div></details>
+      <details class="method"><summary data-i18n="m2_s"></summary><div data-i18n-html="m2"></div></details>
+      <details class="method"><summary data-i18n="m3_s"></summary><div data-i18n-html="m3"></div></details>
+      <details class="method"><summary data-i18n="m4_s"></summary><div data-i18n-html="m4"></div></details>
+      <details class="method"><summary data-i18n="m5_s"></summary><div data-i18n-html="m5"></div><div class="heat" id="covMatrix" style="margin-top:10px"></div></details>
+    </div>
+  </section>
+  <footer data-i18n-html="footer"></footer>
+</main>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const FOODS=[{"id":0,"fr":"pomme de terre chips salées","es":"patatas fritas de bolsa saladas","en":"salted potato crisps","cat":"bread","g":30,"u":"handful","core":1,"inca":"Biscuits sucrés ou salés et barres","c":{"ACR":[954.5,954.5,954.5,16,16],"PAH4":[0.207,0.2107,0.2145,4,4],"CPF":[0,3.25,6.5,16,0],"CBZ":[0,4.125,8.25,16,0],"DMT":[0,8.438,16.88,16,0],"Cd":[84.3,84.3,84.3,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[7.98,7.98,7.98,1,1],"BPA":[0.1958,0.2417,0.2876,16,9]}},{"id":1,"fr":"pain grillé","es":"pan tostado","en":"toasted bread","cat":"bread","g":10,"u":"slice","core":1,"inca":"Pain et panification sèche","c":{"ACR":[35.45,35.45,35.45,2,2],"DON":[117.5,117.5,117.5,2,2],"PFAS4":[0,0.1435,0.287,1,0],"PAH4":[0.2998,0.2998,0.2998,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[6.0,6.0,6.0,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.543,0.543,0.543,2,2]}},{"id":2,"fr":"pain complet ou intégral","es":"pan integral","en":"wholemeal bread","cat":"bread","g":30,"u":"slice","core":1,"inca":"Pain et panification sèche","c":{"ACR":[38.3,38.3,38.3,2,2],"DON":[115.0,115.0,115.0,2,2],"PFAS4":[0,0.1565,0.313,1,0],"PAH4":[0.4067,0.4067,0.4067,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[27.8,27.8,27.8,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[10.9,10.9,10.9,1,1],"BPA":[0.9855,0.9855,0.9855,2,2]}},{"id":3,"fr":"pain de mie","es":"pan de molde","en":"sandwich loaf bread","cat":"bread","g":25,"u":"slice","core":1,"inca":"Pain et panification sèche","c":{"ACR":[21.95,21.95,21.95,2,2],"DON":[152.5,152.5,152.5,2,2],"PFAS4":[0,0.11,0.22,1,0],"PAH4":[0.2691,0.2691,0.2691,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[2.06,2.06,2.06,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.8655,0.8655,0.8655,2,2]}},{"id":4,"fr":"pain aux céréales","es":"pan de cereales","en":"multigrain bread","cat":"bread","g":30,"u":"slice","core":1,"inca":"Pain et panification sèche","c":{"ACR":[44.7,44.7,44.7,2,2],"DON":[97.5,97.5,97.5,2,2],"PFAS4":[0,0.115,0.23,1,0],"PAH4":[0.4691,0.4691,0.4691,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[35.7,35.7,35.7,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[11.8,11.8,11.8,1,1],"BPA":[0.319,0.319,0.319,2,2]}},{"id":5,"fr":"pain au chocolat","es":"napolitana de chocolate","en":"pain au chocolat","cat":"pastry","g":60,"u":"unit","core":1,"inca":"Viennoiserie","c":{"ACR":[26.35,26.35,26.35,2,2],"DON":[57.5,57.5,57.5,2,2],"PFAS4":[0,0.1335,0.267,1,0],"PAH4":[0.2498,0.2498,0.2498,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[20.0,20.0,20.0,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[13.6,13.6,13.6,1,1],"BPA":[0.822,0.822,0.822,2,2]}},{"id":6,"fr":"compote de pomme","es":"compota de manzana","en":"apple sauce","cat":"fruit","g":100,"u":"unit","core":0,"inca":"Compotes et fruits cuits","c":{"ACR":[0,2.0,4.0,2,0],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.1595,0.212,0.2645,2,1]}},{"id":7,"fr":"compote de fruits autres que pomme","es":"compota de otras frutas","en":"fruit compote (not apple)","cat":"fruit","g":100,"u":"unit","core":0,"inca":"Compotes et fruits cuits","c":{"ACR":[0,2.0,4.0,2,0],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.317,0.317,0.317,2,2]}},{"id":8,"fr":"café noir","es":"café solo","en":"black coffee","cat":"drinks","g":150,"u":"cup","core":1,"inca":"Café","c":{"ACR":[37.33,37.33,37.33,3,3],"PAH4":[0.004809,0.008642,0.01247,15,12],"CPF":[0,2.5,5.0,4,0],"DMT":[0,5.0,10.0,4,0],"Cd":[0.834,0.834,0.834,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[5.32,5.32,5.32,1,1],"BPA":[0.0776,0.1076,0.1376,15,5]}},{"id":9,"fr":"café soluble reconstitué prêt à boire","es":"café soluble preparado","en":"instant coffee (prepared)","cat":"drinks","g":150,"u":"cup","core":0,"inca":"Café","c":{"ACR":[73.1,74.17,75.23,15,10],"PAH4":[0.01053,0.01171,0.01289,14,13],"CPF":[0,2.5,5.0,4,0],"DMT":[0,5.0,10.0,4,0],"BPA":[0.1015,0.1255,0.1495,15,7]}},{"id":10,"fr":"boisson au chocolat","es":"bebida de chocolate","en":"chocolate drink","cat":"drinks","g":200,"u":"glass","core":1,"inca":"Autres boissons chaudes","c":{"ACR":[21.76,21.76,21.76,14,14],"PAH4":[0.009812,0.01253,0.01526,9,8],"CPF":[0,2.5,5.0,10,0],"CBZ":[0,0.25,0.5,2,0],"DMT":[0,5.0,10.0,10,0],"Cd":[4.46,4.46,4.46,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[6.14,6.14,6.14,1,1],"BPA":[0.1125,0.1402,0.1679,13,5]}},{"id":11,"fr":"dessert au soja nature","es":"postre de soja natural","en":"plain soy dessert","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"ACR":[0,3.5,7.0,2,0],"DON":[0,3.25,6.5,2,0],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":12,"fr":"dessert au soja aux fruits","es":"postre de soja con frutas","en":"soy dessert with fruit","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"ACR":[0,2.0,4.0,2,0],"DON":[0,3.25,6.5,2,0],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":13,"fr":"dessert au soja aromatisé au chocolat","es":"postre de soja de chocolate","en":"chocolate soy dessert","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"ACR":[0,2.0,4.0,2,0],"DON":[0,3.25,6.5,2,0],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":14,"fr":"gâteau au chocolat","es":"pastel de chocolate","en":"chocolate cake","cat":"pastry","g":90,"u":"serving","core":1,"inca":"Pâtisseries et gâteaux","c":{"ACR":[48.15,48.15,48.15,2,2],"DON":[10.0,10.25,10.5,2,1],"PFAS4":[0,0.172,0.344,1,0],"PAH4":[0.4586,0.4586,0.4586,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[15.5,15.5,15.5,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[9.18,9.18,9.18,1,1],"BPA":[0.3575,0.3575,0.3575,2,2]}},{"id":15,"fr":"cake aux fruits confits","es":"plum-cake de frutas confitadas","en":"candied-fruit cake","cat":"pastry","g":50,"u":"slice","core":0,"inca":"Pâtisseries et gâteaux","c":{"ACR":[20.3,20.3,20.3,2,2],"DON":[25.0,27.5,30.0,2,1],"PFAS4":[0,0.1515,0.303,1,0],"PAH4":[0.1012,0.1012,0.1012,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.649,0.649,0.649,2,2]}},{"id":16,"fr":"barquette à la pulpe de fruit","es":"barquillo relleno de fruta","en":"fruit-filled biscuit","cat":"pastry","g":20,"u":"unit","core":0,"inca":"Biscuits sucrés ou salés et barres","c":{"ACR":[11.2,11.2,11.2,2,2],"DON":[15.0,17.5,20.0,2,1],"PFAS4":[0,0.149,0.298,1,0],"PAH4":[0.1285,0.1565,0.1845,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":17,"fr":"hachis parmentier","es":"pastel de carne y puré (hachis parmentier)","en":"shepherd's pie (hachis parmentier)","cat":"dishes","g":250,"u":"serving","core":0,"inca":"Plats composés","c":{"ACR":[6.95,9.45,11.95,4,2],"DON":[0,5.0,10.0,7,0],"PFAS4":[0,0.05433,0.1087,3,0],"PBDE":[0.01581,0.01653,0.01724,8,8],"PAH4":[0.1489,0.1541,0.1594,8,8],"TEQ":[0.05857,0.05914,0.0597,8,8],"CPF":[0,2.5,5.0,10,0],"CBZ":[0,5.0,10.0,10,0],"DMT":[0,2.5,5.0,10,0],"BPA":[3.679,3.679,3.679,9,9]}},{"id":18,"fr":"cordon bleu de volaille","es":"cordon bleu de pollo","en":"chicken cordon bleu","cat":"meat","g":100,"u":"unit","core":0,"inca":"Plats composés","c":{"ACR":[33.85,33.85,33.85,2,2],"DON":[42.5,42.5,42.5,2,2],"PFAS4":[0,0.0795,0.159,1,0],"PBDE":[0.02499,0.02617,0.02734,2,2],"PAH4":[0.1716,0.1716,0.1716,2,2],"TEQ":[0.02209,0.02268,0.02327,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[2.433,2.433,2.433,2,2]}},{"id":19,"fr":"quiche lorraine","es":"quiche lorraine","en":"quiche lorraine","cat":"dishes","g":150,"u":"serving","core":0,"inca":"Pizzas, quiches et pâtisseries salées","c":{"ACR":[27.35,27.35,27.35,2,2],"DON":[115.0,115.0,115.0,2,2],"PBDE":[0.02447,0.02572,0.02697,2,2],"PAH4":[0.2189,0.2372,0.2554,2,2],"TEQ":[0.08134,0.08159,0.08184,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[1.627,1.627,1.627,2,2]}},{"id":20,"fr":"poisson pané","es":"pescado empanado","en":"breaded fish","cat":"fish","g":120,"u":"serving","core":1,"inca":"Poissons","c":{"ACR":[8.569,11.07,13.57,16,8],"PFAS4":[0.02173,0.08794,0.1542,16,8],"PBDE":[0.04825,0.04936,0.05047,15,15],"PAH4":[0.2176,0.2213,0.225,16,16],"TEQ":[0.04457,0.0468,0.04903,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[10.4,10.4,10.4,1,1],"Hg":[33.4,33.4,33.4,1,1],"Pb":[9.15,9.15,9.15,1,1],"BPA":[0.6852,0.6957,0.7062,10,9]}},{"id":21,"fr":"barre chocolatée biscuitée","es":"barrita de chocolate con galleta","en":"chocolate biscuit bar","cat":"pastry","g":25,"u":"unit","core":0,"inca":"Chocolat","c":{"ACR":[78.3,78.3,78.3,2,2],"CPF":[0,2.5,5.0,2,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.347,0.347,0.347,1,1]}},{"id":22,"fr":"chocolat au lait","es":"chocolate con leche","en":"milk chocolate","cat":"pastry","g":20,"u":"unit","core":0,"inca":"Chocolat","c":{"ACR":[46.75,46.75,46.75,2,2],"CPF":[0,2.5,5.0,2,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.506,0.506,0.506,2,2]}},{"id":23,"fr":"chocolat au lait aux fruits secs","es":"chocolate con leche y frutos secos","en":"milk chocolate with nuts","cat":"pastry","g":20,"u":"unit","core":0,"inca":"Chocolat","c":{"ACR":[78.4,78.4,78.4,2,2],"CPF":[0,2.5,5.0,2,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.3855,0.3855,0.3855,2,2]}},{"id":24,"fr":"pâte à tartiner chocolatée","es":"crema de cacao para untar","en":"chocolate spread","cat":"pastry","g":15,"u":"tsp","core":1,"inca":"Chocolat","c":{"ACR":[46.1,46.1,46.1,1,1],"PFAS4":[0,0.284,0.568,1,0],"Cd":[11.6,11.6,11.6,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[10.0,10.0,10.0,1,1],"BPA":[0,0.105,0.21,2,0]}},{"id":25,"fr":"dinde escalope","es":"escalope de pavo","en":"turkey escalope","cat":"meat","g":110,"u":"serving","core":0,"inca":"Volaille et gibier","c":{"ACR":[11.55,13.8,16.05,4,1],"PFAS4":[0.00312,0.07784,0.1526,16,1],"PBDE":[0.01946,0.02057,0.02168,16,15],"PAH4":[0.03177,0.04758,0.0634,16,13],"TEQ":[0.006538,0.009282,0.01203,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[6.788,6.788,6.788,14,14]}},{"id":26,"fr":"mousse au chocolat rayon frais","es":"mousse de chocolate","en":"chocolate mousse","cat":"dairy","g":60,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"ACR":[29.4,29.4,29.4,2,2],"DON":[0,1.5,3.0,2,0],"PFAS4":[0,0.07725,0.1545,2,0],"PBDE":[0.003194,0.004419,0.005644,2,2],"PAH4":[0.1516,0.1783,0.2051,2,2],"TEQ":[0.02159,0.02347,0.02535,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,1,0]}},{"id":27,"fr":"chocolat viennois ou liégeois","es":"postre de chocolate con nata","en":"chocolate liégeois dessert","cat":"dairy","g":100,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"ACR":[0,5.0,10.0,2,0],"DON":[0,1.5,3.0,2,0],"PFAS4":[0,0.0595,0.119,2,0],"PBDE":[0.005391,0.006391,0.007391,2,2],"PAH4":[0.03456,0.04756,0.06056,2,2],"TEQ":[0.03384,0.03442,0.035,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":28,"fr":"biscotte","es":"biscote","en":"rusk","cat":"bread","g":10,"u":"unit","core":1,"inca":"Pain et panification sèche","c":{"ACR":[60.5,60.5,60.5,2,2],"DON":[167.5,167.5,167.5,2,2],"PFAS4":[0,0.2165,0.433,1,0],"PAH4":[0.09536,0.1754,0.2554,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[23.3,23.3,23.3,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[8.38,8.38,8.38,1,1],"BPA":[0,0.105,0.21,2,0]}},{"id":29,"fr":"baguette","es":"pan (barra)","en":"baguette","cat":"bread","g":25,"u":"slice","core":0,"inca":"Pain et panification sèche","c":{"ACR":[5.8,8.3,10.8,2,1],"DON":[145.0,145.0,145.0,2,2],"PFAS4":[0,0.1375,0.275,1,0],"PAH4":[0.0609,0.0609,0.0609,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.29,0.29,0.29,2,2]}},{"id":30,"fr":"pain de campagne","es":"pan de payés / rústico","en":"country bread","cat":"bread","g":30,"u":"slice","core":1,"inca":"Pain et panification sèche","c":{"ACR":[30.7,30.7,30.7,2,2],"DON":[130.0,130.0,130.0,2,2],"PFAS4":[0,0.113,0.226,1,0],"PAH4":[0.1414,0.1934,0.2454,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[21.4,21.4,21.4,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[13.9,13.9,13.9,1,1],"BPA":[0.22,0.22,0.22,2,2]}},{"id":31,"fr":"céréales au chocolat","es":"cereales de chocolate","en":"chocolate breakfast cereals","cat":"bread","g":30,"u":"cup","core":1,"inca":"Céréales pour petit déjeuner","c":{"ACR":[7.65,8.65,9.65,2,1],"DON":[12.5,12.5,12.5,2,2],"PFAS4":[0,0.0595,0.119,1,0],"PAH4":[0.03164,0.03914,0.04664,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[5.66,5.66,5.66,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0,0.105,0.21,1,0]}},{"id":32,"fr":"muesli","es":"muesli","en":"muesli","cat":"bread","g":40,"u":"cup","core":0,"inca":"Céréales pour petit déjeuner","c":{"ACR":[11.95,11.95,11.95,2,2],"DON":[10.0,10.0,10.0,2,2],"PFAS4":[0,0.0625,0.125,1,0],"PAH4":[0.1993,0.2163,0.2333,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.222,0.2745,0.327,2,1]}},{"id":33,"fr":"pétales de maïs","es":"copos de maíz","en":"corn flakes","cat":"bread","g":30,"u":"cup","core":0,"inca":"Céréales pour petit déjeuner","c":{"ACR":[27.95,27.95,27.95,2,2],"DON":[0,5.0,10.0,2,0],"PFAS4":[0,0.0295,0.059,1,0],"PAH4":[0.01185,0.01685,0.02185,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":34,"fr":"croissant","es":"cruasán","en":"croissant","cat":"pastry","g":55,"u":"unit","core":1,"inca":"Viennoiserie","c":{"ACR":[21.05,21.05,21.05,2,2],"DON":[67.5,67.5,67.5,2,2],"PFAS4":[0,0.0365,0.073,1,0],"PAH4":[0.2933,0.2933,0.2933,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[15.3,15.3,15.3,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[6.92,6.92,6.92,1,1],"BPA":[1.279,1.279,1.279,1,1]}},{"id":35,"fr":"brioche et pain brioché","es":"brioche / pan de leche","en":"brioche","cat":"pastry","g":40,"u":"unit","core":0,"inca":"Viennoiserie","c":{"ACR":[19.15,19.15,19.15,2,2],"DON":[95.0,95.0,95.0,2,2],"PFAS4":[0,0.184,0.368,1,0],"PAH4":[0.1743,0.2103,0.2463,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[2.058,2.058,2.058,2,2]}},{"id":36,"fr":"biscuit apéritif","es":"galletitas saladas de aperitivo","en":"savoury cocktail biscuits","cat":"bread","g":30,"u":"handful","core":1,"inca":"Biscuits sucrés ou salés et barres","c":{"ACR":[697.5,697.5,697.5,2,2],"DON":[92.5,95.0,97.5,2,1],"PFAS4":[0,0.222,0.444,1,0],"PAH4":[0.4131,0.4131,0.4131,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[15.0,15.0,15.0,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[10.0,10.0,10.0,1,1],"BPA":[0,0.105,0.21,2,0]}},{"id":37,"fr":"biscuit sec au chocolat","es":"galleta de chocolate","en":"chocolate biscuit","cat":"pastry","g":10,"u":"unit","core":0,"inca":"Biscuits sucrés ou salés et barres","c":{"ACR":[212.8,212.8,212.8,2,2],"DON":[45.0,47.5,50.0,2,1],"PFAS4":[0,0.216,0.432,1,0],"PAH4":[0.519,0.519,0.519,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":38,"fr":"biscuit sec","es":"galleta tipo María","en":"plain biscuit","cat":"pastry","g":6,"u":"unit","core":0,"inca":"Biscuits sucrés ou salés et barres","c":{"ACR":[192.9,192.9,192.9,2,2],"DON":[75.0,77.5,80.0,2,1],"PFAS4":[0,0.222,0.444,1,0],"PAH4":[0.2949,0.2949,0.2949,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[3.651,3.704,3.756,2,1]}},{"id":39,"fr":"moelleux au chocolat","es":"bizcocho tierno de chocolate (brownie)","en":"chocolate fondant / brownie","cat":"pastry","g":100,"u":"unit","core":1,"inca":"Pâtisseries et gâteaux","c":{"ACR":[15.2,15.2,15.2,2,2],"DON":[25.0,25.0,25.0,2,2],"PFAS4":[0,0.1845,0.369,1,0],"PAH4":[0.1839,0.1839,0.1839,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[13.5,13.5,13.5,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[12.5,12.5,12.5,1,1],"BPA":[0.2965,0.349,0.4015,2,1]}},{"id":40,"fr":"gateau moelleux fourré ou non","es":"bizcocho (relleno o no)","en":"sponge cake","cat":"pastry","g":40,"u":"unit","core":0,"inca":"Pâtisseries et gâteaux","c":{"ACR":[20.05,20.05,20.05,2,2],"DON":[62.5,62.5,62.5,2,2],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[5.248,5.248,5.248,2,2]}},{"id":41,"fr":"chou, chouquette","es":"lionesa / profiterol","en":"choux pastry","cat":"pastry","g":30,"u":"unit","core":0,"inca":"Pâtisseries et gâteaux","c":{"ACR":[17.9,17.9,17.9,2,2],"DON":[25.0,25.0,25.0,2,2],"PFAS4":[0,0.1225,0.245,1,0],"PAH4":[0.03963,0.07063,0.1016,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[1.671,1.671,1.671,2,2]}},{"id":42,"fr":"crêpe ou gaufre","es":"crep o gofre","en":"crêpe or waffle","cat":"pastry","g":60,"u":"unit","core":0,"inca":"Pâtisseries et gâteaux","c":{"ACR":[23.2,23.2,23.2,2,2],"DON":[115.0,115.0,115.0,2,2],"PFAS4":[0,0.038,0.076,1,0],"PAH4":[0.02107,0.02857,0.03607,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[2.649,2.649,2.649,2,2]}},{"id":43,"fr":"gâteau","es":"pastel / tarta","en":"cake","cat":"pastry","g":90,"u":"serving","core":0,"inca":"Pâtisseries et gâteaux","c":{"ACR":[30.4,30.4,30.4,2,2],"DON":[27.5,27.5,27.5,2,2],"PFAS4":[0,0.1685,0.337,1,0],"PAH4":[0.369,0.369,0.369,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.8875,0.8875,0.8875,2,2]}},{"id":44,"fr":"tarte ou tartelette","es":"tarta o tartaleta","en":"tart","cat":"pastry","g":100,"u":"serving","core":0,"inca":"Pâtisseries et gâteaux","c":{"ACR":[30.4,30.4,30.4,2,2],"DON":[135.0,135.0,135.0,2,2],"PFAS4":[0,0.1185,0.237,1,0],"PAH4":[0.04964,0.06914,0.08864,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.5535,0.5535,0.5535,2,2]}},{"id":45,"fr":"poulet","es":"pollo","en":"chicken","cat":"meat","g":110,"u":"serving","core":1,"inca":"Volaille et gibier","c":{"ACR":[0,5.0,10.0,2,0],"PFAS4":[0,0.06972,0.1394,16,0],"PBDE":[0.0271,0.02794,0.02878,16,16],"PAH4":[0.06508,0.07487,0.08465,16,14],"TEQ":[0.01657,0.01827,0.01997,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[1.12,1.12,1.12,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[30.8,30.8,30.8,1,1],"BPA":[2.619,2.619,2.619,15,15]}},{"id":46,"fr":"pomme de terre sautée ou frite","es":"patatas fritas o salteadas","en":"French fries / sautéed potatoes","cat":"bread","g":150,"u":"serving","core":0,"inca":"Pommes de terre et apparentés","c":{"ACR":[724.1,724.1,724.1,16,16],"PFAS4":[0,0.045,0.09,1,0],"PAH4":[0.1266,0.1367,0.1469,4,4],"CPF":[0,2.812,5.625,16,0],"CBZ":[0,5.0,10.0,16,0],"DMT":[0,8.438,16.88,16,0],"BPA":[0.7466,0.7466,0.7466,13,13]}},{"id":47,"fr":"chocolat noir","es":"chocolate negro","en":"dark chocolate","cat":"pastry","g":20,"u":"unit","core":0,"inca":"Chocolat","c":{"ACR":[133.7,133.7,133.7,2,2],"CPF":[0,2.5,5.0,2,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.854,0.854,0.854,1,1]}},{"id":48,"fr":"pizza","es":"pizza","en":"pizza","cat":"dishes","g":200,"u":"serving","core":1,"inca":"Pizzas, quiches et pâtisseries salées","c":{"ACR":[54.6,54.6,54.6,2,2],"DON":[87.5,87.5,87.5,2,2],"PBDE":[0.008738,0.01036,0.01199,2,2],"PAH4":[0.3927,0.3927,0.3927,2,2],"TEQ":[0.0288,0.03032,0.03185,2,2],"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[16.5,16.5,16.5,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[8.27,8.27,8.27,1,1],"BPA":[2.693,2.693,2.693,2,2]}},{"id":49,"fr":"hamburger","es":"hamburguesa","en":"hamburger","cat":"dishes","g":200,"u":"unit","core":1,"inca":"Sandwiches, casse-croûte","c":{"ACR":[4.667,7.0,9.333,6,2],"DON":[36.67,36.67,36.67,12,12],"PFAS4":[0,0.082,0.164,2,0],"PBDE":[0.04397,0.04506,0.04616,8,8],"PAH4":[0.1764,0.1851,0.1938,8,8],"TEQ":[0.06846,0.0688,0.06914,8,8],"CPF":[0,2.5,5.0,14,0],"CBZ":[0,5.0,10.0,14,0],"DMT":[0,2.5,5.0,14,0],"Cd":[8.65,8.65,8.65,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.7677,0.7677,0.7677,14,14]}},{"id":50,"fr":"sandwich","es":"bocadillo / sándwich","en":"sandwich","cat":"dishes","g":200,"u":"unit","core":1,"inca":"Sandwiches, casse-croûte","c":{"ACR":[10.12,12.79,15.46,9,3],"DON":[129.4,129.4,129.4,16,16],"PFAS4":[0,0.0865,0.173,1,0],"PBDE":[0.04496,0.04618,0.04739,10,10],"PAH4":[0.1235,0.1326,0.1418,10,10],"TEQ":[0.02707,0.02819,0.02931,10,10],"CPF":[0,2.5,5.0,16,0],"CBZ":[0,5.0,10.0,16,0],"DMT":[0,2.5,5.0,16,0],"Cd":[12.6,12.6,12.6,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[5.42,5.42,5.42,1,1],"BPA":[3.414,3.414,3.414,16,16]}},{"id":51,"fr":"pâtes fourrées type ravioli","es":"pasta rellena (raviolis)","en":"filled pasta (ravioli)","cat":"dishes","g":250,"u":"serving","core":0,"inca":"Plats composés","c":{"ACR":[7.333,9.833,12.33,6,3],"DON":[41.88,41.88,41.88,16,16],"PBDE":[0.01513,0.01604,0.01695,12,12],"PAH4":[0.07621,0.08571,0.09521,12,12],"TEQ":[0.02813,0.02843,0.02874,12,12],"CPF":[0,2.5,5.0,16,0],"CBZ":[0,5.0,10.0,16,0],"DMT":[0,2.5,5.0,16,0],"BPA":[9.199,9.199,9.199,14,14]}},{"id":52,"fr":"crème dessert","es":"natillas","en":"custard dessert","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"ACR":[0,2.0,4.0,2,0],"DON":[0,1.5,3.0,2,0],"PFAS4":[0,0.05775,0.1155,2,0],"PBDE":[0.006678,0.007603,0.008528,2,2],"PAH4":[0.04528,0.06953,0.09378,2,1],"TEQ":[0.02857,0.03067,0.03278,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":53,"fr":"purée de pommes de terre","es":"puré de patatas","en":"mashed potatoes","cat":"bread","g":200,"u":"serving","core":0,"inca":"Pommes de terre et apparentés","c":{"PAH4":[0.06551,0.07576,0.08601,2,2],"CPF":[0,2.812,5.625,16,0],"CBZ":[0,5.0,10.0,16,0],"DMT":[0,8.438,16.88,16,0],"BPA":[0.2921,0.3411,0.3901,15,8]}},{"id":54,"fr":"foie gras","es":"foie gras","en":"foie gras","cat":"meat","g":40,"u":"serving","core":0,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,2,0],"PFAS4":[0,0.1888,0.3775,2,0],"PBDE":[0.01997,0.02374,0.02752,2,2],"PAH4":[0.05483,0.07258,0.09033,2,2],"TEQ":[0.06398,0.06506,0.06614,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[15.71,15.71,15.71,2,2]}},{"id":55,"fr":"coquille st jacques","es":"vieira","en":"scallop","cat":"fish","g":100,"u":"serving","core":0,"inca":"Crustacés et mollusques","c":{"PFAS4":[0.03119,0.05978,0.08839,5,3],"PBDE":[0.07397,0.07475,0.07553,5,5],"PAH4":[4.29,4.29,4.29,5,5],"TEQ":[0.1384,0.1389,0.1393,5,5],"CPF":[0,0.5,1.0,5,0],"CBZ":[0,0.8333,1.667,5,0],"DMT":[0,0.8333,1.667,5,0],"BPA":[1.431,1.431,1.431,2,2]}},{"id":56,"fr":"crevette","es":"gamba","en":"shrimp","cat":"fish","g":100,"u":"serving","core":1,"inca":"Crustacés et mollusques","c":{"PFAS4":[0.6346,0.7134,0.7922,16,12],"PBDE":[0.0982,0.09917,0.1001,16,16],"PAH4":[0.1074,0.1186,0.1299,16,15],"TEQ":[0.1913,0.1916,0.1918,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[13.5,13.5,13.5,1,1],"Hg":[35.9,35.9,35.9,1,1],"Pb":[15.1,15.1,15.1,1,1],"BPA":[12.02,12.02,12.02,15,15]}},{"id":57,"fr":"huître","es":"ostra","en":"oyster","cat":"fish","g":100,"u":"serving","core":0,"inca":"Crustacés et mollusques","c":{"PFAS4":[0.007565,0.06073,0.1139,6,2],"PBDE":[0.05389,0.05454,0.05518,6,6],"PAH4":[5.616,5.616,5.616,6,6],"TEQ":[0.5933,0.5934,0.5935,6,6],"CPF":[0,0.5,1.0,6,0],"CBZ":[0,0.8333,1.667,6,0],"DMT":[0,0.8333,1.667,6,0],"BPA":[1.96,1.96,1.96,6,6]}},{"id":58,"fr":"moule","es":"mejillón","en":"mussel","cat":"fish","g":150,"u":"serving","core":1,"inca":"Crustacés et mollusques","c":{"PFAS4":[0.09276,0.1933,0.2938,10,10],"PBDE":[0.1878,0.1893,0.1909,10,10],"PAH4":[6.406,6.406,6.406,10,10],"TEQ":[0.7537,0.7538,0.7538,10,10],"CPF":[0,0.5,1.0,10,0],"CBZ":[0,0.8333,1.667,10,0],"DMT":[0,0.8333,1.667,10,0],"Cd":[67.3,67.3,67.3,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[192.0,192.0,192.0,1,1],"BPA":[6.06,6.06,6.06,10,10]}},{"id":59,"fr":"mayonnaise","es":"mayonesa","en":"mayonnaise","cat":"fat","g":15,"u":"tbsp","core":0,"inca":"Condiments et sauces","c":{"PFAS4":[0,0.463,0.926,1,0],"PBDE":[0.01085,0.02169,0.03254,1,1],"PAH4":[0.6238,0.6238,0.6238,1,1],"TEQ":[0.001599,0.02922,0.05685,1,1],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[1.24,1.292,1.345,2,1]}},{"id":60,"fr":"sauce tomate à la viande","es":"salsa boloñesa","en":"meat tomato sauce","cat":"dishes","g":100,"u":"serving","core":0,"inca":"Condiments et sauces","c":{"PFAS4":[0,0.034,0.068,2,0],"PBDE":[0.002132,0.002957,0.003782,2,2],"PAH4":[0.08869,0.09419,0.09969,2,2],"TEQ":[0.02696,0.02714,0.02732,2,2],"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[3.74,3.74,3.74,2,2]}},{"id":61,"fr":"roquefort","es":"queso roquefort","en":"Roquefort cheese","cat":"dairy","g":30,"u":"serving","core":0,"inca":"Fromages","c":{"PFAS4":[0,0.1128,0.2255,2,0],"PBDE":[0.02547,0.02872,0.03197,2,2],"PAH4":[0.03878,0.07278,0.1068,2,2],"TEQ":[0.137,0.1372,0.1373,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0]}},{"id":62,"fr":"fromage à pâte ferme enrobé de cire","es":"queso semicurado","en":"semi-hard cheese","cat":"dairy","g":30,"u":"serving","core":1,"inca":"Fromages","c":{"PFAS4":[0,0.09375,0.1875,2,0],"PBDE":[0.0169,0.01867,0.02045,2,2],"PAH4":[0.01937,0.05812,0.09687,2,2],"TEQ":[0.1412,0.1416,0.1421,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"Cd":[3.83,3.83,3.83,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[8.72,8.72,8.72,1,1],"BPA":[0.12,0.1725,0.225,2,1]}},{"id":63,"fr":"beurre","es":"mantequilla","en":"butter","cat":"fat","g":5,"u":"tsp","core":1,"inca":"Beurre","c":{"PBDE":[0.1127,0.1155,0.1183,2,2],"PAH4":[0.08138,0.09988,0.1184,2,2],"TEQ":[0.569,0.5695,0.57,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"Cd":[1.02,1.02,1.02,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[9.893,9.893,9.893,1,1],"BPA":[0.16,0.2125,0.265,2,1]}},{"id":64,"fr":"beurre allégé à 60-62 % m.g.","es":"mantequilla light","en":"reduced-fat butter","cat":"fat","g":5,"u":"tsp","core":0,"inca":"Beurre","c":{"PBDE":[0.05433,0.0569,0.05948,2,2],"PAH4":[0.03742,0.04718,0.05693,2,2],"TEQ":[0.4258,0.4259,0.426,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0.495,0.495,0.495,2,2]}},{"id":65,"fr":"margarine au tournesol","es":"margarina de girasol","en":"sunflower margarine","cat":"fat","g":5,"u":"tsp","core":0,"inca":"Margarine","c":{"PBDE":[0.05867,0.06372,0.06877,2,2],"PAH4":[0.5222,0.5222,0.5222,2,2],"TEQ":[0.04482,0.06263,0.08043,2,2],"BPA":[0.889,0.889,0.889,2,2]}},{"id":66,"fr":"huile d'olive vierge 1ère pression","es":"aceite de oliva virgen extra","en":"extra virgin olive oil","cat":"fat","g":10,"u":"tbsp","core":0,"inca":"Huile","c":{"PBDE":[0.001578,0.02043,0.03928,1,1],"PAH4":[2.016,2.016,2.016,2,2],"TEQ":[0.04015,0.06774,0.09532,2,2],"BPA":[1.141,1.141,1.141,2,2]}},{"id":67,"fr":"huile de soja","es":"aceite de soja","en":"soybean oil","cat":"fat","g":10,"u":"tbsp","core":0,"inca":"Huile","c":{"PBDE":[0.01276,0.02191,0.03105,1,1],"PAH4":[2.21,2.21,2.21,2,2],"TEQ":[0.02474,0.03882,0.0529,2,2],"BPA":[0.5055,0.5055,0.5055,2,2]}},{"id":68,"fr":"huile de tournesol","es":"aceite de girasol","en":"sunflower oil","cat":"fat","g":10,"u":"tbsp","core":0,"inca":"Huile","c":{"PBDE":[0.0186,0.02915,0.0397,1,1],"PAH4":[1.181,1.181,1.181,2,2],"TEQ":[0.02577,0.03903,0.05229,2,2],"BPA":[0.085,0.1075,0.13,2,1]}},{"id":69,"fr":"boisson au soja ou tonyu","es":"bebida de soja","en":"soy drink","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"PAH4":[0,0.00525,0.0105,2,0],"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.2045,0.227,0.2495,2,1]}},{"id":70,"fr":"radis","es":"rábano","en":"radish","cat":"veg","g":50,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.002665,0.01116,0.01966,2,1],"PAH4":[0.04338,0.04398,0.04458,10,10],"CPF":[0,12.5,25.0,12,0],"CBZ":[0,2.5,5.0,12,0],"DMT":[0,5.0,10.0,12,0],"BPA":[0,0.105,0.21,12,0]}},{"id":71,"fr":"oeuf dur","es":"huevo duro","en":"hard-boiled egg","cat":"dairy","g":55,"u":"unit","core":1,"inca":"Oeufs et dérivés","c":{"PFAS4":[0,0.04846,0.09693,14,0],"PBDE":[0.01004,0.0113,0.01256,14,14],"PAH4":[0.01053,0.02778,0.04503,14,13],"TEQ":[0.02438,0.02548,0.02658,14,14],"CPF":[0,0.5,1.0,14,0],"CBZ":[0,0.8333,1.667,14,0],"DMT":[0,0.8333,1.667,14,0],"Cd":[1.9,1.9,1.9,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.8577,0.8738,0.89,13,11]}},{"id":72,"fr":"cassoulet","es":"cassoulet (fabada francesa)","en":"cassoulet","cat":"dishes","g":300,"u":"serving","core":0,"inca":"Plats composés","c":{"DON":[0,4.125,8.25,4,0],"PBDE":[0.01216,0.01281,0.01346,2,2],"PAH4":[0.127,0.133,0.139,2,2],"TEQ":[0.01159,0.01325,0.01491,2,2],"CPF":[0,2.5,5.0,4,0],"CBZ":[0,5.0,10.0,4,0],"DMT":[0,2.5,5.0,4,0],"BPA":[25.28,25.28,25.28,3,3]}},{"id":73,"fr":"choucroute","es":"chucrut con embutidos","en":"sauerkraut with meats","cat":"dishes","g":300,"u":"serving","core":0,"inca":"Plats composés","c":{"DON":[0,1.5,3.0,4,0],"PBDE":[0.02347,0.02414,0.02482,4,4],"PAH4":[0.3157,0.3157,0.3157,4,4],"TEQ":[0.00958,0.01162,0.01366,4,4],"CPF":[0,2.5,5.0,3,0],"CBZ":[0,5.0,10.0,3,0],"DMT":[0,2.5,5.0,3,0],"BPA":[10.45,10.45,10.45,4,4]}},{"id":74,"fr":"pot-au-feu","es":"cocido (pot-au-feu)","en":"beef stew (pot-au-feu)","cat":"dishes","g":300,"u":"serving","core":0,"inca":"Plats composés","c":{"DON":[0,2.375,4.75,4,0],"PBDE":[0.008185,0.008935,0.009685,3,3],"PAH4":[0.0491,0.05543,0.06177,3,3],"TEQ":[0.04063,0.04077,0.04091,3,3],"CPF":[0,2.5,5.0,4,0],"CBZ":[0,5.0,10.0,4,0],"DMT":[0,2.5,5.0,4,0],"BPA":[12.4,12.4,12.4,4,4]}},{"id":75,"fr":"ratatouille","es":"pisto (ratatouille)","en":"ratatouille","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"DON":[0,2.667,5.333,3,0],"PBDE":[0.03625,0.03667,0.03708,3,3],"PAH4":[0.08733,0.08733,0.08733,3,3],"TEQ":[0.002532,0.00503,0.007527,3,3],"CPF":[0,2.5,5.0,8,0],"CBZ":[0,5.0,10.0,8,0],"DMT":[0,2.5,5.0,8,0],"BPA":[9.961,9.961,9.961,8,8]}},{"id":76,"fr":"couscous","es":"cuscús con carne y verduras","en":"couscous (complete dish)","cat":"dishes","g":300,"u":"serving","core":0,"inca":"Plats composés","c":{"DON":[27.0,28.0,29.0,10,8],"PBDE":[0.01801,0.01887,0.01973,10,10],"PAH4":[0.1267,0.1352,0.1437,10,10],"TEQ":[0.03025,0.03109,0.03192,10,10],"CPF":[0,2.5,5.0,8,0],"CBZ":[0,5.0,10.0,8,0],"DMT":[0,2.5,5.0,8,0],"BPA":[14.69,14.69,14.69,10,10]}},{"id":77,"fr":"lieu ou colin","es":"merluza / abadejo","en":"hake / pollock","cat":"fish","g":130,"u":"serving","core":0,"inca":"Poissons","c":{"PFAS4":[0.1951,0.2237,0.2523,6,6],"PBDE":[0.06227,0.063,0.06372,6,6],"PAH4":[0.05327,0.06602,0.07877,6,6],"TEQ":[0.07899,0.08158,0.08418,6,6],"CPF":[0,0.5,1.0,6,0],"CBZ":[0,0.8333,1.667,6,0],"DMT":[0,0.8333,1.667,6,0],"BPA":[16.69,16.69,16.69,4,4]}},{"id":78,"fr":"saumon fumé","es":"salmón ahumado","en":"smoked salmon","cat":"fish","g":25,"u":"slice","core":1,"inca":"Poissons","c":{"PFAS4":[0,0.04175,0.0835,2,0],"PBDE":[0.8015,0.8015,0.8015,2,2],"PAH4":[0.1102,0.1164,0.1227,2,2],"TEQ":[0.6047,0.6048,0.605,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"Cd":[0,0.25,0.5,1,0],"Hg":[42.0,42.0,42.0,1,1],"Pb":[10.9,10.9,10.9,1,1],"BPA":[1.119,1.119,1.119,2,2]}},{"id":79,"fr":"saumon","es":"salmón","en":"salmon","cat":"fish","g":130,"u":"serving","core":1,"inca":"Poissons","c":{"PFAS4":[0.03628,0.08287,0.1295,16,2],"PBDE":[1.117,1.118,1.12,16,16],"PAH4":[0.08313,0.1017,0.1204,16,16],"TEQ":[0.8573,0.8577,0.858,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[1.7,1.7,1.7,1,1],"Hg":[50.1,50.1,50.1,1,1],"Pb":[0,1.25,2.5,1,0],"BPA":[13.78,13.78,13.78,15,15]}},{"id":80,"fr":"thon","es":"atún fresco","en":"fresh tuna","cat":"fish","g":130,"u":"serving","core":1,"inca":"Poissons","c":{"PFAS4":[0.2538,0.2878,0.3218,2,1],"PBDE":[0.8849,0.8857,0.8864,2,2],"PAH4":[0.08143,0.1137,0.1459,2,2],"TEQ":[1.567,1.568,1.569,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"Cd":[12.0,12.0,12.0,1,1],"Hg":[702.0,702.0,702.0,1,1],"Pb":[0,1.25,2.5,1,0],"BPA":[3.978,3.978,3.978,2,2]}},{"id":81,"fr":"merguez","es":"salchicha merguez","en":"merguez sausage","cat":"meat","g":50,"u":"unit","core":0,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,6,0],"PFAS4":[0.03175,0.1104,0.1891,6,2],"PBDE":[0.1007,0.1019,0.103,6,6],"PAH4":[0.4224,0.4224,0.4224,6,6],"TEQ":[0.1711,0.1722,0.1732,6,6],"CPF":[0.5,1.083,1.667,6,1],"CBZ":[0,0.8333,1.667,6,0],"DMT":[0,0.8333,1.667,6,0],"BPA":[3.943,3.943,3.943,5,5]}},{"id":82,"fr":"saucisse de strasbourg","es":"salchicha tipo Frankfurt","en":"frankfurter sausage","cat":"meat","g":40,"u":"unit","core":1,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,8,0],"PFAS4":[0,0.08943,0.1789,7,0],"PBDE":[0.05216,0.0533,0.05443,8,8],"PAH4":[0.1598,0.1611,0.1624,8,8],"TEQ":[0.01449,0.01814,0.02178,8,8],"CPF":[0,0.5,1.0,8,0],"CBZ":[0,0.8333,1.667,8,0],"DMT":[0,0.8333,1.667,8,0],"Cd":[1.74,1.74,1.74,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[9.2,9.2,9.2,1,1],"BPA":[0.6693,0.6693,0.6693,8,8]}},{"id":83,"fr":"dinde rôtie","es":"pavo asado","en":"roast turkey","cat":"meat","g":110,"u":"serving","core":0,"inca":"Volaille et gibier","c":{"PFAS4":[0,0.05825,0.1165,2,0],"PBDE":[0.005587,0.007762,0.009937,2,2],"PAH4":[0.1241,0.1284,0.1326,2,2],"TEQ":[0.01386,0.01506,0.01626,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[4.077,4.077,4.077,2,2]}},{"id":84,"fr":"crème caramel","es":"flan de caramelo","en":"crème caramel","cat":"dairy","g":100,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"DON":[0,1.5,3.0,2,0],"PFAS4":[0,0.07225,0.1445,2,0],"PBDE":[0.005641,0.006916,0.008191,2,2],"PAH4":[0,0.01975,0.0395,2,0],"TEQ":[0.01837,0.02074,0.02312,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":85,"fr":"clafoutis aux fruits","es":"clafoutis de frutas","en":"fruit clafoutis","cat":"pastry","g":100,"u":"serving","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"DON":[22.5,22.5,22.5,2,2],"PFAS4":[0,0.08725,0.1745,2,0],"PBDE":[0.02246,0.02364,0.02481,2,2],"PAH4":[0.02349,0.04799,0.07249,2,2],"TEQ":[0.03779,0.03811,0.03844,2,2],"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[2.614,2.614,2.614,2,2]}},{"id":86,"fr":"flan aux oeufs","es":"flan de huevo","en":"egg custard","cat":"dairy","g":100,"u":"unit","core":0,"inca":"Entremets, crèmes desserts et laits gélifiés","c":{"DON":[11.67,13.33,15.0,12,8],"PFAS4":[0,0.07462,0.1492,12,0],"PBDE":[0.02913,0.03046,0.0318,12,12],"PAH4":[0.02595,0.04645,0.06695,12,10],"TEQ":[0.01894,0.02009,0.02124,12,12],"CPF":[0,0.5,1.0,12,0],"CBZ":[0,0.8333,1.667,12,0],"DMT":[0,0.8333,1.667,12,0],"BPA":[1.256,1.308,1.361,12,6]}},{"id":87,"fr":"crêpe sucrée","es":"crep dulce","en":"sweet crêpe","cat":"pastry","g":60,"u":"unit","core":0,"inca":"Pâtisseries et gâteaux","c":{"DON":[60.0,60.0,60.0,2,2],"PFAS4":[0,0.109,0.218,1,0],"PAH4":[0.1808,0.2123,0.2438,1,1],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[1.696,1.696,1.696,2,2]}},{"id":88,"fr":"lait demi-écrémé","es":"leche semidesnatada","en":"semi-skimmed milk","cat":"dairy","g":200,"u":"glass","core":1,"inca":"Lait","c":{"PFAS4":[0,0.1481,0.2963,16,0],"PBDE":[0.001413,0.00171,0.002007,15,15],"PAH4":[0.002253,0.005971,0.00969,16,10],"TEQ":[0.01052,0.01115,0.01179,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[1.82,1.82,1.82,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.221,0.239,0.257,15,9]}},{"id":89,"fr":"lait écrémé","es":"leche desnatada","en":"skimmed milk","cat":"dairy","g":200,"u":"glass","core":0,"inca":"Lait","c":{"PFAS4":[0,0.1371,0.2742,10,0],"PBDE":[0.000633,0.000909,0.001185,10,8],"PAH4":[0.000823,0.005773,0.01072,10,6],"TEQ":[0.001424,0.002862,0.0043,10,10],"CPF":[0,0.5,1.0,10,0],"CBZ":[0,0.8333,1.667,10,0],"DMT":[0,0.8333,1.667,10,0],"BPA":[0.1022,0.1247,0.1472,10,5]}},{"id":90,"fr":"lait entier","es":"leche entera","en":"whole milk","cat":"dairy","g":200,"u":"glass","core":0,"inca":"Lait","c":{"PFAS4":[0,0.1414,0.2828,12,0],"PBDE":[0.002678,0.002953,0.003228,12,12],"PAH4":[0.001296,0.005755,0.01021,12,9],"TEQ":[0.0248,0.0251,0.0254,12,12],"CPF":[0,0.5,1.0,12,0],"CBZ":[0,0.8333,1.667,12,0],"DMT":[0,0.8333,1.667,12,0],"BPA":[0.129,0.144,0.159,12,8]}},{"id":91,"fr":"crème fraîche","es":"nata fresca","en":"crème fraîche","cat":"dairy","g":15,"u":"tbsp","core":0,"inca":"Ultra-frais laitier","c":{"PFAS4":[0,0.1863,0.3726,12,0],"PBDE":[0.02081,0.02166,0.02252,12,12],"PAH4":[0.009106,0.01465,0.02019,12,11],"TEQ":[0.1208,0.121,0.1213,12,12],"CPF":[0,0.5,1.0,12,0],"CBZ":[0,0.8333,1.667,12,0],"DMT":[0,0.8333,1.667,12,0],"BPA":[0.3391,0.3578,0.3766,12,7]}},{"id":92,"fr":"lait fermenté et yaourt à boire","es":"yogur líquido / leche fermentada","en":"drinking yogurt","cat":"dairy","g":100,"u":"unit","core":0,"inca":"Ultra-frais laitier","c":{"PFAS4":[0,0.1555,0.3109,16,0],"PBDE":[0.006368,0.006796,0.007225,16,16],"PAH4":[0.001883,0.005852,0.00982,16,10],"TEQ":[0.01068,0.01256,0.01444,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[0.1298,0.1494,0.1691,16,9]}},{"id":93,"fr":"fromage blanc non allégé","es":"queso fresco batido","en":"fromage blanc","cat":"dairy","g":100,"u":"unit","core":0,"inca":"Fromages","c":{"PFAS4":[0,0.1807,0.3614,16,0],"PBDE":[0.009122,0.009589,0.01006,15,15],"PAH4":[0.006522,0.01158,0.01665,16,10],"TEQ":[0.03678,0.03777,0.03876,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[0.1057,0.1932,0.2807,6,1]}},{"id":94,"fr":"yaourt 0%","es":"yogur 0%","en":"fat-free yogurt","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Ultra-frais laitier","c":{"PFAS4":[0,0.1385,0.2771,16,0],"PBDE":[0.003864,0.004336,0.004808,16,16],"PAH4":[0.007187,0.01056,0.01394,16,11],"TEQ":[0.003339,0.006407,0.009475,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[0.3301,0.3526,0.3751,16,8]}},{"id":95,"fr":"yaourt au lait entier","es":"yogur entero","en":"whole-milk yogurt","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Ultra-frais laitier","c":{"PFAS4":[0,0.1675,0.335,16,0],"PBDE":[0.007875,0.008212,0.008548,15,15],"PAH4":[0.002286,0.006067,0.009849,16,12],"TEQ":[0.0253,0.02724,0.02918,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[0.1739,0.188,0.2021,16,11]}},{"id":96,"fr":"yaourt au lait partiellement écrémé","es":"yogur semidesnatado","en":"low-fat yogurt","cat":"dairy","g":125,"u":"unit","core":0,"inca":"Ultra-frais laitier","c":{"PFAS4":[0,0.1325,0.265,15,0],"PBDE":[0.008151,0.008561,0.008971,15,15],"PAH4":[0.004802,0.007768,0.01073,15,12],"TEQ":[0.01955,0.02146,0.02338,15,15],"CPF":[0,0.5,1.0,15,0],"CBZ":[0,0.8333,1.667,15,0],"DMT":[0,0.8333,1.667,15,0],"BPA":[0.0902,0.1172,0.1442,15,6]}},{"id":97,"fr":"fromage fondu","es":"queso fundido","en":"processed cheese","cat":"dairy","g":20,"u":"unit","core":1,"inca":"Fromages","c":{"PFAS4":[0,0.0755,0.151,2,0],"PBDE":[0.01939,0.02074,0.02209,2,2],"PAH4":[0.03936,0.08286,0.1264,2,1],"TEQ":[0.1471,0.1472,0.1474,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"Cd":[2.74,2.74,2.74,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[12.0,12.0,12.0,1,1],"BPA":[0.1305,0.183,0.2355,2,1]}},{"id":98,"fr":"camembert et apparenté","es":"queso camembert","en":"Camembert-type cheese","cat":"dairy","g":30,"u":"serving","core":0,"inca":"Fromages","c":{"PFAS4":[0,0.09,0.18,2,0],"PBDE":[0.02902,0.03152,0.03402,2,2],"PAH4":[0.01011,0.03186,0.05361,2,2],"TEQ":[0.1496,0.1498,0.15,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0]}},{"id":99,"fr":"cantal, morbier et apparenté","es":"queso curado tipo cantal","en":"Cantal-type cheese","cat":"dairy","g":30,"u":"serving","core":0,"inca":"Fromages","c":{"PFAS4":[0,0.0805,0.161,2,0],"PBDE":[0.006588,0.009738,0.01289,2,2],"PAH4":[0.02114,0.07439,0.1276,2,2],"TEQ":[0.1571,0.1576,0.158,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[6.103,6.103,6.103,1,1]}},{"id":100,"fr":"chèvre","es":"queso de cabra","en":"goat cheese","cat":"dairy","g":30,"u":"serving","core":0,"inca":"Fromages","c":{"PFAS4":[0,0.2475,0.495,2,0],"PBDE":[0.04428,0.04723,0.05018,2,2],"PAH4":[0.08639,0.08765,0.0889,2,2],"TEQ":[0.1364,0.1368,0.1371,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0]}},{"id":101,"fr":"edam et apparenté","es":"queso edam y similares","en":"Edam-type cheese","cat":"dairy","g":20,"u":"slice","core":1,"inca":"Fromages","c":{"PFAS4":[0,0.0795,0.159,2,0],"PBDE":[0.01524,0.01797,0.02069,2,2],"PAH4":[0.004133,0.05038,0.09663,2,1],"TEQ":[0.1131,0.1159,0.1187,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"Cd":[3.98,3.98,3.98,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[20.6,20.6,20.6,1,1],"BPA":[2.55,2.55,2.55,2,2]}},{"id":102,"fr":"gruyère","es":"queso gruyère / emmental","en":"Gruyère cheese","cat":"dairy","g":30,"u":"serving","core":0,"inca":"Fromages","c":{"PFAS4":[0,0.1155,0.231,2,0],"PBDE":[0.02653,0.02906,0.03158,2,2],"PAH4":[0.0424,0.0844,0.1264,2,2],"TEQ":[0.1505,0.1513,0.1521,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":103,"fr":"œuf brouillé, omelette","es":"huevos revueltos / tortilla","en":"scrambled eggs / omelette","cat":"dairy","g":110,"u":"serving","core":0,"inca":"Oeufs et dérivés","c":{"PFAS4":[0,0.05087,0.1017,16,0],"PBDE":[0.02232,0.02373,0.02513,16,16],"PAH4":[0.1292,0.1392,0.1491,16,14],"TEQ":[0.02771,0.02898,0.03025,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[1.327,1.341,1.355,15,13]}},{"id":104,"fr":"beurre salé","es":"mantequilla salada","en":"salted butter","cat":"fat","g":5,"u":"tsp","core":0,"inca":"Beurre","c":{"PFAS4":[0,0.1435,0.287,1,0],"PBDE":[0.05876,0.06221,0.06566,2,2],"PAH4":[0.09334,0.1201,0.1468,2,2],"TEQ":[0.4693,0.4712,0.4731,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[0.329,0.329,0.329,2,2]}},{"id":105,"fr":"margarine allégée","es":"margarina light","en":"reduced-fat margarine","cat":"fat","g":5,"u":"tsp","core":0,"inca":"Margarine","c":{"PBDE":[0.01945,0.02645,0.03345,2,2],"PAH4":[2.167,2.167,2.167,2,2],"TEQ":[0.04776,0.06021,0.07266,2,2],"BPA":[0.376,0.4285,0.481,2,1]}},{"id":106,"fr":"mouton","es":"cordero","en":"lamb","cat":"meat","g":110,"u":"serving","core":0,"inca":"Viande","c":{"PFAS4":[0,0.07891,0.1578,16,0],"PBDE":[0.03642,0.03719,0.03796,16,16],"PAH4":[0.05795,0.06914,0.08033,16,15],"TEQ":[0.08425,0.08455,0.08484,16,16],"CPF":[0,0.5,1.0,16,0],"BPA":[7.761,7.761,7.761,11,11]}},{"id":107,"fr":"bœuf steak","es":"bistec de ternera","en":"beef steak","cat":"meat","g":110,"u":"serving","core":1,"inca":"Viande","c":{"PFAS4":[0.01289,0.09504,0.1772,16,3],"PBDE":[0.01525,0.01628,0.0173,16,16],"PAH4":[0.02375,0.0465,0.06925,16,14],"TEQ":[0.0802,0.0807,0.0812,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[2.17,2.17,2.17,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[9.68,9.68,9.68,1,1],"BPA":[3.387,3.401,3.415,15,13]}},{"id":108,"fr":"côte de porc","es":"chuleta de cerdo","en":"pork chop","cat":"meat","g":120,"u":"serving","core":0,"inca":"Viande","c":{"PFAS4":[0,0.08728,0.1746,16,0],"PBDE":[0.02496,0.02587,0.02677,16,16],"PAH4":[0.03206,0.05822,0.08437,16,13],"TEQ":[0.008413,0.01175,0.01508,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[16.95,16.95,16.95,16,16]}},{"id":109,"fr":"rôti de porc","es":"asado de cerdo","en":"roast pork","cat":"meat","g":110,"u":"serving","core":0,"inca":"Viande","c":{"PFAS4":[0.003526,0.09009,0.1767,16,1],"PBDE":[0.02221,0.02301,0.02381,16,16],"PAH4":[0.07286,0.08777,0.1027,16,16],"TEQ":[0.008403,0.01181,0.01521,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[12.44,12.44,12.44,15,15]}},{"id":110,"fr":"veau","es":"ternera (blanquette)","en":"veal","cat":"meat","g":110,"u":"serving","core":0,"inca":"Plats composés","c":{"PFAS4":[0.006212,0.07975,0.1533,15,2],"PBDE":[0.03491,0.03557,0.03622,16,16],"PAH4":[0.04631,0.06034,0.07437,16,16],"TEQ":[0.03614,0.03726,0.03838,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[34.4,34.4,34.4,13,13]}},{"id":111,"fr":"canard","es":"pato","en":"duck","cat":"meat","g":110,"u":"serving","core":0,"inca":"Volaille et gibier","c":{"PFAS4":[0,0.1139,0.2278,4,0],"PBDE":[0.0464,0.04844,0.05048,4,4],"PAH4":[0.03427,0.06964,0.105,4,4],"TEQ":[0.05362,0.05562,0.05762,4,4],"CPF":[0,0.5,1.0,4,0],"CBZ":[0,0.8333,1.667,4,0],"DMT":[0,0.8333,1.667,4,0],"BPA":[3.974,3.974,3.974,1,1]}},{"id":112,"fr":"foie","es":"hígado","en":"liver","cat":"meat","g":100,"u":"serving","core":0,"inca":"Abats","c":{"DON":[0,1.5,3.0,13,0],"PFAS4":[0.02754,0.4207,0.8139,16,4],"PBDE":[0.0122,0.01458,0.01696,16,15],"PAH4":[0.03859,0.05999,0.0814,16,12],"TEQ":[0.1377,0.139,0.1403,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[30.81,30.81,30.81,15,15]}},{"id":113,"fr":"lard, bacon","es":"panceta / bacon","en":"bacon","cat":"meat","g":30,"u":"slice","core":0,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,4,0],"PFAS4":[0,0.0975,0.195,4,0],"PBDE":[0.03933,0.04024,0.04116,4,3],"PAH4":[0.2086,0.2151,0.2216,4,4],"TEQ":[0.01855,0.02457,0.0306,4,4],"CPF":[0,0.5,1.0,4,0],"CBZ":[0,0.8333,1.667,4,0],"DMT":[0,0.8333,1.667,4,0],"BPA":[0.4522,0.4785,0.5048,4,3]}},{"id":114,"fr":"chipolata","es":"salchicha fresca","en":"chipolata sausage","cat":"meat","g":50,"u":"unit","core":0,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,2,0],"PFAS4":[0,0.0855,0.171,2,0],"PBDE":[0.02851,0.03092,0.03331,2,2],"PAH4":[0.1168,0.1168,0.1168,2,2],"TEQ":[0.01617,0.02377,0.03138,2,2],"CPF":[0,0.5,1.0,2,0],"CBZ":[0,0.8333,1.667,2,0],"DMT":[0,0.8333,1.667,2,0],"BPA":[5.958,5.958,5.958,2,2]}},{"id":115,"fr":"jambon cuit","es":"jamón cocido","en":"cooked ham","cat":"meat","g":30,"u":"slice","core":1,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,16,0],"PFAS4":[0,0.06713,0.1343,16,0],"PBDE":[0.01311,0.01376,0.01442,16,16],"PAH4":[0.03956,0.05518,0.07081,16,14],"TEQ":[0.004558,0.00738,0.0102,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"Cd":[0.843,0.843,0.843,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[7.12,7.12,7.12,1,1],"BPA":[1.167,1.167,1.167,13,13]}},{"id":116,"fr":"jambon cru","es":"jamón curado","en":"cured ham","cat":"meat","g":20,"u":"slice","core":0,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,12,0],"PFAS4":[0,0.1181,0.2362,12,0],"PBDE":[0.0444,0.04515,0.04591,12,12],"PAH4":[0.06834,0.08405,0.09976,12,11],"TEQ":[0.00907,0.01274,0.01641,12,12],"CPF":[0,0.5,1.0,12,0],"CBZ":[0,0.8333,1.667,12,0],"DMT":[0,0.8333,1.667,12,0],"BPA":[2.723,2.723,2.723,6,6]}},{"id":117,"fr":"saucisson sec","es":"salchichón / fuet","en":"dry sausage","cat":"meat","g":25,"u":"serving","core":0,"inca":"Charcuterie","c":{"DON":[0,1.5,3.0,16,0],"PFAS4":[0,0.1467,0.2935,16,0],"PBDE":[0.1203,0.121,0.1216,16,16],"PAH4":[1.2,1.21,1.22,16,16],"TEQ":[0.02376,0.03387,0.04399,16,16],"CPF":[0,0.5,1.0,16,0],"CBZ":[0,0.8333,1.667,16,0],"DMT":[0,0.8333,1.667,16,0],"BPA":[0.7752,0.7752,0.7752,4,4]}},{"id":118,"fr":"pâté","es":"paté","en":"pâté","cat":"meat","g":30,"u":"serving","core":0,"inca":"Charcuterie","c":{"DON":[0,3.5,7.0,14,0],"PFAS4":[0.008726,0.1068,0.2049,14,1],"PBDE":[0.05341,0.05443,0.05544,14,14],"PAH4":[0.1169,0.1214,0.1259,14,14],"TEQ":[0.0229,0.02771,0.03253,14,14],"CPF":[0,0.5,1.0,14,0],"CBZ":[0,0.8333,1.667,14,0],"DMT":[0,0.8333,1.667,14,0],"BPA":[2.708,2.708,2.708,12,12]}},{"id":119,"fr":"thon en conserve","es":"atún en conserva","en":"canned tuna","cat":"fish","g":80,"u":"can","core":1,"inca":"Poissons","c":{"PFAS4":[0.03316,0.06603,0.09891,4,3],"PBDE":[0.05614,0.05674,0.05734,4,4],"PAH4":[0.2207,0.2207,0.2207,4,4],"TEQ":[0.06096,0.06241,0.06386,4,4],"CPF":[0,0.5,1.0,4,0],"CBZ":[0,0.8333,1.667,4,0],"DMT":[0,0.8333,1.667,4,0],"Cd":[14.0,14.0,14.0,1,1],"Hg":[131.0,131.0,131.0,1,1],"Pb":[0,1.25,2.5,1,0],"BPA":[46.57,46.57,46.57,3,3]}},{"id":120,"fr":"carotte","es":"zanahoria","en":"carrot","cat":"veg","g":60,"u":"unit","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.005106,0.01986,0.03461,4,1],"PAH4":[0.004605,0.01561,0.02661,16,11],"CPF":[0,12.5,25.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[4.283,4.283,4.283,14,14]}},{"id":121,"fr":"navet","es":"nabo","en":"turnip","cat":"veg","g":100,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.01217,0.02433,3,0],"PAH4":[0.00842,0.01115,0.01388,11,10],"CPF":[0,13.64,27.27,11,0],"CBZ":[0,2.5,5.0,11,0],"DMT":[0,5.0,10.0,11,0],"BPA":[0.71,0.71,0.71,11,11]}},{"id":122,"fr":"oignon","es":"cebolla","en":"onion","cat":"veg","g":50,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.01738,0.03475,4,0],"PAH4":[0.01055,0.01827,0.02599,16,12],"CPF":[0,11.56,23.12,16,0],"CBZ":[0,2.812,5.625,16,0],"DMT":[0,10.62,21.25,16,0],"BPA":[2.84,2.84,2.84,16,16]}},{"id":123,"fr":"poireau","es":"puerro","en":"leek","cat":"veg","g":100,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.004131,0.06401,0.1239,4,1],"PAH4":[0.07065,0.07219,0.07373,12,12],"CPF":[0,12.5,25.0,12,0],"CBZ":[0,2.5,5.0,12,0],"DMT":[0,5.0,10.0,12,0],"BPA":[1.45,1.45,1.45,12,12]}},{"id":124,"fr":"pomme de terre cuite à l'eau","es":"patata hervida","en":"boiled potato","cat":"bread","g":150,"u":"serving","core":0,"inca":"Pommes de terre et apparentés","c":{"PAH4":[0.008573,0.01657,0.02457,2,2],"CPF":[0,2.812,5.625,16,0],"CBZ":[0,5.0,10.0,16,0],"DMT":[0,8.438,16.88,16,0],"BPA":[0.88,0.88,0.88,16,16]}},{"id":125,"fr":"crêpe salée","es":"crep salada","en":"savoury crêpe","cat":"dishes","g":150,"u":"unit","core":0,"inca":"Plats composés","c":{"DON":[43.75,43.75,43.75,8,8],"PBDE":[0.01286,0.01471,0.01656,4,4],"PAH4":[0.1306,0.1398,0.1491,4,4],"TEQ":[0.03355,0.03439,0.03522,4,4],"CPF":[0,2.5,5.0,8,0],"CBZ":[0,5.0,10.0,8,0],"DMT":[0,2.5,5.0,8,0],"BPA":[2.194,2.194,2.194,7,7]}},{"id":126,"fr":"eau de source","es":"agua mineral","en":"spring water","cat":"drinks","g":250,"u":"glass","core":0,"inca":"","c":{"PFAS4":[0.000275,0.002142,0.004009,3,2],"BPA":[0,0.004,0.008,18,0]}},{"id":127,"fr":"eau du robinet","es":"agua del grifo","en":"tap water","cat":"drinks","g":250,"u":"glass","core":1,"inca":"","c":{"PFAS4":[0.006359,0.01703,0.02769,3,3],"BPA":[0.000279,0.004558,0.008837,276,2]}},{"id":128,"fr":"concombre","es":"pepino","en":"cucumber","cat":"veg","g":100,"u":"serving","core":1,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.0065,0.013,2,0],"CPF":[0,12.5,25.0,11,0],"CBZ":[0,2.5,5.0,11,0],"DMT":[0,5.0,10.0,11,0],"Cd":[1.52,1.52,1.52,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[6.19,6.19,6.19,1,1],"BPA":[0,0.105,0.21,11,0]}},{"id":129,"fr":"céleri","es":"apio","en":"celery","cat":"veg","g":50,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.04,0.08,2,0],"CPF":[0,1.5,3.0,10,0],"CBZ":[0,2.5,5.0,10,0],"DMT":[0,2.5,5.0,10,0],"BPA":[0.4566,0.5266,0.5966,9,3]}},{"id":130,"fr":"chou-fleur","es":"coliflor","en":"cauliflower","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.002804,0.0103,0.0178,4,1],"CPF":[0,12.5,25.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[0.298,0.354,0.41,15,7]}},{"id":131,"fr":"courgette","es":"calabacín","en":"courgette","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.00925,0.0185,4,0],"CPF":[0,12.5,25.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[1.19,1.19,1.19,16,16]}},{"id":132,"fr":"endive","es":"endivia","en":"endive","cat":"veg","g":100,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.008375,0.01675,4,0],"CPF":[0,11.56,23.12,16,0],"CBZ":[0,2.812,5.625,16,0],"DMT":[1.562,11.88,22.19,16,1],"BPA":[0,0.105,0.21,16,0]}},{"id":133,"fr":"épinard","es":"espinacas","en":"spinach","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.008038,0.04441,0.08079,4,1],"CPF":[0,12.5,25.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[3.935,3.942,3.949,15,14]}},{"id":134,"fr":"haricot","es":"judías verdes","en":"green beans","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.07612,0.1522,4,0],"CPF":[0,1.5,3.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,2.5,5.0,16,0],"BPA":[34.89,34.89,34.89,16,16]}},{"id":135,"fr":"salade","es":"lechuga / ensalada verde","en":"lettuce / green salad","cat":"veg","g":40,"u":"cup","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.0066,0.01298,0.01935,4,2],"CPF":[0,13.28,26.56,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[0.4586,0.5216,0.5846,15,6]}},{"id":136,"fr":"maïs","es":"maíz dulce","en":"sweet corn","cat":"veg","g":80,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"DON":[0.7143,3.107,5.5,14,1],"PFAS4":[0,0.1105,0.221,4,0],"CPF":[0,12.5,25.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[35.16,35.16,35.16,16,16]}},{"id":137,"fr":"petit pois","es":"guisantes","en":"green peas","cat":"veg","g":100,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0.007243,0.06974,0.1322,4,1],"CPF":[0,1.5,3.0,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,2.5,5.0,16,0],"BPA":[23.65,23.65,23.65,15,15]}},{"id":138,"fr":"poivron","es":"pimiento","en":"bell pepper","cat":"veg","g":80,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.05175,0.1035,2,0],"CPF":[0,12.5,25.0,9,0],"CBZ":[0,2.5,5.0,9,0],"DMT":[0,5.0,10.0,9,0],"BPA":[4.01,4.01,4.01,9,9]}},{"id":139,"fr":"tomate","es":"tomate","en":"tomato","cat":"veg","g":120,"u":"unit","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.008,0.016,3,0],"CPF":[0,13.28,26.56,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[1.401,1.401,1.401,16,16]}},{"id":140,"fr":"lentille","es":"lentejas","en":"lentils","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes secs","c":{"PFAS4":[0,0.3385,0.677,1,0],"CPF":[0,2.5,5.0,16,0],"CBZ":[0,5.0,10.0,16,0],"DMT":[0,2.5,5.0,16,0],"BPA":[15.72,15.72,15.72,14,14]}},{"id":141,"fr":"artichaut","es":"alcachofa","en":"artichoke","cat":"veg","g":100,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"PFAS4":[0,0.0975,0.195,4,0],"CPF":[0,13.28,26.56,16,0],"CBZ":[0,2.5,5.0,16,0],"DMT":[0,5.0,10.0,16,0],"BPA":[1.186,1.193,1.199,16,15]}},{"id":142,"fr":"jus d'ananas à base de concentré","es":"zumo de piña (concentrado)","en":"pineapple juice (from concentrate)","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0,0.045,0.09,2,0]}},{"id":143,"fr":"jus de fruits multivitamines 100% pur jus","es":"zumo multifrutas 100%","en":"multifruit juice 100%","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0,0.045,0.09,2,0]}},{"id":144,"fr":"jus d'orange à base de concentré pasteurisé","es":"zumo de naranja (concentrado)","en":"orange juice (from concentrate)","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0,0.045,0.09,2,0]}},{"id":145,"fr":"jus d'orange frais non sucré","es":"zumo de naranja natural","en":"fresh orange juice","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[3.192,3.192,3.192,2,2]}},{"id":146,"fr":"jus de pomme à base de concentré pasteurisé","es":"zumo de manzana (concentrado)","en":"apple juice (from concentrate)","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0,0.045,0.09,2,0]}},{"id":147,"fr":"pur jus de raisin pasteurisé","es":"mosto / zumo de uva","en":"grape juice","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.3575,0.3575,0.3575,2,2]}},{"id":148,"fr":"blé dur précuit","es":"trigo precocido (ebly)","en":"pre-cooked durum wheat","cat":"bread","g":150,"u":"cup","core":0,"inca":"Riz et blé dur ou concassé","c":{"DON":[55.0,55.0,55.0,2,2],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.273,0.273,0.273,1,1]}},{"id":149,"fr":"couscous (graine seule), semoule cuite","es":"cuscús (sémola cocida)","en":"couscous semolina (cooked)","cat":"bread","g":150,"u":"cup","core":1,"inca":"Riz et blé dur ou concassé","c":{"DON":[117.5,117.5,117.5,2,2],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[20.1,20.1,20.1,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.145,0.1975,0.25,2,1]}},{"id":150,"fr":"pâtes alimentaires aux oeufs cuites","es":"pasta al huevo cocida","en":"egg pasta (cooked)","cat":"bread","g":150,"u":"cup","core":1,"inca":"Pâtes","c":{"DON":[57.5,57.5,57.5,2,2],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[12.7,12.7,12.7,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.365,0.365,0.365,2,2]}},{"id":151,"fr":"abricot","es":"albaricoque","en":"apricot","cat":"fruit","g":40,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,1,0],"CBZ":[0,2.5,5.0,1,0],"DMT":[0,2.5,5.0,1,0],"BPA":[0,0.105,0.21,1,0]}},{"id":152,"fr":"banane","es":"plátano","en":"banana","cat":"fruit","g":120,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":153,"fr":"cerise","es":"cerezas","en":"cherries","cat":"fruit","g":100,"u":"handful","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[160.0,160.0,160.0,2,2],"BPA":[0,0.105,0.21,2,0]}},{"id":154,"fr":"fraise","es":"fresas","en":"strawberries","cat":"fruit","g":150,"u":"cup","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,6,0],"CBZ":[0,2.5,5.0,6,0],"DMT":[0,2.5,5.0,6,0],"BPA":[0.61,0.61,0.61,6,6]}},{"id":155,"fr":"melon","es":"melón","en":"melon","cat":"fruit","g":200,"u":"slice","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,5,0],"CBZ":[0,2.5,5.0,5,0],"DMT":[0,2.5,5.0,5,0],"BPA":[1.95,1.95,1.95,5,5]}},{"id":156,"fr":"poire","es":"pera","en":"pear","cat":"fruit","g":150,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[1.25,4.344,7.438,16,1],"CBZ":[6.25,9.844,13.44,16,2],"DMT":[0,2.5,5.0,16,0],"BPA":[0,0.105,0.21,16,0]}},{"id":157,"fr":"pomme","es":"manzana","en":"apple","cat":"fruit","g":150,"u":"unit","core":1,"inca":"Fruits","c":{"CPF":[5.438,9.281,13.12,16,5],"CBZ":[13.62,17.06,20.5,16,3],"DMT":[0,2.5,5.0,16,0],"Cd":[2.44,2.44,2.44,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[15.5,15.5,15.5,1,1],"BPA":[0,0.105,0.21,15,0]}},{"id":158,"fr":"raisin blanc","es":"uva blanca","en":"white grapes","cat":"fruit","g":90,"u":"handful","core":0,"inca":"Fruits","c":{"CPF":[6.8,8.733,10.67,15,4],"CBZ":[2.0,4.333,6.667,15,1],"DMT":[0,2.5,5.0,15,0],"BPA":[0,0.105,0.21,15,0]}},{"id":159,"fr":"limonade ou clear lime sucrée","es":"gaseosa / refresco de lima-limón","en":"lemonade / lemon-lime soda","cat":"drinks","g":330,"u":"can","core":0,"inca":"Boissons fraîches sans alcool","c":{"BPA":[0.1755,0.198,0.2205,2,1]}},{"id":160,"fr":"sirop aux extraits de fruits","es":"sirope de frutas (diluido)","en":"fruit syrup (diluted)","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[2.637,2.637,2.637,1,1]}},{"id":161,"fr":"boisson aux extraits de thé aromatisé","es":"té frío aromatizado","en":"iced tea drink","cat":"drinks","g":330,"u":"can","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0,0.045,0.09,2,0]}},{"id":162,"fr":"boisson gazeuse à l'orange avec pulpe sucrée","es":"refresco de naranja con gas","en":"sparkling orange soft drink","cat":"drinks","g":330,"u":"can","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.0985,0.121,0.1435,2,1]}},{"id":163,"fr":"boisson plate à l'orange","es":"refresco de naranja sin gas","en":"still orange drink","cat":"drinks","g":200,"u":"glass","core":0,"inca":"Boissons fraîches sans alcool","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.3325,0.355,0.3775,2,1]}},{"id":164,"fr":"escalopes végétales à base de soja","es":"filete vegetal de soja","en":"soy-based vegetarian escalope","cat":"veg","g":100,"u":"unit","core":0,"inca":"Plats composés","c":{"DON":[0,3.25,6.5,2,0],"BPA":[0.338,0.338,0.338,1,1]}},{"id":165,"fr":"paella","es":"paella","en":"paella","cat":"dishes","g":300,"u":"serving","core":0,"inca":"Plats composés","c":{"DON":[0,1.5,3.0,2,0],"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[8.161,8.161,8.161,2,2]}},{"id":166,"fr":"taboulé","es":"tabulé","en":"tabbouleh","cat":"dishes","g":150,"u":"serving","core":0,"inca":"Plats composés","c":{"DON":[65.0,65.0,65.0,6,6],"CPF":[0,2.5,5.0,6,0],"CBZ":[0,5.0,10.0,6,0],"DMT":[0,2.5,5.0,6,0],"BPA":[2.2,2.2,2.2,4,4]}},{"id":167,"fr":"pâtes alimentaires cuites","es":"pasta cocida","en":"pasta (cooked)","cat":"bread","g":150,"u":"cup","core":0,"inca":"Pâtes","c":{"DON":[55.0,55.0,55.0,2,2],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[1.329,1.329,1.329,2,2]}},{"id":168,"fr":"riz","es":"arroz cocido","en":"rice (cooked)","cat":"bread","g":150,"u":"cup","core":1,"inca":"Riz et blé dur ou concassé","c":{"DON":[0,1.5,3.0,2,0],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"Cd":[6.25,6.25,6.25,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[0,1.25,2.5,1,0],"BPA":[0.2725,0.325,0.3775,2,1]}},{"id":169,"fr":"pêche","es":"melocotón","en":"peach","cat":"fruit","g":150,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[33.0,35.4,37.8,5,3],"CBZ":[0,4.0,8.0,5,0],"DMT":[0,2.5,5.0,5,0],"BPA":[0.26,0.26,0.26,5,5]}},{"id":170,"fr":"soda","es":"refresco de cola","en":"cola soft drink","cat":"drinks","g":330,"u":"can","core":0,"inca":"","c":{"BPA":[0,0.045,0.09,2,0]}},{"id":171,"fr":"bière","es":"cerveza","en":"beer","cat":"drinks","g":330,"u":"can","core":1,"inca":"Boissons alcoolisées","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.5765,0.5765,0.5765,2,2]}},{"id":172,"fr":"cidre","es":"sidra","en":"cider","cat":"drinks","g":250,"u":"glass","core":0,"inca":"Boissons alcoolisées","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0.437,0.437,0.437,1,1]}},{"id":173,"fr":"vin","es":"vino","en":"wine","cat":"drinks","g":125,"u":"glass","core":1,"inca":"Boissons alcoolisées","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"Cd":[1.21,1.21,1.21,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[16.0,16.0,16.0,1,1],"BPA":[1.04,1.04,1.04,2,2]}},{"id":174,"fr":"thé ou tisane","es":"té o infusión","en":"tea or herbal tea","cat":"drinks","g":200,"u":"cup","core":0,"inca":"Autres boissons chaudes","c":{"CPF":[0,2.5,5.0,4,0],"DMT":[0,5.0,10.0,4,0],"BPA":[0.08327,0.1133,0.1433,15,5]}},{"id":175,"fr":"fruits au sirop","es":"fruta en almíbar","en":"fruit in syrup","cat":"fruit","g":120,"u":"serving","core":0,"inca":"Compotes et fruits cuits","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.398,0.4505,0.503,2,1]}},{"id":176,"fr":"fruit séché","es":"fruta desecada","en":"dried fruit","cat":"fruit","g":30,"u":"handful","core":0,"inca":"Fruits secs et graines oléagineuses","c":{"DON":[0,1.5,3.0,2,0],"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":177,"fr":"champagne","es":"cava / champán","en":"champagne","cat":"drinks","g":125,"u":"glass","core":0,"inca":"Boissons alcoolisées","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[1.47,1.47,1.47,2,2]}},{"id":178,"fr":"sauce tomate sans viande","es":"salsa de tomate","en":"tomato sauce","cat":"dishes","g":60,"u":"serving","core":0,"inca":"Condiments et sauces","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[3.3,3.3,3.3,1,1]}},{"id":179,"fr":"kiwi","es":"kiwi","en":"kiwi","cat":"fruit","g":80,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.28,0.28,0.28,2,2]}},{"id":180,"fr":"clémentine ou mandarine","es":"mandarina","en":"mandarin / clementine","cat":"fruit","g":70,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[0,6.0,12.0,1,0],"CBZ":[0,2.5,5.0,1,0],"DMT":[0,2.5,5.0,1,0],"BPA":[0.965,0.965,0.965,1,1]}},{"id":181,"fr":"orange","es":"naranja","en":"orange","cat":"fruit","g":160,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[1.86,1.86,1.86,2,2]}},{"id":182,"fr":"pamplemousse","es":"pomelo","en":"grapefruit","cat":"fruit","g":200,"u":"unit","core":0,"inca":"Fruits","c":{"CPF":[0,3.75,7.5,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[2.13,2.13,2.13,2,2]}},{"id":183,"fr":"compote de fruits allégée","es":"compota light","en":"low-sugar compote","cat":"fruit","g":100,"u":"unit","core":0,"inca":"Compotes et fruits cuits","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.3115,0.3115,0.3115,2,2]}},{"id":184,"fr":"haricot blanc","es":"alubias blancas","en":"white beans","cat":"veg","g":150,"u":"serving","core":0,"inca":"Légumes secs","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.45,0.45,0.45,1,1]}},{"id":185,"fr":"soupe de légumes","es":"sopa de verduras","en":"vegetable soup","cat":"dishes","g":250,"u":"bowl","core":0,"inca":"Soupes et bouillons","c":{"CPF":[0,2.5,5.0,18,0],"CBZ":[0,5.0,10.0,18,0],"DMT":[0,2.5,5.0,18,0],"BPA":[2.218,2.224,2.23,18,17]}},{"id":186,"fr":"soupe poulet vermicelle","es":"sopa de pollo con fideos","en":"chicken noodle soup","cat":"dishes","g":250,"u":"bowl","core":0,"inca":"Soupes et bouillons","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":187,"fr":"velouté de tomate","es":"crema de tomate","en":"tomato cream soup","cat":"dishes","g":250,"u":"bowl","core":0,"inca":"Soupes et bouillons","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,5.0,10.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,1,0]}},{"id":188,"fr":"miel","es":"miel","en":"honey","cat":"pastry","g":15,"u":"tsp","core":0,"inca":"Sucres et dérivés","c":{"CPF":[0,2.5,5.0,2,0],"CBZ":[0,0.25,0.5,1,0],"DMT":[0,5.0,10.0,2,0],"BPA":[0,0.105,0.21,1,0]}},{"id":189,"fr":"céleri rave","es":"apio nabo","en":"celeriac","cat":"veg","g":100,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":190,"fr":"confiture","es":"mermelada","en":"jam","cat":"pastry","g":15,"u":"tsp","core":0,"inca":"Sucres et dérivés","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0,0.105,0.21,2,0]}},{"id":191,"fr":"graine oléagineuse","es":"frutos secos / semillas","en":"nuts & seeds","cat":"fruit","g":30,"u":"handful","core":0,"inca":"Fruits secs et graines oléagineuses","c":{"CPF":[0,1.5,3.0,2,0],"CBZ":[0,2.5,5.0,2,0],"DMT":[0,2.5,5.0,2,0],"BPA":[0.1175,0.17,0.2225,2,1]}},{"id":192,"fr":"bonbons tout type","es":"caramelos / golosinas","en":"sweets / candies","cat":"pastry","g":20,"u":"handful","core":0,"inca":"Sucres et dérivés","c":{"BPA":[0.409,0.409,0.409,2,2]}},{"id":193,"fr":"glace","es":"helado","en":"ice cream","cat":"pastry","g":60,"u":"unit","core":0,"inca":"Glaces et desserts glacés","c":{"BPA":[0.1585,0.211,0.2635,2,1]}},{"id":194,"fr":"sucre","es":"azúcar","en":"sugar","cat":"pastry","g":5,"u":"tsp","core":0,"inca":"Sucres et dérivés","c":{"BPA":[1.294,1.294,1.294,2,2]}},{"id":195,"fr":"sauce de soja","es":"salsa de soja","en":"soy sauce","cat":"dishes","g":10,"u":"tbsp","core":0,"inca":"Condiments et sauces","c":{"BPA":[0.1105,0.163,0.2155,4,2]}},{"id":196,"fr":"haricot mungo, \"germe de soja\"","es":"brotes de soja (conserva)","en":"bean sprouts (canned)","cat":"veg","g":80,"u":"serving","core":0,"inca":"Légumes (hors pomme de terre)","c":{"BPA":[11.55,11.55,11.55,2,2]}},{"id":197,"fr":"tofu","es":"tofu","en":"tofu","cat":"veg","g":100,"u":"serving","core":1,"inca":"Aliments destinés à une alimentaire particulière","c":{"Cd":[16.1,16.1,16.1,1,1],"Hg":[0,2.5,5.0,1,0],"Pb":[13.7,13.7,13.7,1,1],"BPA":[0.5005,0.5005,0.5005,2,2]}},{"id":198,"fr":"pastis prêt à boire (1+5)","es":"pastís (diluido 1+5)","en":"pastis (diluted 1+5)","cat":"drinks","g":120,"u":"glass","core":0,"inca":"Boissons alcoolisées","c":{"BPA":[0.217,0.217,0.217,1,1]}},{"id":199,"fr":"vinaigrette","es":"vinagreta","en":"vinaigrette dressing","cat":"fat","g":15,"u":"tbsp","core":0,"inca":"Condiments et sauces","c":{"BPA":[0.236,0.236,0.236,2,2]}},{"id":200,"fr":"eau minérale (bouteille)","es":"agua mineral embotellada","en":"bottled mineral water","cat":"drinks","g":250,"u":"glass","core":0,"inca":"Eaux","c":{"BPA":[0,0.004,0.008,42,0]}},{"id":201,"fr":"huile de colza","es":"aceite de colza","en":"rapeseed oil","cat":"fat","g":10,"u":"tbsp","core":0,"inca":"Huile","c":{"BPA":[0.157,0.1795,0.202,2,1]}},{"id":202,"fr":"huile mélangée","es":"aceite de mezcla","en":"blended vegetable oil","cat":"fat","g":10,"u":"tbsp","core":0,"inca":"Huile","c":{"BPA":[0,0.045,0.09,2,0]}}];
+</script>
+<script>
+"use strict";
+/* ---------------------------------------------------------------- substances & reference points
+   All reference points expressed per kg body weight per day, in the same mass unit as the exposure:
+   ng/kg bw/day (pg TEQ/kg bw/day for dioxins & dl-PCBs).
+   type 'HBGV' -> risk quotient RQ = exposure / HBGV      (concern if RQ >= 1)
+   type 'MOE'  -> MOE = RP / exposure; RQ = threshold/MOE (concern if MOE < threshold, i.e. RQ >= 1) */
+const SUBS_DEFAULT = [
+ {k:"Cd",   fam:"metal", u:"ng", type:"HBGV", rp:2500/7,  grp:"kidney", conf:"high"},
+ {k:"Hg",   fam:"metal", u:"ng", type:"HBGV", rp:1300/7,  grp:"neuro",  conf:"medium"},
+ {k:"Pb",   fam:"metal", u:"ng", type:"MOE",  rp:630, thr:10, grp:"kidney", conf:"high"},
+ {k:"ACR",  fam:"proc",  u:"ng", type:"MOE",  rp:170000, thr:10000, grp:"carc", conf:"high"},
+ {k:"PAH4", fam:"proc",  u:"ng", type:"MOE",  rp:340000, thr:10000, grp:"carc", conf:"high"},
+ {k:"DON",  fam:"myco",  u:"ng", type:"HBGV", rp:1000,   grp:"other",  conf:"high"},
+ {k:"TEQ",  fam:"pop",   u:"pg", type:"HBGV", rp:2/7,    grp:"repro",  conf:"high"},
+ {k:"PBDE", fam:"pop",   u:"ng", type:"MOE",  rp:3.2, thr:25, grp:"neuro", conf:"medium"},
+ {k:"PFAS4",fam:"pop",   u:"ng", type:"HBGV", rp:4.4/7,  grp:"immune", conf:"high"},
+ {k:"CPF",  fam:"pest",  u:"ng", type:"HBGV", rp:1000,   grp:"neuro",  conf:"low"},
+ {k:"DMT",  fam:"pest",  u:"ng", type:"HBGV", rp:1000,   grp:"neuro",  conf:"medium"},
+ {k:"CBZ",  fam:"pest",  u:"ng", type:"HBGV", rp:20000,  grp:"repro",  conf:"medium"},
+ {k:"BPA",  fam:"fcm",   u:"ng", type:"HBGV", rp:0.2,    grp:"immune", conf:"medium"},
+];
+const FAMS = ["metal","proc","myco","pop","pest","fcm"];
+const GROUPS = ["neuro","kidney","carc","repro","immune","other"];
+const CATS = ["bread","pastry","fish","meat","dairy","fat","veg","fruit","dishes","drinks"];
+const MEALS = ["breakfast","lunch","snack","dinner","other"];
+
+/* ---------------------------------------------------------------- i18n */
+const I18N = {
+es:{
+ subtitle:"Calculadora de exposición a mezclas químicas · datos EAT2 Francia (ANSES)",
+ peda_only:"Solo con fines pedagógicos",
+ bw:"Peso corporal", bound:"Escenario de censura",
+ tab_diet:"Mi dieta 24 h", tab_expo:"Exposición", tab_contrib:"Alimentos que contribuyen", tab_risk:"Riesgo y mezclas", tab_compare:"Comparar escenarios", tab_methods:"Métodos y datos",
+ diet_h:"Recordatorio dietético de 24 horas",
+ diet_lead:"Anota todo lo que comiste y bebiste ayer, comida por comida. Busca cada alimento, indica el número de porciones (o los gramos) y observa en tiempo real cómo cambia tu perfil de exposición.",
+ clear:"Vaciar dieta", all_foods:"Mostrar todo el catálogo EAT2 (203 alimentos)",
+ m_breakfast:"Desayuno", m_lunch:"Comida", m_snack:"Merienda", m_dinner:"Cena", m_other:"Otros / entre horas",
+ add_food:"+ Añadir alimento (escribe para buscar)…", no_items:"Sin alimentos todavía.",
+ portions:"porc.", grams:"g", remove:"Quitar",
+ live_h:"Vista rápida", k_grams:"g ingeridos", k_exceed:"sustancias ≥ referencia", k_hi:"Índice de peligro HI (sustancias con umbral)",
+ live_note:"Izquierda: exposición (ng/kg pc/día, escala log). Derecha: cociente de riesgo (RQ); la línea discontinua marca RQ = 1. El HI suma las sustancias con umbral; los carcinógenos genotóxicos se combinan aparte con el MOE<sub>T</sub>.",
+ portion_help:"<b>Ayuda con las porciones.</b> Cada alimento trae una medida casera por defecto (p. ej. 1 rebanada de pan = 25–30 g, 1 vaso = 200 ml, 1 lata = 330 ml). Ajusta el número de porciones o escribe directamente los gramos. Las barras <span class='cov'><i class='y'></i><i class='y'></i><i></i></span> junto a cada alimento indican cuántas de las 13 sustancias se analizaron en él.",
+ expo_h:"Exposición diaria por sustancia",
+ expo_lead:"Exposición = Σ (consumo del alimento × concentración) ÷ peso corporal. Se expresa en ng/kg pc/día (pg EQT/kg pc/día para dioxinas y PCB-DL). El intervalo LB–UB refleja la incertidumbre debida a los resultados no detectados.",
+ rq_chart_h:"Cantidad frente a riesgo: exposición y cociente de riesgo por sustancia",
+ expo_table_h:"Tabla de resultados", export_csv:"Exportar CSV",
+ th_sub:"Sustancia", th_expo:"Exposición", th_range:"LB – UB", th_unit:"Unidad", th_ref:"Valor de referencia", th_metric:"Indicador", th_status:"Conclusión", th_cov:"Datos",
+ censor_note:"<b>LB / MB / UB.</b> Cuando un análisis no detecta la sustancia (&lt; LOD) o no la cuantifica (&lt; LOQ) no sabemos su valor real. <b>LB</b> (lower bound) los sustituye por 0, <b>MB</b> por LOD/2 (o LOQ/2) y <b>UB</b> (upper bound) por el LOD (o LOQ). Un resultado que solo supera la referencia en UB es <i>incierto</i>: depende más de la sensibilidad analítica que de la contaminación real.",
+ st_ok:"Sin riesgo apreciable", st_unc:"Incierto (solo UB)", st_hi:"Posible riesgo",
+ metric_pct:"% del VBS", metric_moe:"MOE",
+ contrib_h:"¿Qué alimentos impulsan cada exposición?",
+ contrib_lead:"Cada celda muestra el % de la exposición a una sustancia que procede de un alimento. Haz clic en una columna para ver el detalle. Las celdas rayadas indican que la sustancia no se analizó en ese alimento: no es lo mismo que «cero».",
+ heat_h:"Mapa de contribuciones (% de la exposición)", detail_h:"Contribución por alimento",
+ not_analysed:"no analizado", contrib_none:"Sin exposición para esta sustancia con la dieta actual.",
+ contrib_cov:"Alimentos de tu dieta en los que esta sustancia <b>no se analizó</b>: ",
+ risk_h:"Riesgo combinado: evaluar la mezcla",
+ risk_lead:"Las sustancias no actúan de forma aislada. La guía de EFSA (2019) para mezclas propone un enfoque escalonado: primero sumar los cocientes de riesgo de todo (<b>índice de peligro, HI</b>, muy conservador) y, si HI ≥ 1, refinar agrupando las sustancias que comparten un efecto tóxico (<b>grupos de evaluación</b>).",
+ tier0_h:"Nivel 0 – cribado de toda la mezcla", hi_all:"HI = Σ RQ (11 sustancias con umbral)", moet_carc:"MOE<sub>T</sub> genotóxicos-carcinógenos",
+ tier0_text:"HI = Σ (exposición / valor de referencia) para las sustancias con umbral de efecto. Si HI &lt; 1, no hay preocupación aunque se sumen todos los efectos; si HI ≥ 1, se pasa al nivel 1. Los carcinógenos genotóxicos (acrilamida, HAP4) no tienen umbral y se combinan con el margen de exposición total: MOE<sub>T</sub> = 1 / Σ(1/MOE<sub>i</sub>); preocupación si &lt; 10 000.",
+ drivers_h:"¿Qué sustancias pesan más en el HI?", drivers_note:"Porcentaje del HI (sustancias con umbral) que aporta cada sustancia.",
+ groups_h:"Nivel 1 – grupos por efecto tóxico común",
+ groups_lead:"HI por grupo = suma de RQ de las sustancias que comparten órgano diana o modo de acción (agrupación ilustrativa para fines docentes).",
+ g_neuro:"Neurotoxicidad", g_neuro_d:"desarrollo neurológico, colinesterasa",
+ g_kidney:"Nefrotoxicidad", g_kidney_d:"daño tubular renal",
+ g_carc:"Carcinógenos genotóxicos", g_carc_d:"enfoque MOE (10 000)",
+ g_repro:"Reproducción / desarrollo", g_repro_d:"calidad espermática, desarrollo",
+ g_immune:"Inmunotoxicidad", g_immune_d:"respuesta de anticuerpos",
+ g_other:"Otros", g_other_d:"peso corporal, digestivo",
+ mix_caveat:"<b>Atención:</b> un único día de consumo no representa la exposición crónica (los valores de referencia son para exposición de por vida). Esta herramienta es pedagógica: muestra cómo se razona, no un diagnóstico individual.",
+ cmp_h:"Comparar escenarios dietéticos",
+ cmp_lead:"Guarda tu dieta actual como escenario, modifícala (cambia el pescado, el pan, las bebidas…) y compara cómo cambian los perfiles de exposición y de riesgo. Hasta 4 escenarios.",
+ cmp_chart_h:"Cociente de riesgo (RQ) por escenario", scen_h:"Escenarios guardados", save_scen:"Guardar dieta actual como escenario",
+ scen_note:"Haz clic en «Cargar» para volver a editar un escenario en la pestaña 1. Los escenarios se guardan en este navegador.",
+ load:"Cargar", del:"Eliminar", current:"Dieta actual", scen_default:"Escenario",
+ io_h:"Guardar / compartir", export_json:"Exportar dieta y escenarios (JSON)", import_json:"Importar JSON", print:"Imprimir / PDF",
+ cmp_empty:"Guarda al menos un escenario para compararlo con la dieta actual.",
+ cmp_th_total:"HI (sustancias con umbral)", cmp_th_exceed:"Sustancias ≥ ref.", cmp_th_g:"g totales",
+ m_h:"Métodos, datos y valores de referencia",
+ m_lead:"Concentraciones: <b>Segundo Estudio de Dieta Total francés (EAT2, ANSES 2011)</b>, 2007–2009, alimentos analizados «tal como se consumen» (muestras compuestas de 15 submuestras, 8 regiones). Datos abiertos: <a href='https://www.data.gouv.fr/datasets/donnees-regionales-eat2-etude-de-l-alimentation-totale/' target='_blank' rel='noopener'>data.gouv.fr</a>. Bisfenol A: <a href='https://www.data.gouv.fr/datasets/bisphenol-a' target='_blank' rel='noopener'>ANSES/LABERCA, data.gouv.fr</a>.",
+ ref_h:"Valores de referencia toxicológicos (editables)", reset_rp:"Restaurar valores",
+ th_type:"Tipo", th_value:"Valor", th_thr:"Umbral MOE", th_endpoint:"Efecto crítico / fuente", th_conf:"Confianza",
+ conf_high:"alta", conf_medium:"media", conf_low:"baja",
+ m1_s:"1. Cálculo de la exposición",
+ m1:"<p>Para cada sustancia <i>s</i>: <code>E<sub>s</sub> = Σ<sub>f</sub> (consumo<sub>f</sub> [g/día] × C<sub>f,s</sub> [ng/g]) / peso [kg]</code>. C<sub>f,s</sub> es la media de todas las muestras regionales/nacionales de EAT2 para ese alimento. Las sumas de congéneres (HAP4, PFAS4, PBDE, EQT) se calculan muestra a muestra antes de promediar.</p>",
+ m2_s:"2. Datos censurados (LB / MB / UB)",
+ m2:"<p>«ND (x)», «&lt; x» → no detectado (x = LOD): LB = 0, MB = LOD/2, UB = LOD. «NQ (x)» → detectado no cuantificado (x = LOQ): LB = 0, MB = LOQ/2, UB = LOQ. Cuando no se indica el límite se usa el de la hoja «Limites analytiques» (acrilamida LOD 4 / LOQ 10 µg/kg; DON 3/10 µg/kg en sólidos y 0,3/1 en líquidos). «NR» o celda vacía = no analizado (se excluye, no se pone a 0).</p>",
+ m3_s:"3. Sustancias y agregación",
+ m3:"<ul><li><b>Cd, Hg, Pb</b>: valores de elementos traza de EAT2 incluidos en la calculadora original (45 alimentos, µg/kg). Celdas vacías interpretadas como &lt; LOD (Cd 0,5; Hg 5; Pb 2,5 µg/kg). El Hg total se compara con la TWI del metilmercurio (conservador fuera del pescado).</li><li><b>HAP4</b> = BaP + BaA + BbF + CHR. <b>PFAS4</b> = PFOS + PFOA + PFNA + PFHxS (grupo EFSA 2020). <b>PBDE</b> = Σ BDE-28, 47, 99, 100, 153, 154, 183.</li><li><b>Dioxinas + PCB-DL</b>: 17 PCDD/F + 12 PCB-DL ponderados por TEF OMS-2005 → pg EQT-OMS/g.</li><li><b>Plaguicidas</b>: clorpirifós-etilo, carbendazima, dimetoato (mg/kg × 1000).</li><li><b>DON</b> (deoxinivalenol), <b>acrilamida</b>.</li><li><b>Bisfenol A</b>: campaña ANSES/LABERCA sobre las muestras EAT2 + aguas embotelladas (LHN), µg/kg; «&lt;LOD»/«&lt;LOQ» con su límite. Muestras de 2007–2009, anteriores a la prohibición francesa del BPA en envases alimentarios (2015). ANSES (2013) atribuyó cerca de la mitad de la exposición alimentaria a las conservas; la contaminación de carnes se produce tras el sacrificio.</li></ul>",
+ m4_s:"4. Caracterización del riesgo y mezclas",
+ m4:"<p>Sustancias con valor basado en salud (TDI/TWI/ADI): RQ = E / VBS; se muestra el % del VBS. Sustancias evaluadas con margen de exposición: MOE = BMDL / E; preocupación si MOE &lt; umbral (10 000 para carcinógenos genotóxicos, 10 para Pb, 25 para PBDE según EFSA 2024). Para combinarlas se usa RQ = umbral / MOE. HI = Σ RQ de las sustancias con umbral (nivel 0, guía MixTox de EFSA 2019); los carcinógenos genotóxicos no se suman al HI sino que se combinan con MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Los grupos de nivel 1 son una simplificación pedagógica de los grupos de evaluación acumulativa.</p><p><b>Limitaciones:</b> 1 día ≠ exposición habitual; datos de 2007–2009; no todas las sustancias se analizaron en todos los alimentos; solo exposición alimentaria (sin agua de bebida para la mayoría de sustancias, aire, polvo…).</p>",
+ m5_s:"5. Cobertura analítica del catálogo",
+ m5:"<p>Número de alimentos del catálogo EAT2 de esta herramienta con datos para cada sustancia.</p>",
+ footer:"MixExpo v1 (25.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
+ preset_ph:"Cargar una dieta de ejemplo…", p_excel:"Ejemplo de la hoja Excel original", p_med:"Mediterránea con pescado", p_fast:"Comida rápida / ultraprocesados", p_veg:"Vegetariana",
+ cat_bread:"Pan, cereales y féculas", cat_pastry:"Bollería, galletas y dulces", cat_fish:"Pescados y mariscos", cat_meat:"Carnes y embutidos", cat_dairy:"Lácteos y huevos", cat_fat:"Grasas y aceites", cat_veg:"Verduras y legumbres", cat_fruit:"Frutas y frutos secos", cat_dishes:"Platos preparados y salsas", cat_drinks:"Bebidas",
+ u_slice:"rebanada", u_unit:"unidad", u_cup:"taza", u_serving:"ración", u_glass:"vaso", u_handful:"puñado", u_tsp:"cucharadita", u_tbsp:"cucharada", u_can:"lata", u_bowl:"plato",
+ fam_metal:"Metales", fam_proc:"Contaminantes de proceso", fam_myco:"Micotoxinas", fam_pop:"Contaminantes orgánicos persistentes", fam_pest:"Plaguicidas", fam_fcm:"Materiales en contacto con alimentos",
+ no_metals:"sin datos de metales", data_of:"sustancias con datos",
+ tip_rq:"RQ", tip_expo:"Exposición", confirm_clear:"¿Seguro? Clic de nuevo", imported:"Importado correctamente.", import_err:"El archivo no es válido.",
+ k_moet:"MOE<sub>T</sub> genotóxicos (≥ 10 000)",
+ carc_row:"Margen de exposición de cada sustancia y combinado (MOE<sub>T</sub>)",
+ dual_expo:"¿Cuánto? Exposición",
+ dual_expo_s:"Exposición",
+ dual_expo_sub:"ng/kg pc/día (dioxinas en ng EQT), escala log",
+ dual_rq:"¿Cuánto riesgo? RQ",
+ dual_rq_s:"Riesgo (RQ)",
+ dual_rq_sub:"exposición ÷ valor de referencia; línea = 1",
+ sort_lbl:"Ordenar por",
+ sort_fam:"familia",
+ sort_expo:"exposición",
+ sort_rq:"riesgo",
+ rank_note:"Mayor exposición: <b>{a}</b> ({ea}). Mayor riesgo: <b>{b}</b> (RQ {rb}).",
+ rank_diff:"La sustancia a la que más te expones no es la que más riesgo supone: el riesgo depende de la potencia tóxica (valor de referencia), no solo de la cantidad. Ordena por «exposición» y por «riesgo» para comparar los rankings.",
+},
+en:{
+ subtitle:"Chemical mixture exposure calculator · French TDS2 data (ANSES)",
+ peda_only:"For pedagogical purposes only",
+ bw:"Body weight", bound:"Censoring scenario",
+ tab_diet:"My 24 h diet", tab_expo:"Exposure", tab_contrib:"Contributing foods", tab_risk:"Risk & mixtures", tab_compare:"Compare scenarios", tab_methods:"Methods & data",
+ diet_h:"24-hour dietary recall",
+ diet_lead:"Write down everything you ate and drank yesterday, meal by meal. Search each food, set the number of portions (or grams) and watch your exposure profile change in real time.",
+ clear:"Clear diet", all_foods:"Show the full TDS2 catalogue (203 foods)",
+ m_breakfast:"Breakfast", m_lunch:"Lunch", m_snack:"Afternoon snack", m_dinner:"Dinner", m_other:"Other / between meals",
+ add_food:"+ Add food (type to search)…", no_items:"No foods yet.",
+ portions:"port.", grams:"g", remove:"Remove",
+ live_h:"Quick view", k_grams:"g consumed", k_exceed:"substances ≥ reference", k_hi:"Hazard index HI (threshold substances)",
+ live_note:"Left: exposure (ng/kg bw/day, log scale). Right: risk quotient (RQ); the dashed line marks RQ = 1. The HI adds up threshold substances; genotoxic carcinogens are combined separately with MOE<sub>T</sub>.",
+ portion_help:"<b>Portion help.</b> Each food comes with a default household measure (e.g. 1 slice of bread = 25–30 g, 1 glass = 200 ml, 1 can = 330 ml). Adjust the number of portions or type the grams directly. The bars <span class='cov'><i class='y'></i><i class='y'></i><i></i></span> next to each food show how many of the 13 substances were analysed in it.",
+ expo_h:"Daily exposure per substance",
+ expo_lead:"Exposure = Σ (food intake × concentration) ÷ body weight, in ng/kg bw/day (pg TEQ/kg bw/day for dioxins and dl-PCBs). The LB–UB interval reflects uncertainty due to non-detected results.",
+ rq_chart_h:"Amount versus risk: exposure and risk quotient by substance",
+ expo_table_h:"Results table", export_csv:"Export CSV",
+ th_sub:"Substance", th_expo:"Exposure", th_range:"LB – UB", th_unit:"Unit", th_ref:"Reference value", th_metric:"Metric", th_status:"Conclusion", th_cov:"Data",
+ censor_note:"<b>LB / MB / UB.</b> When an analysis does not detect a substance (&lt; LOD) or cannot quantify it (&lt; LOQ), its true value is unknown. <b>LB</b> (lower bound) replaces it by 0, <b>MB</b> by LOD/2 (or LOQ/2) and <b>UB</b> (upper bound) by the LOD (or LOQ). A result that exceeds the reference only under UB is <i>uncertain</i>: it reflects analytical sensitivity more than actual contamination.",
+ st_ok:"No appreciable risk", st_unc:"Uncertain (UB only)", st_hi:"Potential concern",
+ metric_pct:"% of HBGV", metric_moe:"MOE",
+ contrib_h:"Which foods drive each exposure?",
+ contrib_lead:"Each cell shows the % of exposure to a substance coming from a food. Click a column for details. Hatched cells mean the substance was not analysed in that food — which is not the same as “zero”.",
+ heat_h:"Contribution map (% of exposure)", detail_h:"Contribution by food",
+ not_analysed:"not analysed", contrib_none:"No exposure to this substance with the current diet.",
+ contrib_cov:"Foods in your diet where this substance was <b>not analysed</b>: ",
+ risk_h:"Combined risk: assessing the mixture",
+ risk_lead:"Substances do not act in isolation. EFSA’s 2019 guidance on combined exposure proposes a tiered approach: first add up the risk quotients of everything (<b>hazard index, HI</b>, very conservative) and, if HI ≥ 1, refine by grouping substances that share a toxic effect (<b>assessment groups</b>).",
+ tier0_h:"Tier 0 – whole-mixture screening", hi_all:"HI = Σ RQ (11 threshold substances)", moet_carc:"MOE<sub>T</sub> genotoxic carcinogens",
+ tier0_text:"HI = Σ (exposure / reference value) for substances with a threshold of effect. If HI &lt; 1 there is no concern even when all effects are added; if HI ≥ 1, move to tier 1. Genotoxic carcinogens (acrylamide, PAH4) have no threshold and are combined through the total margin of exposure: MOE<sub>T</sub> = 1 / Σ(1/MOE<sub>i</sub>); concern if &lt; 10,000.",
+ drivers_h:"Which substances weigh most in the HI?", drivers_note:"Share of the HI (threshold substances) contributed by each substance.",
+ groups_h:"Tier 1 – groups with a common toxic effect",
+ groups_lead:"Group HI = sum of the RQs of substances sharing a target organ or mode of action (illustrative grouping for teaching).",
+ g_neuro:"Neurotoxicity", g_neuro_d:"neurodevelopment, cholinesterase",
+ g_kidney:"Nephrotoxicity", g_kidney_d:"renal tubular damage",
+ g_carc:"Genotoxic carcinogens", g_carc_d:"MOE approach (10,000)",
+ g_repro:"Reproduction / development", g_repro_d:"sperm quality, development",
+ g_immune:"Immunotoxicity", g_immune_d:"antibody response",
+ g_other:"Other", g_other_d:"body weight, gastrointestinal",
+ mix_caveat:"<b>Caution:</b> a single day of intake does not represent chronic exposure (reference values apply to lifetime exposure). This is a teaching tool: it shows the reasoning, not an individual diagnosis.",
+ cmp_h:"Compare dietary scenarios",
+ cmp_lead:"Save your current diet as a scenario, change it (swap the fish, the bread, the drinks…) and compare how the exposure and risk profiles shift. Up to 4 scenarios.",
+ cmp_chart_h:"Risk quotient (RQ) by scenario", scen_h:"Saved scenarios", save_scen:"Save current diet as scenario",
+ scen_note:"Click “Load” to edit a scenario again in tab 1. Scenarios are stored in this browser.",
+ load:"Load", del:"Delete", current:"Current diet", scen_default:"Scenario",
+ io_h:"Save / share", export_json:"Export diet & scenarios (JSON)", import_json:"Import JSON", print:"Print / PDF",
+ cmp_empty:"Save at least one scenario to compare it with the current diet.",
+ cmp_th_total:"HI (threshold substances)", cmp_th_exceed:"Substances ≥ ref.", cmp_th_g:"Total g",
+ m_h:"Methods, data and reference values",
+ m_lead:"Concentrations: <b>Second French Total Diet Study (TDS2 / EAT2, ANSES 2011)</b>, 2007–2009, foods analysed “as consumed” (composite samples of 15 sub-samples, 8 regions). Open data: <a href='https://www.data.gouv.fr/datasets/donnees-regionales-eat2-etude-de-l-alimentation-totale/' target='_blank' rel='noopener'>data.gouv.fr</a>. Bisphenol A: <a href='https://www.data.gouv.fr/datasets/bisphenol-a' target='_blank' rel='noopener'>ANSES/LABERCA, data.gouv.fr</a>.",
+ ref_h:"Toxicological reference values (editable)", reset_rp:"Reset values",
+ th_type:"Type", th_value:"Value", th_thr:"MOE threshold", th_endpoint:"Critical effect / source", th_conf:"Confidence",
+ conf_high:"high", conf_medium:"medium", conf_low:"low",
+ m1_s:"1. Exposure calculation",
+ m1:"<p>For each substance <i>s</i>: <code>E<sub>s</sub> = Σ<sub>f</sub> (intake<sub>f</sub> [g/day] × C<sub>f,s</sub> [ng/g]) / body weight [kg]</code>. C<sub>f,s</sub> is the mean of all regional/national TDS2 samples of that food. Congener sums (PAH4, PFAS4, PBDE, TEQ) are computed sample by sample before averaging.</p>",
+ m2_s:"2. Left-censored data (LB / MB / UB)",
+ m2:"<p>“ND (x)”, “&lt; x” → not detected (x = LOD): LB = 0, MB = LOD/2, UB = LOD. “NQ (x)” → detected, not quantified (x = LOQ): LB = 0, MB = LOQ/2, UB = LOQ. When no limit is given, the “Limites analytiques” sheet is used (acrylamide LOD 4 / LOQ 10 µg/kg; DON 3/10 µg/kg in solids, 0.3/1 in liquids). “NR” or empty = not analysed (excluded, not set to 0).</p>",
+ m3_s:"3. Substances and aggregation",
+ m3:"<ul><li><b>Cd, Hg, Pb</b>: TDS2 trace-element values included in the original spreadsheet calculator (45 foods, µg/kg). Empty cells taken as &lt; LOD (Cd 0.5; Hg 5; Pb 2.5 µg/kg). Total Hg is compared with the methylmercury TWI (conservative outside fish).</li><li><b>PAH4</b> = BaP + BaA + BbF + CHR. <b>PFAS4</b> = PFOS + PFOA + PFNA + PFHxS (EFSA 2020 group). <b>PBDE</b> = Σ BDE-28, 47, 99, 100, 153, 154, 183.</li><li><b>Dioxins + dl-PCBs</b>: 17 PCDD/Fs + 12 dl-PCBs weighted by WHO-2005 TEFs → pg WHO-TEQ/g.</li><li><b>Pesticides</b>: chlorpyrifos-ethyl, carbendazim, dimethoate (mg/kg × 1000).</li><li><b>DON</b> (deoxynivalenol), <b>acrylamide</b>.</li><li><b>Bisphenol A</b>: ANSES/LABERCA campaign on the TDS2 samples + bottled waters (LHN), µg/kg; “&lt;LOD”/“&lt;LOQ” with their limit. Samples from 2007–2009, before the French ban of BPA in food packaging (2015). ANSES (2013) attributed about half of dietary exposure to canned foods; contamination of meat occurs after slaughter.</li></ul>",
+ m4_s:"4. Risk characterisation and mixtures",
+ m4:"<p>Substances with a health-based guidance value (TDI/TWI/ADI): RQ = E / HBGV; shown as % of HBGV. Substances assessed by margin of exposure: MOE = BMDL / E; concern if MOE &lt; threshold (10,000 for genotoxic carcinogens, 10 for Pb, 25 for PBDEs per EFSA 2024). To combine them, RQ = threshold / MOE. HI = Σ RQ of threshold substances (tier 0, EFSA 2019 MixTox guidance); genotoxic carcinogens are not added to the HI but combined as MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Tier-1 groups are a teaching simplification of cumulative assessment groups.</p><p><b>Limitations:</b> 1 day ≠ usual exposure; data from 2007–2009; not every substance was analysed in every food; diet only (no drinking water for most substances, air, dust…).</p>",
+ m5_s:"5. Analytical coverage of the catalogue",
+ m5:"<p>Number of foods in this tool’s TDS2 catalogue with data for each substance.</p>",
+ footer:"MixExpo v1 (25.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
+ preset_ph:"Load an example diet…", p_excel:"Example from the original Excel sheet", p_med:"Mediterranean with fish", p_fast:"Fast food / ultra-processed", p_veg:"Vegetarian",
+ cat_bread:"Bread, cereals & starches", cat_pastry:"Pastries, biscuits & sweets", cat_fish:"Fish & seafood", cat_meat:"Meat & cold cuts", cat_dairy:"Dairy & eggs", cat_fat:"Fats & oils", cat_veg:"Vegetables & pulses", cat_fruit:"Fruit & nuts", cat_dishes:"Mixed dishes & sauces", cat_drinks:"Drinks",
+ u_slice:"slice", u_unit:"unit", u_cup:"cup", u_serving:"serving", u_glass:"glass", u_handful:"handful", u_tsp:"teaspoon", u_tbsp:"tablespoon", u_can:"can", u_bowl:"bowl",
+ fam_metal:"Metals", fam_proc:"Process contaminants", fam_myco:"Mycotoxins", fam_pop:"Persistent organic pollutants", fam_pest:"Pesticides", fam_fcm:"Food-contact materials",
+ no_metals:"no metal data", data_of:"substances with data",
+ tip_rq:"RQ", tip_expo:"Exposure", confirm_clear:"Sure? Click again", imported:"Imported successfully.", import_err:"Invalid file.",
+ k_moet:"MOE<sub>T</sub> genotoxic (≥ 10,000)",
+ carc_row:"Margin of exposure of each substance and combined (MOE<sub>T</sub>)",
+ dual_expo:"How much? Exposure",
+ dual_expo_s:"Exposure",
+ dual_expo_sub:"ng/kg bw/day (dioxins in ng TEQ), log scale",
+ dual_rq:"How risky? RQ",
+ dual_rq_s:"Risk (RQ)",
+ dual_rq_sub:"exposure ÷ reference value; line = 1",
+ sort_lbl:"Sort by",
+ sort_fam:"family",
+ sort_expo:"exposure",
+ sort_rq:"risk",
+ rank_note:"Highest exposure: <b>{a}</b> ({ea}). Highest risk: <b>{b}</b> (RQ {rb}).",
+ rank_diff:"The substance you are most exposed to is not the riskiest one: risk depends on toxic potency (the reference value), not only on the amount. Sort by “exposure” and by “risk” to compare the rankings.",
+},
+fr:{
+ subtitle:"Calculateur d’exposition aux mélanges chimiques · données EAT2 (ANSES)",
+ peda_only:"À des fins pédagogiques uniquement",
+ bw:"Poids corporel", bound:"Scénario de censure",
+ tab_diet:"Mon alimentation 24 h", tab_expo:"Exposition", tab_contrib:"Aliments contributeurs", tab_risk:"Risque et mélanges", tab_compare:"Comparer des scénarios", tab_methods:"Méthodes et données",
+ diet_h:"Rappel alimentaire des 24 heures",
+ diet_lead:"Notez tout ce que vous avez mangé et bu hier, repas par repas. Cherchez chaque aliment, indiquez le nombre de portions (ou les grammes) et observez en temps réel l’évolution de votre profil d’exposition.",
+ clear:"Vider le régime", all_foods:"Afficher tout le catalogue EAT2 (203 aliments)",
+ m_breakfast:"Petit-déjeuner", m_lunch:"Déjeuner", m_snack:"Goûter", m_dinner:"Dîner", m_other:"Autres / grignotage",
+ add_food:"+ Ajouter un aliment (tapez pour chercher)…", no_items:"Aucun aliment pour l’instant.",
+ portions:"port.", grams:"g", remove:"Retirer",
+ live_h:"Aperçu", k_grams:"g consommés", k_exceed:"substances ≥ référence", k_hi:"Indice de danger HI (substances à seuil)",
+ live_note:"À gauche : exposition (ng/kg pc/j, échelle log). À droite : quotient de risque (QR) ; la ligne pointillée marque QR = 1. Le HI additionne les substances à seuil ; les cancérogènes génotoxiques sont combinés à part via la MOE<sub>T</sub>.",
+ portion_help:"<b>Aide aux portions.</b> Chaque aliment a une mesure ménagère par défaut (ex. 1 tranche de pain = 25–30 g, 1 verre = 200 ml, 1 canette = 330 ml). Ajustez le nombre de portions ou saisissez directement les grammes. Les barres <span class='cov'><i class='y'></i><i class='y'></i><i></i></span> à côté de chaque aliment indiquent combien des 13 substances y ont été analysées.",
+ expo_h:"Exposition journalière par substance",
+ expo_lead:"Exposition = Σ (consommation × concentration) ÷ poids corporel, en ng/kg pc/j (pg TEQ/kg pc/j pour dioxines et PCB-DL). L’intervalle LB–UB traduit l’incertitude liée aux résultats non détectés.",
+ rq_chart_h:"Quantité ou risque : exposition et quotient de risque par substance",
+ expo_table_h:"Tableau des résultats", export_csv:"Exporter CSV",
+ th_sub:"Substance", th_expo:"Exposition", th_range:"LB – UB", th_unit:"Unité", th_ref:"Valeur de référence", th_metric:"Indicateur", th_status:"Conclusion", th_cov:"Données",
+ censor_note:"<b>LB / MB / UB.</b> Quand une analyse ne détecte pas la substance (&lt; LD) ou ne la quantifie pas (&lt; LQ), sa vraie valeur est inconnue. <b>LB</b> (lower bound) la remplace par 0, <b>MB</b> par LD/2 (ou LQ/2) et <b>UB</b> (upper bound) par la LD (ou LQ). Un dépassement observé seulement en UB est <i>incertain</i> : il reflète la sensibilité analytique plus que la contamination réelle.",
+ st_ok:"Pas de risque appréciable", st_unc:"Incertain (UB seul)", st_hi:"Risque possible",
+ metric_pct:"% de la VTR", metric_moe:"MOE",
+ contrib_h:"Quels aliments pilotent chaque exposition ?",
+ contrib_lead:"Chaque cellule indique le % de l’exposition à une substance apporté par un aliment. Cliquez sur une colonne pour le détail. Les cellules hachurées signifient que la substance n’a pas été analysée dans cet aliment — ce n’est pas « zéro ».",
+ heat_h:"Carte des contributions (% de l’exposition)", detail_h:"Contribution par aliment",
+ not_analysed:"non analysé", contrib_none:"Pas d’exposition à cette substance avec le régime actuel.",
+ contrib_cov:"Aliments de votre régime dans lesquels cette substance <b>n’a pas été analysée</b> : ",
+ risk_h:"Risque combiné : évaluer le mélange",
+ risk_lead:"Les substances n’agissent pas isolément. Le guide EFSA 2019 sur l’exposition combinée propose une approche par paliers : additionner d’abord tous les quotients de risque (<b>indice de danger, HI</b>, très conservateur) puis, si HI ≥ 1, affiner en regroupant les substances qui partagent un effet toxique (<b>groupes d’évaluation</b>).",
+ tier0_h:"Palier 0 – criblage du mélange entier", hi_all:"HI = Σ QR (11 substances à seuil)", moet_carc:"MOE<sub>T</sub> cancérogènes génotoxiques",
+ tier0_text:"HI = Σ (exposition / valeur de référence) pour les substances à seuil d’effet. Si HI &lt; 1, pas de préoccupation même en additionnant tous les effets ; si HI ≥ 1, on passe au palier 1. Les cancérogènes génotoxiques (acrylamide, HAP4) sont sans seuil et se combinent via la marge d’exposition totale : MOE<sub>T</sub> = 1 / Σ(1/MOE<sub>i</sub>) ; préoccupation si &lt; 10 000.",
+ drivers_h:"Quelles substances pèsent le plus dans le HI ?", drivers_note:"Part du HI (substances à seuil) apportée par chaque substance.",
+ groups_h:"Palier 1 – groupes à effet toxique commun",
+ groups_lead:"HI du groupe = somme des QR des substances partageant un organe cible ou un mode d’action (regroupement illustratif à visée pédagogique).",
+ g_neuro:"Neurotoxicité", g_neuro_d:"neurodéveloppement, cholinestérase",
+ g_kidney:"Néphrotoxicité", g_kidney_d:"atteinte tubulaire rénale",
+ g_carc:"Cancérogènes génotoxiques", g_carc_d:"approche MOE (10 000)",
+ g_repro:"Reproduction / développement", g_repro_d:"qualité du sperme, développement",
+ g_immune:"Immunotoxicité", g_immune_d:"réponse anticorps",
+ g_other:"Autres", g_other_d:"poids corporel, digestif",
+ mix_caveat:"<b>Attention :</b> une seule journée ne représente pas l’exposition chronique (les valeurs de référence portent sur la vie entière). Outil pédagogique : il montre le raisonnement, pas un diagnostic individuel.",
+ cmp_h:"Comparer des scénarios alimentaires",
+ cmp_lead:"Enregistrez votre régime actuel comme scénario, modifiez-le (changez le poisson, le pain, les boissons…) et comparez l’évolution des profils d’exposition et de risque. Jusqu’à 4 scénarios.",
+ cmp_chart_h:"Quotient de risque (QR) par scénario", scen_h:"Scénarios enregistrés", save_scen:"Enregistrer le régime actuel",
+ scen_note:"Cliquez sur « Charger » pour modifier à nouveau un scénario dans l’onglet 1. Les scénarios sont stockés dans ce navigateur.",
+ load:"Charger", del:"Supprimer", current:"Régime actuel", scen_default:"Scénario",
+ io_h:"Enregistrer / partager", export_json:"Exporter régime et scénarios (JSON)", import_json:"Importer JSON", print:"Imprimer / PDF",
+ cmp_empty:"Enregistrez au moins un scénario pour le comparer au régime actuel.",
+ cmp_th_total:"HI (substances à seuil)", cmp_th_exceed:"Substances ≥ réf.", cmp_th_g:"g totaux",
+ m_h:"Méthodes, données et valeurs de référence",
+ m_lead:"Concentrations : <b>deuxième Étude de l’Alimentation Totale française (EAT2, ANSES 2011)</b>, 2007–2009, aliments analysés « tels que consommés » (échantillons composites de 15 sous-échantillons, 8 régions). Données ouvertes : <a href='https://www.data.gouv.fr/datasets/donnees-regionales-eat2-etude-de-l-alimentation-totale/' target='_blank' rel='noopener'>data.gouv.fr</a>. Bisphénol A : <a href='https://www.data.gouv.fr/datasets/bisphenol-a' target='_blank' rel='noopener'>ANSES/LABERCA, data.gouv.fr</a>.",
+ ref_h:"Valeurs toxicologiques de référence (modifiables)", reset_rp:"Rétablir les valeurs",
+ th_type:"Type", th_value:"Valeur", th_thr:"Seuil MOE", th_endpoint:"Effet critique / source", th_conf:"Confiance",
+ conf_high:"élevée", conf_medium:"moyenne", conf_low:"faible",
+ m1_s:"1. Calcul de l’exposition",
+ m1:"<p>Pour chaque substance <i>s</i> : <code>E<sub>s</sub> = Σ<sub>f</sub> (consommation<sub>f</sub> [g/j] × C<sub>f,s</sub> [ng/g]) / poids [kg]</code>. C<sub>f,s</sub> est la moyenne de tous les échantillons régionaux/nationaux EAT2 de l’aliment. Les sommes de congénères (HAP4, PFAS4, PBDE, TEQ) sont calculées échantillon par échantillon avant moyenne.</p>",
+ m2_s:"2. Données censurées (LB / MB / UB)",
+ m2:"<p>« ND (x) », « &lt; x » → non détecté (x = LD) : LB = 0, MB = LD/2, UB = LD. « NQ (x) » → détecté non quantifié (x = LQ) : LB = 0, MB = LQ/2, UB = LQ. Si la limite n’est pas indiquée, on utilise l’onglet « Limites analytiques » (acrylamide LD 4 / LQ 10 µg/kg ; DON 3/10 µg/kg en solide, 0,3/1 en liquide). « NR » ou vide = non analysé (exclu, pas mis à 0).</p>",
+ m3_s:"3. Substances et agrégation",
+ m3:"<ul><li><b>Cd, Hg, Pb</b> : valeurs d’éléments traces EAT2 incluses dans le calculateur Excel d’origine (45 aliments, µg/kg). Cellules vides considérées &lt; LD (Cd 0,5 ; Hg 5 ; Pb 2,5 µg/kg). Le Hg total est comparé à la DHT du méthylmercure (conservateur hors poisson).</li><li><b>HAP4</b> = BaP + BaA + BbF + CHR. <b>PFAS4</b> = PFOS + PFOA + PFNA + PFHxS (groupe EFSA 2020). <b>PBDE</b> = Σ BDE-28, 47, 99, 100, 153, 154, 183.</li><li><b>Dioxines + PCB-DL</b> : 17 PCDD/F + 12 PCB-DL pondérés par les TEF OMS-2005 → pg TEQ-OMS/g.</li><li><b>Pesticides</b> : chlorpyriphos-éthyl, carbendazime, diméthoate (mg/kg × 1000).</li><li><b>DON</b> (déoxynivalénol), <b>acrylamide</b>.</li><li><b>Bisphénol A</b> : campagne ANSES/LABERCA sur les échantillons EAT2 + eaux embouteillées (LHN), µg/kg ; « &lt;LOD »/« &lt;LOQ » avec leur limite. Échantillons 2007–2009, antérieurs à l’interdiction française du BPA dans les contenants alimentaires (2015). L’ANSES (2013) attribuait environ la moitié de l’exposition alimentaire aux conserves ; la contamination des viandes a lieu après l’abattage.</li></ul>",
+ m4_s:"4. Caractérisation du risque et mélanges",
+ m4:"<p>Substances avec valeur toxicologique de référence (DJT/DHT/DJA) : QR = E / VTR ; affiché en % de la VTR. Substances évaluées par marge d’exposition : MOE = BMDL / E ; préoccupation si MOE &lt; seuil (10 000 pour les cancérogènes génotoxiques, 10 pour le Pb, 25 pour les PBDE selon l’EFSA 2024). Pour les combiner : QR = seuil / MOE. HI = Σ QR des substances à seuil (palier 0, guide MixTox EFSA 2019) ; les cancérogènes génotoxiques ne sont pas ajoutés au HI mais combinés via MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Les groupes du palier 1 sont une simplification pédagogique des groupes d’évaluation cumulée.</p><p><b>Limites :</b> 1 jour ≠ exposition habituelle ; données 2007–2009 ; toutes les substances n’ont pas été analysées dans tous les aliments ; voie alimentaire uniquement (pas d’eau de boisson pour la plupart des substances, air, poussières…).</p>",
+ m5_s:"5. Couverture analytique du catalogue",
+ m5:"<p>Nombre d’aliments du catalogue EAT2 de l’outil disposant de données pour chaque substance.</p>",
+ footer:"MixExpo v1 (25.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
+ preset_ph:"Charger un régime exemple…", p_excel:"Exemple de la feuille Excel d’origine", p_med:"Méditerranéen avec poisson", p_fast:"Restauration rapide / ultra-transformés", p_veg:"Végétarien",
+ cat_bread:"Pain, céréales et féculents", cat_pastry:"Viennoiseries, biscuits et sucreries", cat_fish:"Poissons et fruits de mer", cat_meat:"Viandes et charcuteries", cat_dairy:"Produits laitiers et œufs", cat_fat:"Matières grasses", cat_veg:"Légumes et légumineuses", cat_fruit:"Fruits et fruits à coque", cat_dishes:"Plats composés et sauces", cat_drinks:"Boissons",
+ u_slice:"tranche", u_unit:"unité", u_cup:"bol", u_serving:"portion", u_glass:"verre", u_handful:"poignée", u_tsp:"cuillère à café", u_tbsp:"cuillère à soupe", u_can:"canette", u_bowl:"assiette",
+ fam_metal:"Métaux", fam_proc:"Contaminants néoformés", fam_myco:"Mycotoxines", fam_pop:"Polluants organiques persistants", fam_pest:"Pesticides", fam_fcm:"Matériaux au contact des aliments",
+ no_metals:"pas de données métaux", data_of:"substances avec données",
+ tip_rq:"QR", tip_expo:"Exposition", confirm_clear:"Sûr ? Cliquez à nouveau", imported:"Import réussi.", import_err:"Fichier invalide.",
+ k_moet:"MOE<sub>T</sub> génotoxiques (≥ 10 000)",
+ carc_row:"Marge d’exposition de chaque substance et combinée (MOE<sub>T</sub>)",
+ dual_expo:"Combien ? Exposition",
+ dual_expo_s:"Exposition",
+ dual_expo_sub:"ng/kg pc/j (dioxines en ng TEQ), échelle log",
+ dual_rq:"Quel risque ? QR",
+ dual_rq_s:"Risque (QR)",
+ dual_rq_sub:"exposition ÷ valeur de référence ; ligne = 1",
+ sort_lbl:"Trier par",
+ sort_fam:"famille",
+ sort_expo:"exposition",
+ sort_rq:"risque",
+ rank_note:"Exposition la plus élevée : <b>{a}</b> ({ea}). Risque le plus élevé : <b>{b}</b> (QR {rb}).",
+ rank_diff:"La substance à laquelle vous êtes le plus exposé n’est pas la plus préoccupante : le risque dépend de la puissance toxique (valeur de référence), pas seulement de la quantité. Triez par « exposition » puis par « risque » pour comparer les classements.",
+}};
+const SUBTXT = {
+ Cd:{sh:{es:"Cd",en:"Cd",fr:"Cd"}, n:{es:"Cadmio",en:"Cadmium",fr:"Cadmium"}, ep:{es:"Toxicidad renal (β2-microglobulina). TWI 2,5 µg/kg pc/sem – EFSA 2009/2011",en:"Kidney toxicity (β2-microglobulin). TWI 2.5 µg/kg bw/wk – EFSA 2009/2011",fr:"Toxicité rénale (β2-microglobuline). DHT 2,5 µg/kg pc/sem – EFSA 2009/2011"}},
+ Hg:{sh:{es:"Hg",en:"Hg",fr:"Hg"}, n:{es:"Mercurio (como MeHg)",en:"Mercury (as MeHg)",fr:"Mercure (comme MeHg)"}, ep:{es:"Neurodesarrollo. TWI metilmercurio 1,3 µg/kg pc/sem – EFSA 2012",en:"Neurodevelopment. Methylmercury TWI 1.3 µg/kg bw/wk – EFSA 2012",fr:"Neurodéveloppement. DHT méthylmercure 1,3 µg/kg pc/sem – EFSA 2012"}},
+ Pb:{sh:{es:"Pb",en:"Pb",fr:"Pb"}, n:{es:"Plomo",en:"Lead",fr:"Plomb"}, ep:{es:"Nefrotoxicidad en adultos. BMDL10 0,63 µg/kg pc/día; MOE ≥ 10 sin riesgo apreciable – EFSA 2010 (neurodesarrollo infantil: BMDL01 0,50)",en:"Nephrotoxicity in adults. BMDL10 0.63 µg/kg bw/day; MOE ≥ 10 no appreciable risk – EFSA 2010 (child neurodevelopment: BMDL01 0.50)",fr:"Néphrotoxicité chez l’adulte. BMDL10 0,63 µg/kg pc/j ; MOE ≥ 10 sans risque appréciable – EFSA 2010 (neurodéveloppement enfant : BMDL01 0,50)"}},
+ ACR:{n:{es:"Acrilamida",en:"Acrylamide",fr:"Acrylamide"}, ep:{es:"Tumores (genotóxico). BMDL10 0,17 mg/kg pc/día – EFSA 2015",en:"Tumours (genotoxic). BMDL10 0.17 mg/kg bw/day – EFSA 2015",fr:"Tumeurs (génotoxique). BMDL10 0,17 mg/kg pc/j – EFSA 2015"}},
+ PAH4:{sh:{es:"HAP4",en:"PAH4",fr:"HAP4"}, n:{es:"HAP4",en:"PAH4",fr:"HAP4"}, ep:{es:"Carcinogenicidad. BMDL10 HAP4 0,34 mg/kg pc/día – EFSA 2008 (sustituye al fenantreno de la versión Excel)",en:"Carcinogenicity. PAH4 BMDL10 0.34 mg/kg bw/day – EFSA 2008 (replaces phenanthrene from the Excel version)",fr:"Cancérogénicité. BMDL10 HAP4 0,34 mg/kg pc/j – EFSA 2008 (remplace le phénanthrène de la version Excel)"}},
+ DON:{sh:{es:"DON",en:"DON",fr:"DON"}, n:{es:"Deoxinivalenol (DON)",en:"Deoxynivalenol (DON)",fr:"Déoxynivalénol (DON)"}, ep:{es:"Reducción de ganancia de peso. TDI de grupo 1 µg/kg pc/día – EFSA 2017",en:"Reduced body-weight gain. Group TDI 1 µg/kg bw/day – EFSA 2017",fr:"Réduction du gain de poids. DJT de groupe 1 µg/kg pc/j – EFSA 2017"}},
+ TEQ:{sh:{es:"PCDD/F+PCB",en:"PCDD/F+PCB",fr:"PCDD/F+PCB"}, n:{es:"Dioxinas + PCB-DL",en:"Dioxins + dl-PCBs",fr:"Dioxines + PCB-DL"}, ep:{es:"Calidad espermática. TWI 2 pg EQT-OMS/kg pc/sem – EFSA 2018",en:"Sperm quality. TWI 2 pg WHO-TEQ/kg bw/wk – EFSA 2018",fr:"Qualité du sperme. DHT 2 pg TEQ-OMS/kg pc/sem – EFSA 2018"}},
+ PBDE:{sh:{es:"PBDE",en:"PBDE",fr:"PBDE"}, n:{es:"PBDE (Σ7)",en:"PBDEs (Σ7)",fr:"PBDE (Σ7)"}, ep:{es:"Neurodesarrollo. Nivel 1 EFSA 2024: punto de referencia del congénere más potente (BDE-153, 3,2 ng/kg pc/día) aplicado a la suma; MOE < 25 = preocupación",en:"Neurodevelopment. EFSA 2024 tier 1: reference point of the most potent congener (BDE-153, 3.2 ng/kg bw/day) applied to the sum; MOE < 25 = concern",fr:"Neurodéveloppement. Palier 1 EFSA 2024 : point de référence du congénère le plus puissant (BDE-153, 3,2 ng/kg pc/j) appliqué à la somme ; MOE < 25 = préoccupation"}},
+ PFAS4:{sh:{es:"PFAS",en:"PFAS",fr:"PFAS"}, n:{es:"PFAS (Σ4)",en:"PFAS (Σ4)",fr:"PFAS (Σ4)"}, ep:{es:"Inmunotoxicidad (vacunas). TWI 4,4 ng/kg pc/sem – EFSA 2020",en:"Immunotoxicity (vaccine response). TWI 4.4 ng/kg bw/wk – EFSA 2020",fr:"Immunotoxicité (réponse vaccinale). DHT 4,4 ng/kg pc/sem – EFSA 2020"}},
+ CPF:{n:{es:"Clorpirifós",en:"Chlorpyrifos",fr:"Chlorpyriphos"}, ep:{es:"Neurotoxicidad del desarrollo. ADI 0,001 mg/kg pc/día (EFSA 2014); en 2019 EFSA concluyó que no puede fijarse un nivel seguro; no aprobado en la UE desde 2020",en:"Developmental neurotoxicity. ADI 0.001 mg/kg bw/day (EFSA 2014); in 2019 EFSA concluded no safe level can be set; not approved in the EU since 2020",fr:"Neurotoxicité développementale. DJA 0,001 mg/kg pc/j (EFSA 2014) ; en 2019 l’EFSA a conclu qu’aucun niveau sûr ne pouvait être fixé ; non approuvé dans l’UE depuis 2020"}},
+ DMT:{n:{es:"Dimetoato",en:"Dimethoate",fr:"Diméthoate"}, ep:{es:"Inhibición de colinesterasa. ADI 0,001 mg/kg pc/día – EFSA; no aprobado en la UE desde 2019",en:"Cholinesterase inhibition. ADI 0.001 mg/kg bw/day – EFSA; not approved in the EU since 2019",fr:"Inhibition des cholinestérases. DJA 0,001 mg/kg pc/j – EFSA ; non approuvé dans l’UE depuis 2019"}},
+ BPA:{sh:{es:"BPA",en:"BPA",fr:"BPA"}, n:{es:"Bisfenol A (BPA)",en:"Bisphenol A (BPA)",fr:"Bisphénol A (BPA)"}, ep:{es:"Sistema inmunitario (aumento de linfocitos Th17). TDI 0,2 ng/kg pc/día – EFSA 2023 (el BfR propone 200 ng/kg pc/día: prueba a cambiarlo)",en:"Immune system (increase in Th17 cells). TDI 0.2 ng/kg bw/day – EFSA 2023 (BfR proposes 200 ng/kg bw/day: try changing it)",fr:"Système immunitaire (augmentation des lymphocytes Th17). DJT 0,2 ng/kg pc/j – EFSA 2023 (le BfR propose 200 ng/kg pc/j : essayez de la modifier)"}},
+ CBZ:{n:{es:"Carbendazima",en:"Carbendazim",fr:"Carbendazime"}, ep:{es:"Toxicidad reproductiva / aneugenicidad. ADI 0,02 mg/kg pc/día – EFSA 2010",en:"Reproductive toxicity / aneugenicity. ADI 0.02 mg/kg bw/day – EFSA 2010",fr:"Toxicité pour la reproduction / aneugénicité. DJA 0,02 mg/kg pc/j – EFSA 2010"}},
+};
+
+/* ---------------------------------------------------------------- example diets (by EAT2 French libellé) */
+const PRESETS = {
+ p_excel:{breakfast:[["pain grillé",10],["pain de mie",25]], lunch:[["pâtes alimentaires aux oeufs cuites",100],["poisson pané",100],["pain de mie",10],["concombre",150],["eau du robinet",200]], snack:[["pomme de terre chips salées",20],["pomme",60]], dinner:[["pain aux céréales",50],["bière",200]], other:[]},
+ p_med:{breakfast:[["lait demi-écrémé",200],["pain complet ou intégral",60],["huile d'olive vierge 1ère pression",10],["tomate",60],["café noir",150]], lunch:[["lentille",200],["saumon",130],["salade",40],["huile d'olive vierge 1ère pression",10],["pain de campagne",50],["orange",160]], snack:[["yaourt au lait partiellement écrémé",125],["graine oléagineuse",30]], dinner:[["thon",130],["épinard",150],["riz",150],["pomme",150],["vin",125]], other:[["eau du robinet",750]]},
+ p_fast:{breakfast:[["céréales au chocolat",40],["lait entier",200],["croissant",55]], lunch:[["hamburger",200],["pomme de terre sautée ou frite",150],["boisson gazeuse à l'orange avec pulpe sucrée",330]], snack:[["pomme de terre chips salées",30],["chocolat au lait",40]], dinner:[["pizza",300],["bière",330],["mousse au chocolat rayon frais",60]], other:[]},
+ p_veg:{breakfast:[["muesli",50],["boisson au soja ou tonyu",200],["banane",120]], lunch:[["tofu",150],["riz",150],["ratatouille",150],["pain complet ou intégral",60],["pomme",150]], snack:[["yaourt au lait entier",125],["graine oléagineuse",30]], dinner:[["lentille",200],["salade",40],["tomate",120],["huile d'olive vierge 1ère pression",10],["poire",150],["thé ou tisane",200]], other:[["eau du robinet",750]]},
+};
+
+/* ---------------------------------------------------------------- state */
+const byFr = {}; FOODS.forEach(f => byFr[f.fr] = f);
+const byId = {}; FOODS.forEach(f => byId[f.id] = f);
+const LS = "mixexpo.v2";
+const packM = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({fr:byId[it.id].fr, g:+it.g}))); return o; };
+const unpackM = m => { const o={}; MEALS.forEach(k=>o[k]=[]); MEALS.forEach(k=>((m&&m[k])||[]).forEach(it=>{ const f=byFr[it.fr||it.food]; if(f) o[k].push({id:f.id, g:+it.g||0}); })); return o; };
+function store(){ try{ localStorage.setItem(LS, JSON.stringify({lang:S.lang,bw:S.bw,bound:S.bound,meals:packM(S.meals),scen:S.scen.map(x=>({name:x.name,bw:x.bw,meals:packM(x.meals)})),rp:S.rp,all:S.all,sort:S.sort})); }catch(e){} }
+function emptyMeals(){ const m={}; MEALS.forEach(k=>m[k]=[]); return m; }
+let S = {lang:"es", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"diet", sel:"Cd", sort:"fam"};
+try{ const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ Object.assign(S, s); S.meals = unpackM(s.meals); S.scen = (s.scen||[]).map(x=>({name:x.name,bw:x.bw,meals:unpackM(x.meals)})); } }catch(e){ S.meals = emptyMeals(); S.scen = []; }
+if(!S.meals || !Object.values(S.meals).some(a=>a.length)) { if(!localStorage.getItem || true) {} }
+
+function subs(){ return SUBS_DEFAULT.map(s => Object.assign({}, s, S.rp[s.k]||{})); }
+const t = k => (I18N[S.lang][k] ?? I18N.en[k] ?? k);
+const fname = f => f[S.lang] || f.fr;
+const sname = k => SUBTXT[k].n[S.lang];
+const shname = k => SUBTXT[k].sh ? SUBTXT[k].sh[S.lang] : SUBTXT[k].n[S.lang];
+const unitOf = s => (s.u==="pg" ? "pg TEQ/kg bw/d" : "ng/kg bw/d").replace("bw", S.lang==="en"?"bw":"pc").replace("/d", S.lang==="en"?"/day":(S.lang==="es"?"/día":"/j"));
+
+/* ---------------------------------------------------------------- core computation */
+function compute(meals, bw){
+  const SU = subs();
+  const intake = {};           // food id -> grams
+  MEALS.forEach(m => (meals[m]||[]).forEach(it => { if(it.g>0) intake[it.id] = (intake[it.id]||0) + it.g; }));
+  const foods = Object.keys(intake).map(Number);
+  const res = {intake, foods, grams: foods.reduce((a,id)=>a+intake[id],0), S:{}};
+  SU.forEach(s => {
+    const E = {lb:0, mb:0, ub:0}, contrib = {}, missing = [];
+    foods.forEach(id => {
+      const c = byId[id].c[s.k];
+      if(!c){ missing.push(id); return; }
+      const g = intake[id];
+      E.lb += g*c[0]/bw; E.mb += g*c[1]/bw; E.ub += g*c[2]/bw;
+      contrib[id] = {lb:g*c[0]/bw, mb:g*c[1]/bw, ub:g*c[2]/bw};
+    });
+    const rq = b => s.type==="HBGV" ? E[b]/s.rp : E[b]*s.thr/s.rp;
+    const RQ = {lb:rq("lb"), mb:rq("mb"), ub:rq("ub")};
+    const status = RQ.ub < 1 ? "ok" : (RQ.lb >= 1 ? "hi" : "unc");
+    res.S[s.k] = {s, E, RQ, contrib, missing, status};
+  });
+  return res;
+}
+// Tier-0 hazard index: threshold substances only (genotoxic carcinogens are combined with MOET instead)
+function hi(res, b, keys){ return (keys||Object.keys(res.S).filter(k=>res.S[k].s.grp!=="carc")).reduce((a,k)=>a+res.S[k].RQ[b],0); }
+function moet(res, b){ const inv = Object.values(res.S).filter(r=>r.s.grp==="carc").reduce((a,r)=>a + r.E[b]/r.s.rp, 0); return inv>0 ? 1/inv : Infinity; }
+function moetStatus(res){ const thr = 10000; return moet(res,"ub")>=thr ? "ok" : (moet(res,"lb")<thr ? "hi" : "unc"); }
+function hiStatus(res, keys){ return hi(res,"ub",keys)<1 ? "ok" : (hi(res,"lb",keys)>=1 ? "hi" : "unc"); }
+function cw(el, fallback){ const w = el.clientWidth; return w>200 ? Math.round(w) : fallback; }
+
+/* ---------------------------------------------------------------- formatting */
+function fmt(x, d){
+  if(!isFinite(x)) return "∞";
+  if(x===0) return "0";
+  const loc = S.lang==="en" ? "en-GB" : (S.lang==="fr"?"fr-FR":"es-ES");
+  const a = Math.abs(x);
+  let opts;
+  if(d!==undefined) opts={maximumFractionDigits:d, minimumFractionDigits:0};
+  else if(a>=1000) opts={maximumFractionDigits:0};
+  else if(a>=10) opts={maximumFractionDigits:1};
+  else if(a>=0.01) opts={maximumSignificantDigits:3};
+  else opts={maximumSignificantDigits:2};
+  return x.toLocaleString(loc, opts);
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function statusHTML(st){ const ic={ok:"✓",unc:"?",hi:"!"}[st]; return `<span class="status st-${st}"><span class="dot">${ic}</span>${t("st_"+st)}</span>`; }
+function metricText(r){
+  const s=r.s, b=S.bound;
+  if(s.type==="HBGV") return fmt(r.RQ[b]*100) + " %";
+  const moe = s.rp / r.E[b];
+  return "MOE " + (isFinite(moe) ? fmt(moe) : "–");
+}
+function refText(s){
+  if(s.type==="HBGV") return `${fmt(s.rp)} ${unitOf(s)}`;
+  return `BMDL ${fmt(s.rp)} ${unitOf(s)} · MOE ≥ ${fmt(s.thr)}`;
+}
+
+/* ---------------------------------------------------------------- tooltip */
+const tip = document.getElementById("tip");
+document.addEventListener("mousemove", e => {
+  const el = e.target.closest("[data-tip]");
+  if(!el){ tip.style.opacity=0; return; }
+  tip.innerHTML = el.getAttribute("data-tip");
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if(x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if(y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tip.style.left = x+"px"; tip.style.top = y+"px"; tip.style.opacity = 1;
+});
+
+/* ---------------------------------------------------------------- charts (hand-made SVG, no dependencies) */
+const LOGMIN = -3, LOGMAX = 3;   // RQ axis 0.001 … 100
+function lx(v, x0, w){ const l = Math.log10(Math.max(v, Math.pow(10,LOGMIN))); return x0 + (Math.min(l,LOGMAX)-LOGMIN)/(LOGMAX-LOGMIN)*w; }
+function logAxis(x0, w, y0, y1, compact){
+  let g = "";
+  for(let p=LOGMIN; p<=LOGMAX; p++){
+    const x = lx(Math.pow(10,p), x0, w);
+    g += `<line class="gl" x1="${x}" x2="${x}" y1="${y0}" y2="${y1}"/>`;
+    const lab = p<0 ? (compact? "10"+superscript(p) : fmt(Math.pow(10,p))) : fmt(Math.pow(10,p));
+    g += `<text x="${x}" y="${y1+14}" text-anchor="middle">${lab}</text>`;
+  }
+  const xt = lx(1, x0, w);
+  g += `<line class="thr" x1="${xt}" x2="${xt}" y1="${y0-4}" y2="${y1}"/>`;
+  return g;
+}
+function superscript(n){ const m={"-":"⁻","0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶","7":"⁷","8":"⁸","9":"⁹"}; return String(n).split("").map(c=>m[c]).join(""); }
+const STC = {ok:"var(--good)", unc:"var(--warning)", hi:"var(--critical)"};
+
+function expoNg(r, b){ return r.E[b] * (r.s.u==="pg" ? 0.001 : 1); }   // dioxin TEQ pg -> ng for a common axis
+function sortedSubs(res, mode){
+  const SU = subs(), b = S.bound;
+  if(mode==="expo") return SU.slice().sort((x,y)=>expoNg(res.S[y.k],b)-expoNg(res.S[x.k],b));
+  if(mode==="rq")   return SU.slice().sort((x,y)=>res.S[y.k].RQ[b]-res.S[x.k].RQ[b]);
+  return SU;
+}
+function lpos(v, lo, hi, x0, w){ const l = Math.log10(Math.max(v, Math.pow(10,lo))); return x0 + (Math.min(l,hi)-lo)/(hi-lo)*w; }
+function decAxis(lo, hi, x0, w, y0, y1, compact){
+  const step = (compact || (hi-lo) > 6) ? 2 : 1; let g = "";
+  for(let p=Math.ceil(lo/step)*step; p<=hi; p+=step){
+    const x = lpos(Math.pow(10,p), lo, hi, x0, w);
+    const lab = p===0 ? "1" : ((compact || p<-2 || p>3) ? "10"+superscript(p) : fmt(Math.pow(10,p)));
+    g += `<line class="gl" x1="${x}" x2="${x}" y1="${y0}" y2="${y1}"/><text x="${x}" y="${y1+14}" text-anchor="middle">${lab}</text>`;
+  }
+  return g;
+}
+function whisker(x1, x2, cy){
+  if(x2-x1 <= 1) return "";
+  const st = `stroke="var(--text-primary)" stroke-width="1.2" pointer-events="none"`;
+  return `<line x1="${x1}" x2="${x2}" y1="${cy}" y2="${cy}" ${st}/><line x1="${x1}" x2="${x1}" y1="${cy-4}" y2="${cy+4}" ${st}/><line x1="${x2}" x2="${x2}" y1="${cy-4}" y2="${cy+4}" ${st}/>`;
+}
+/* Two aligned panels sharing the substance labels: left = how much (exposure), right = how risky (RQ). */
+function dualChart(el, res, opts={}){
+  const b = S.bound, SU = sortedSubs(res, opts.sort||"fam"), compact = !!opts.compact;
+  const W = cw(el, opts.w || 760), lab = opts.labW || 180, gap = compact ? 16 : 34, padR = 12;
+  const rowH = opts.rowH || 26, top = compact ? 34 : 40, n = SU.length, H = top + n*rowH + 22;
+  const colW = (W - lab - gap - padR) / 2, xa = lab, xb = lab + colW + gap;
+  // exposure axis: decades covering LB..UB of all substances
+  const vals = SU.flatMap(s => ["lb","ub",b].map(k => expoNg(res.S[s.k], k))).filter(v => v > 0);
+  let lo = vals.length ? Math.floor(Math.log10(Math.min(...vals))) : -3, hi = vals.length ? Math.ceil(Math.log10(Math.max(...vals))) : 3;
+  lo = Math.max(lo, -7); if(hi - lo < 4) lo = hi - 4;
+  const rlo = LOGMIN, rhi = LOGMAX;
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t("dual_expo")+" / "+t("dual_rq"))}">`;
+  g += `<text class="lbl" x="${xa}" y="14" style="font-weight:600">${esc(t(compact?"dual_expo_s":"dual_expo"))}</text>`;
+  g += `<text class="lbl" x="${xb}" y="14" style="font-weight:600">${esc(t(compact?"dual_rq_s":"dual_rq"))}</text>`;
+  if(!compact) g += `<text x="${xa}" y="29">${esc(t("dual_expo_sub"))}</text><text x="${xb}" y="29">${esc(t("dual_rq_sub"))}</text>`;
+  g += decAxis(lo, hi, xa, colW, top, top + n*rowH, compact) + decAxis(rlo, rhi, xb, colW, top, top + n*rowH, compact);
+  const x1 = lpos(1, rlo, rhi, xb, colW);
+  g += `<line class="thr" x1="${x1}" x2="${x1}" y1="${top-4}" y2="${top + n*rowH}"/>`;
+  SU.forEach((s, i) => {
+    const r = res.S[s.k], y = top + i*rowH, cy = y + rowH/2, bh = Math.min(12, rowH - 9);
+    const e = expoNg(r, b), q = r.RQ[b];
+    const tipTxt = `<b>${esc(sname(s.k))}</b><br>${t("tip_expo")} (${b.toUpperCase()}): ${fmt(r.E[b])} ${unitOf(s)}<br>LB–UB: ${fmt(r.E.lb)} – ${fmt(r.E.ub)}<br>${t("tip_rq")}: ${fmt(q)} · ${metricText(r)}<br>${t("st_"+r.status)}`;
+    g += `<rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" data-tip="${esc(tipTxt)}"/>`;
+    g += `<text class="lbl" x="${lab-10}" y="${cy+4}" text-anchor="end" pointer-events="none">${esc(compact ? trunc(shname(s.k),18) : sname(s.k))}</text>`;
+    const xa0 = lpos(Math.pow(10,lo), lo, hi, xa, colW), xe = lpos(e, lo, hi, xa, colW);
+    if(e > 0) g += `<rect x="${xa0}" y="${cy-bh/2}" width="${Math.max(2, xe-xa0)}" height="${bh}" rx="3" fill="var(--series-1)" pointer-events="none"/>`;
+    g += whisker(lpos(expoNg(r,"lb")||Math.pow(10,lo), lo, hi, xa, colW), lpos(expoNg(r,"ub")||Math.pow(10,lo), lo, hi, xa, colW), cy);
+    const xb0 = lpos(Math.pow(10,rlo), rlo, rhi, xb, colW), xq = lpos(q, rlo, rhi, xb, colW);
+    if(q > 0) g += `<rect x="${xb0}" y="${cy-bh/2}" width="${Math.max(2, xq-xb0)}" height="${bh}" rx="3" fill="${STC[r.status]}" pointer-events="none"/>`;
+    g += whisker(lpos(r.RQ.lb||Math.pow(10,rlo), rlo, rhi, xb, colW), lpos(r.RQ.ub||Math.pow(10,rlo), rlo, rhi, xb, colW), cy);
+  });
+  el.innerHTML = g + `</svg>`;
+}
+function rankNote(res){
+  const b = S.bound, SU = subs();
+  const topE = SU.slice().sort((x,y)=>expoNg(res.S[y.k],b)-expoNg(res.S[x.k],b))[0];
+  const topR = SU.slice().sort((x,y)=>res.S[y.k].RQ[b]-res.S[x.k].RQ[b])[0];
+  if(!res.foods.length) return "";
+  let h = t("rank_note").replace("{a}", esc(sname(topE.k))).replace("{ea}", fmt(res.S[topE.k].E[b])+" "+unitOf(topE)).replace("{b}", esc(sname(topR.k))).replace("{rb}", fmt(res.S[topR.k].RQ[b]));
+  if(topE.k !== topR.k) h += " " + t("rank_diff");
+  return h;
+}
+function barList(el, rows, opts={}){
+  // rows: [{label, v (0..1 share or value), txt, tip}]
+  const W = cw(el, opts.w || 520), lab = opts.labW || 200, rowH = 24, padR = 56, x0 = lab, w = W-lab-padR;
+  const max = opts.max || Math.max(...rows.map(r=>r.v), 1e-12);
+  const H = rows.length*rowH + 6;
+  let g = `<svg viewBox="0 0 ${W} ${H}">`;
+  rows.forEach((r,i)=>{
+    const y = i*rowH, cy = y+rowH/2, bw = Math.max(2, r.v/max*w);
+    g += `<rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" ${r.tip?`data-tip="${esc(r.tip)}"`:""}/>`;
+    g += `<text class="lbl" x="${lab-10}" y="${cy+4}" text-anchor="end" pointer-events="none">${esc(trunc(r.label, opts.trunc||30))}</text>`;
+    g += `<rect x="${x0}" y="${cy-6}" width="${bw}" height="12" rx="3" fill="${r.color||"var(--series-1)"}" pointer-events="none"/>`;
+    g += `<text x="${x0+bw+6}" y="${cy+4}" pointer-events="none">${esc(r.txt)}</text>`;
+  });
+  g += `</svg>`;
+  el.innerHTML = g;
+}
+const trunc = (s,n) => s.length>n ? s.slice(0,n-1)+"…" : s;
+
+/* ---------------------------------------------------------------- rendering: static text */
+function applyI18n(){
+  document.documentElement.lang = S.lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll("[data-i18n-html]").forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
+  document.querySelectorAll("#langSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.l===S.lang));
+  document.querySelectorAll("#boundSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b===S.bound));
+  const ps = document.getElementById("preset");
+  ps.innerHTML = `<option value="">${esc(t("preset_ph"))}</option>` + Object.keys(PRESETS).map(k=>`<option value="${k}">${esc(t(k))}</option>`).join("");
+  document.getElementById("subSel").innerHTML = subs().map(s=>`<option value="${s.k}">${esc(sname(s.k))}</option>`).join("");
+  document.getElementById("subSel").value = S.sel;
+}
+
+/* ---------------------------------------------------------------- 1 · diet editor */
+function covHTML(f){
+  const SU = subs(), n = SU.filter(s=>f.c[s.k]).length;
+  const segs = Math.round(n/SU.length*6);
+  return `<span class="cov" data-tip="${n}/${SU.length} ${esc(t("data_of"))}${f.c.Cd?"":" · "+esc(t("no_metals"))}">${Array.from({length:6},(_,i)=>`<i class="${i<segs?"y":""}"></i>`).join("")}</span>`;
+}
+function renderMeals(){
+  const box = document.getElementById("meals");
+  box.innerHTML = MEALS.map(m => {
+    const items = S.meals[m];
+    const tot = items.reduce((a,it)=>a+(+it.g||0),0);
+    return `<div class="card" data-meal="${m}">
+      <div class="meal-head"><h3>${esc(t("m_"+m))}</h3><span class="tot">${fmt(tot,0)} g</span></div>
+      <div class="items">${items.length? items.map((it,i)=>{ const f=byId[it.id]; const por = it.g/f.g;
+        return `<div class="item" data-i="${i}">
+          <div class="nm"><b title="${esc(fname(f))}">${esc(fname(f))}</b><small>${esc(t("u_"+f.u))} ≈ ${f.g} g ${covHTML(f)}</small></div>
+          <input type="number" class="por" min="0" step="0.5" value="${+por.toFixed(2)}" aria-label="${esc(t("portions"))}">
+          <span class="unitlbl">×</span>
+          <input type="number" class="gr" min="0" step="5" value="${Math.round(it.g*10)/10}" aria-label="${esc(t("grams"))}">
+          <button class="x" title="${esc(t("remove"))}" aria-label="${esc(t("remove"))}">×</button></div>`; }).join("")
+        : `<div class="empty">${esc(t("no_items"))}</div>`}</div>
+      <div class="adder"><input type="text" class="search" placeholder="${esc(t("add_food"))}" autocomplete="off"><div class="dd"></div></div>
+    </div>`;
+  }).join("");
+  // units header hint
+}
+function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
+function searchFoods(q){
+  const nq = norm(q.trim());
+  let list = FOODS.filter(f => S.all || f.core);
+  if(nq) list = FOODS.filter(f => (S.all||f.core||nq.length>=3) && [f.es,f.en,f.fr].some(n=>norm(n).includes(nq)));
+  const out = {};
+  CATS.forEach(c=>out[c]=[]);
+  list.forEach(f=>out[f.cat].push(f));
+  CATS.forEach(c=>out[c].sort((a,b)=>fname(a).localeCompare(fname(b))));
+  return out;
+}
+function openDD(input){
+  const dd = input.nextElementSibling;
+  const groups = searchFoods(input.value);
+  let h = "";
+  CATS.forEach(c => { if(!groups[c].length) return;
+    h += `<div class="grp">${esc(t("cat_"+c))}</div>` + groups[c].map(f=>`<div class="opt" data-id="${f.id}"><span>${esc(fname(f))}${S.lang!=="fr"?` <small>· ${esc(f.fr)}</small>`:""}</span><small>${f.g} g${f.c.Cd?"":" · ⚠"}</small></div>`).join("");
+  });
+  dd.innerHTML = h || `<div class="empty" style="padding:8px 10px">—</div>`;
+  dd.classList.add("open");
+  const first = dd.querySelector(".opt"); if(first) first.classList.add("act");
+}
+function closeDD(){ document.querySelectorAll(".dd.open").forEach(d=>d.classList.remove("open")); }
+function addFood(meal, id){
+  const f = byId[id];
+  S.meals[meal].push({id, g:f.g});
+  update();
+  const inp = document.querySelector(`[data-meal="${meal}"] .search`); if(inp){ inp.focus(); }
+}
+const mealsBox = document.getElementById("meals");
+mealsBox.addEventListener("focusin", e => { if(e.target.classList.contains("search")) openDD(e.target); });
+mealsBox.addEventListener("input", e => {
+  const el = e.target, card = el.closest("[data-meal]"); if(!card) return;
+  const meal = card.dataset.meal;
+  if(el.classList.contains("search")) return openDD(el);
+  const row = el.closest(".item"); if(!row) return;
+  const it = S.meals[meal][+row.dataset.i], f = byId[it.id];
+  if(el.classList.contains("por")){ it.g = Math.max(0, (+el.value||0)*f.g); row.querySelector(".gr").value = Math.round(it.g*10)/10; }
+  if(el.classList.contains("gr")){ it.g = Math.max(0, +el.value||0); row.querySelector(".por").value = +(it.g/f.g).toFixed(2); }
+  card.querySelector(".tot").textContent = fmt(S.meals[meal].reduce((a,x)=>a+(+x.g||0),0),0)+" g";
+  update(false);
+});
+mealsBox.addEventListener("click", e => {
+  const card = e.target.closest("[data-meal]"); if(!card) return;
+  const meal = card.dataset.meal;
+  const opt = e.target.closest(".opt");
+  if(opt){ closeDD(); addFood(meal, +opt.dataset.id); return; }
+  if(e.target.classList.contains("x")){ S.meals[meal].splice(+e.target.closest(".item").dataset.i,1); update(); }
+});
+mealsBox.addEventListener("keydown", e => {
+  if(!e.target.classList.contains("search")) return;
+  const dd = e.target.nextElementSibling, opts=[...dd.querySelectorAll(".opt")];
+  let i = opts.findIndex(o=>o.classList.contains("act"));
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(i>=0) opts[i].classList.remove("act"); i = e.key==="ArrowDown"? Math.min(opts.length-1,i+1) : Math.max(0,i-1); if(opts[i]){opts[i].classList.add("act"); opts[i].scrollIntoView({block:"nearest"});} }
+  if(e.key==="Enter" && opts[i]){ e.preventDefault(); const meal=e.target.closest("[data-meal]").dataset.meal; closeDD(); addFood(meal, +opts[i].dataset.id); }
+  if(e.key==="Escape"){ closeDD(); e.target.blur(); }
+});
+document.addEventListener("mousedown", e => { if(!e.target.closest(".adder")) closeDD(); });
+
+/* ---------------------------------------------------------------- 1b · live panel */
+function renderLive(res){
+  document.getElementById("kGrams").textContent = fmt(res.grams,0);
+  const ex = Object.values(res.S).filter(r=>r.RQ[S.bound]>=1).length;
+  document.getElementById("kExceed").textContent = ex;
+  const h = hi(res, S.bound);
+  const kh = document.getElementById("kHI"); kh.textContent = fmt(h, 2);
+  kh.style.color = h>=1 ? "var(--critical-ink)" : "";
+  const m = moet(res, S.bound), km = document.getElementById("kMOET");
+  km.textContent = isFinite(m) ? fmt(m) : "–";
+  km.style.color = m<10000 ? "var(--critical-ink)" : "";
+  dualChart(document.getElementById("liveChart"), res, {w:420, labW:96, rowH:21, compact:true});
+}
+
+/* ---------------------------------------------------------------- 2 · exposure */
+function renderExpo(res){
+  const b = S.bound;
+  document.getElementById("rqLegend").innerHTML = `<span><i style="background:var(--series-1)"></i>${esc(t("th_expo"))}</span>` + ["ok","unc","hi"].map(st=>`<span>${statusHTML(st)}</span>`).join("") + `<span><svg width="26" height="10"><line x1="1" x2="25" y1="5" y2="5" stroke="var(--text-primary)"/><line x1="1" x2="1" y1="1" y2="9" stroke="var(--text-primary)"/><line x1="25" x2="25" y1="1" y2="9" stroke="var(--text-primary)"/></svg>LB – UB</span><span><svg width="22" height="10"><line class="thr" x1="11" x2="11" y1="0" y2="10" stroke="var(--text-primary)" stroke-dasharray="3 2"/></svg>RQ = 1</span>`;
+  dualChart(document.getElementById("rqChart"), res, {w:1000, labW:190, rowH:28, sort:S.sort});
+  document.querySelectorAll("#sortSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.s===S.sort));
+  document.getElementById("rankNote").innerHTML = rankNote(res);
+  let h = `<thead><tr><th>${t("th_sub")}</th><th class="num">${t("th_expo")} (${b.toUpperCase()})</th><th class="num">${t("th_range")}</th><th>${t("th_unit")}</th><th>${t("th_ref")}</th><th class="num">${t("th_metric")}</th><th>${t("th_status")}</th><th class="num">${t("th_cov")}</th></tr></thead><tbody>`;
+  FAMS.forEach(fm => {
+    const ss = subs().filter(s=>s.fam===fm);
+    h += `<tr class="fam"><td colspan="8">${esc(t("fam_"+fm))}</td></tr>`;
+    ss.forEach(s => { const r = res.S[s.k];
+      const nf = res.foods.length, na = nf - r.missing.length;
+      h += `<tr><td><b>${esc(sname(s.k))}</b></td><td class="num">${fmt(r.E[b])}</td><td class="num muted">${fmt(r.E.lb)} – ${fmt(r.E.ub)}</td><td class="small muted">${unitOf(s)}</td><td class="small">${refText(s)}</td><td class="num">${metricText(r)}</td><td>${statusHTML(r.status)}</td><td class="num small ${r.missing.length?"":"muted"}" data-tip="${esc(t("contrib_cov").replace(/<[^>]+>/g,""))}${esc(r.missing.map(id=>fname(byId[id])).join(", ")||"—")}">${na}/${nf}</td></tr>`;
+    });
+  });
+  document.getElementById("expoTable").innerHTML = h + "</tbody>";
+}
+function csvExport(){
+  const res = compute(S.meals, S.bw), rows = [];
+  rows.push(["# MixExpo v1 (25.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
+  rows.push(["section","item","value_LB","value_MB","value_UB","unit","reference","metric_selected_bound","status"]);
+  MEALS.forEach(m=>S.meals[m].forEach(it=>rows.push(["diet_"+m, byId[it.id].fr+" | "+fname(byId[it.id]), it.g, it.g, it.g, "g/day","","",""])));
+  rows.push(["body_weight","",S.bw,S.bw,S.bw,"kg","","",""]);
+  subs().forEach(s=>{ const r=res.S[s.k]; rows.push(["exposure", sname(s.k), r.E.lb, r.E.mb, r.E.ub, unitOf(s), refText(s), metricText(r), t("st_"+r.status)]); });
+  subs().forEach(s=>{ const r=res.S[s.k]; rows.push(["risk_quotient", sname(s.k), r.RQ.lb, r.RQ.mb, r.RQ.ub, "", "", "", ""]); });
+  rows.push(["hazard_index_threshold_substances","",hi(res,"lb"),hi(res,"mb"),hi(res,"ub"),"","","",t("st_"+hiStatus(res))]);
+  rows.push(["MOET_genotoxic_carcinogens","",moet(res,"lb"),moet(res,"mb"),moet(res,"ub"),"","MOET >= 10000","",t("st_"+moetStatus(res))]);
+  const csv = rows.map(r=>r.map(v=>{ v = typeof v==="number" ? String(+v.toPrecision(6)) : String(v); return /[",;\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }).join(",")).join("\n");
+  download("mixexpo_results.csv", "﻿"+csv, "text/csv");
+}
+function download(name, text, type){ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500); }
+
+/* ---------------------------------------------------------------- 3 · contributions */
+const SEQ = ["--seq-0","--seq-1","--seq-2","--seq-3","--seq-4","--seq-5","--seq-6","--seq-7"];
+function seqColor(p){ if(p<=0) return "var(--seq-0)"; const i = Math.min(7, 1+Math.floor(p/100*7)); return `var(${SEQ[i]})`; }
+function renderContrib(res){
+  const b = S.bound, SU = subs();
+  const foods = res.foods.slice().sort((a,c)=>res.intake[c]-res.intake[a]);
+  let h = `<table><thead><tr><th></th>${SU.map(s=>`<th class="sub ${s.k===S.sel?"sel":""}" data-k="${s.k}" title="${esc(sname(s.k))}">${esc(shname(s.k))}</th>`).join("")}</tr></thead><tbody>`;
+  foods.forEach(id => {
+    const f = byId[id];
+    h += `<tr><th class="fd" title="${esc(fname(f))}">${esc(trunc(fname(f),28))} <span class="muted">${fmt(res.intake[id],0)} g</span></th>`;
+    SU.forEach(s => {
+      const r = res.S[s.k], c = r.contrib[id];
+      if(!c){ h += `<td class="na" data-tip="<b>${esc(fname(f))}</b> · ${esc(sname(s.k))}<br>${esc(t("not_analysed"))}">·</td>`; return; }
+      const tot = r.E[b], p = tot>0 ? c[b]/tot*100 : 0;
+      const dark = p > 57;
+      h += `<td style="background:${seqColor(p)};color:${dark?"#fff":"var(--text-primary)"}" data-tip="<b>${esc(fname(f))}</b> · ${esc(sname(s.k))}<br>${fmt(p,1)} % · ${fmt(c[b])} ${unitOf(s)}">${p>=0.5?Math.round(p):(p>0?"<1":"0")}</td>`;
+    });
+    h += `</tr>`;
+  });
+  if(!foods.length) h += `<tr><td class="empty" colspan="13">${esc(t("no_items"))}</td></tr>`;
+  document.getElementById("heat").innerHTML = h + "</tbody></table>";
+  document.getElementById("heatScale").innerHTML = `0 %<span class="bar">${SEQ.slice(1).map(v=>`<i style="background:var(${v})"></i>`).join("")}</span>100 % <span class="muted" style="margin-left:10px"><span class="cov" style="width:22px;height:10px;background:repeating-linear-gradient(135deg,var(--line-strong) 0 3px,var(--surface-1) 3px 6px);border-radius:2px"></span> ${esc(t("not_analysed"))}</span>`;
+  // detail
+  const s = SU.find(x=>x.k===S.sel), r = res.S[S.sel];
+  document.getElementById("detailH").textContent = t("detail_h");
+  const rows = Object.entries(r.contrib).map(([id,c])=>({id:+id, v:c[b]})).filter(x=>x.v>0).sort((a,c)=>c.v-a.v);
+  const tot = r.E[b];
+  if(!rows.length) { document.getElementById("contribChart").innerHTML = `<p class="empty">${esc(t("contrib_none"))}</p>`; }
+  else barList(document.getElementById("contribChart"), rows.slice(0,15).map(x=>({label:fname(byId[x.id]), v:x.v/tot, txt:fmt(x.v/tot*100,1)+" %", tip:`<b>${esc(fname(byId[x.id]))}</b><br>${fmt(res.intake[x.id],0)} g × ${fmt(byId[x.id].c[s.k][{lb:0,mb:1,ub:2}[b]])} ${s.u==="pg"?"pg TEQ/g":"ng/g"}<br>= ${fmt(x.v)} ${unitOf(s)} (${fmt(x.v/tot*100,1)} %)`})), {w:560, labW:220});
+  const n = document.getElementById("contribNote");
+  n.innerHTML = r.missing.length ? t("contrib_cov") + r.missing.map(id=>esc(fname(byId[id]))).join(", ") : `<b>${esc(sname(s.k))}</b> · ${esc(SUBTXT[s.k].ep[S.lang])}`;
+}
+document.getElementById("heat").addEventListener("click", e => { const th = e.target.closest("th.sub"); if(th){ S.sel = th.dataset.k; document.getElementById("subSel").value=S.sel; renderContrib(compute(S.meals,S.bw)); } });
+document.getElementById("subSel").addEventListener("change", e => { S.sel = e.target.value; renderContrib(compute(S.meals,S.bw)); });
+
+/* ---------------------------------------------------------------- 4 · risk & mixtures */
+function renderRisk(res){
+  const b = S.bound, SU = subs();
+  const H = hi(res,b);
+  const e1 = document.getElementById("hiAll"); e1.innerHTML = `${fmt(H,2)} <span class="small" style="font-weight:500">${statusHTML(hiStatus(res))}</span>`;
+  const carc = SU.filter(s=>s.grp==="carc");
+  const MT = moet(res, b), stC = moetStatus(res);
+  document.getElementById("moetCarc").innerHTML = `${isFinite(MT)?fmt(MT):"–"} <span class="small" style="font-weight:500">${statusHTML(stC)}</span>`;
+  // drivers (threshold substances)
+  const drv = SU.filter(s=>s.grp!=="carc").map(s=>({k:s.k, v:res.S[s.k].RQ[b]})).sort((a,c)=>c.v-a.v);
+  if(H>0) barList(document.getElementById("driversChart"), drv.map(d=>({label:sname(d.k), v:d.v/H, txt:fmt(d.v/H*100,1)+" %", tip:`<b>${esc(sname(d.k))}</b><br>RQ ${fmt(d.v)} / HI ${fmt(H,2)}`})), {w:520, labW:180});
+  else document.getElementById("driversChart").innerHTML = `<p class="empty">${esc(t("no_items"))}</p>`;
+  // groups (threshold substances); shared linear scale so rows are comparable
+  const TG = GROUPS.filter(g=>g!=="carc");
+  const maxG = Math.max(1.2, ...TG.map(g=>SU.filter(s=>s.grp===g).reduce((a,s)=>a+res.S[s.k].RQ[b],0)));
+  const scaleMax = maxG<=1.2 ? 1.5 : Math.pow(10, Math.ceil(Math.log10(maxG)*4)/4);
+  const box = document.getElementById("mixRows");
+  const W = Math.max(260, (box.clientWidth||900) - 210 - 120 - 24), Hh=46, w=W-30;
+  const short = k => (SUBTXT[k].sh ? SUBTXT[k].sh[S.lang] : sname(k));
+  let h = "";
+  TG.forEach(g => {
+    const ss = SU.filter(s=>s.grp===g); if(!ss.length) return;
+    const tot = ss.reduce((a,s)=>a+res.S[s.k].RQ[b],0);
+    const st = hiStatus(res, ss.map(s=>s.k));
+    let x=0, segs="";
+    ss.slice().sort((a,c)=>res.S[c.k].RQ[b]-res.S[a.k].RQ[b]).forEach((s,i)=>{
+      const v = res.S[s.k].RQ[b], ww = v/scaleMax*w;
+      if(ww<=0) return;
+      const shade = ["var(--seq-6)","var(--seq-4)","var(--seq-3)","var(--seq-2)"][i%4];
+      segs += `<rect x="${x}" y="6" width="${Math.max(1.5,ww-2)}" height="16" rx="3" fill="${shade}" data-tip="<b>${esc(sname(s.k))}</b><br>RQ ${fmt(v)} (${fmt(tot>0?v/tot*100:0,0)} %)"/>`;
+      const lbl = short(s.k);
+      if(ww > lbl.length*6.5+10) segs += `<text x="${x+5}" y="18" style="fill:${i<2?"#fff":"#0e3d7e"};font-size:11px" pointer-events="none">${esc(lbl)}</text>`;
+      x += ww;
+    });
+    const xt = 1/scaleMax*w;
+    const axis = `<line class="thr" x1="${xt}" x2="${xt}" y1="2" y2="26"/><text x="${xt}" y="40" text-anchor="middle">1</text><text x="0" y="40">0</text><text x="${w}" y="40" text-anchor="end">${fmt(scaleMax)}</text>`;
+    h += `<div class="mix-row"><div class="gname"><b>${esc(t("g_"+g))}</b><small>${esc(t("g_"+g+"_d"))} · ${ss.map(s=>esc(sname(s.k))).join(", ")}</small></div>
+      <div class="chart"><svg viewBox="0 0 ${W} ${Hh}"><line class="gl" x1="0" x2="${w}" y1="14" y2="14"/>${segs}${axis}</svg></div>
+      <div><div style="font-size:20px;font-weight:650;font-variant-numeric:tabular-nums">HI ${fmt(tot,2)}</div>${statusHTML(st)}</div></div>`;
+  });
+  // genotoxic carcinogens: MOE approach, no HI
+  h += `<div class="mix-row"><div class="gname"><b>${esc(t("g_carc"))}</b><small>${esc(t("g_carc_d"))} · ${carc.map(s=>esc(sname(s.k))).join(", ")}</small></div>
+    <div class="small sec">${t("carc_row")}:<br>${carc.map(s=>{ const m = s.rp/res.S[s.k].E[b]; return `<b>${esc(sname(s.k))}</b> MOE ${isFinite(m)?fmt(m):"–"} ${statusHTML(res.S[s.k].status)}`; }).join(" &nbsp;·&nbsp; ")}</div>
+    <div><div style="font-size:20px;font-weight:650;font-variant-numeric:tabular-nums">MOE<sub>T</sub> ${isFinite(MT)?fmt(MT):"–"}</div>${statusHTML(stC)}</div></div>`;
+  document.getElementById("mixRows").innerHTML = h;
+}
+
+/* ---------------------------------------------------------------- 5 · compare */
+const SCOL = ["var(--series-1)","var(--series-2)","var(--series-3)","var(--series-4)","var(--text-secondary)"];
+function renderCompare(res){
+  const list = document.getElementById("scenList");
+  list.innerHTML = S.scen.map((sc,i)=>`<div class="scen"><i style="background:${SCOL[i]}"></i><input value="${esc(sc.name)}" data-i="${i}" aria-label="name"><small>${fmt(sc.bw,0)} kg</small><button class="btn small" data-load="${i}">${esc(t("load"))}</button><button class="btn small" data-del="${i}" aria-label="${esc(t("del"))}">×</button></div>`).join("");
+  document.getElementById("btnSave").disabled = S.scen.length>=4;
+  const series = S.scen.map((sc,i)=>({name:sc.name, color:SCOL[i], res:compute(sc.meals, sc.bw)}));
+  series.push({name:t("current"), color:SCOL[4], res, current:true});
+  const lg = document.getElementById("cmpLegend"), ch = document.getElementById("cmpChart");
+  lg.innerHTML = series.map(s=>`<span><i style="background:${s.color}${s.current?";background:repeating-linear-gradient(45deg,var(--text-secondary) 0 2px,transparent 2px 4px);border:1px solid var(--text-secondary)":""}"></i>${esc(s.name)}</span>`).join("");
+  if(!S.scen.length){ ch.innerHTML = `<p class="empty">${esc(t("cmp_empty"))}</p>`; }
+  const b = S.bound, SU = subs();
+  // grouped log bars
+  if(S.scen.length){
+    const W=cw(ch,760), lab=170, padR=16, x0=lab, w=W-lab-padR, n=series.length, bh=6, gap=2, rowH = n*(bh+gap)+12, top=8, H = top+SU.length*rowH+24;
+    let g = `<svg viewBox="0 0 ${W} ${H}">` + logAxis(x0, w, top, top+SU.length*rowH);
+    SU.forEach((s,i)=>{
+      const y = top+i*rowH;
+      g += `<text class="lbl" x="${lab-10}" y="${y+rowH/2+4}" text-anchor="end">${esc(sname(s.k))}</text>`;
+      if(i>0) g += `<line class="gl" x1="0" x2="${W}" y1="${y}" y2="${y}" stroke-dasharray="1 3"/>`;
+      series.forEach((se,j)=>{
+        const v = se.res.S[s.k].RQ[b], xs=lx(Math.pow(10,LOGMIN),x0,w), xv=lx(v,x0,w), yy = y+6+j*(bh+gap);
+        const fill = se.current ? "url(#hatch)" : se.color;
+        if(v>0) g += `<rect x="${xs}" y="${yy}" width="${Math.max(2,xv-xs)}" height="${bh}" rx="2" fill="${fill}" ${se.current?'stroke="var(--text-secondary)" stroke-width=".8"':""} data-tip="<b>${esc(se.name)}</b> · ${esc(sname(s.k))}<br>RQ ${fmt(v)} · ${metricText(se.res.S[s.k])}"/>`;
+      });
+    });
+    g = g.replace("<svg ", `<svg `) + `<defs><pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="var(--surface-1)"/><line x1="0" y1="0" x2="0" y2="4" stroke="var(--text-secondary)" stroke-width="2"/></pattern></defs></svg>`;
+    ch.innerHTML = g;
+  }
+  // table
+  let th = `<thead><tr><th></th>${series.map(s=>`<th class="num">${esc(s.name)}</th>`).join("")}</tr></thead><tbody>`;
+  th += `<tr><td><b>${t("cmp_th_total")}</b></td>${series.map(s=>`<td class="num"><b>${fmt(hi(s.res,b),2)}</b></td>`).join("")}</tr>`;
+  th += `<tr><td>MOE<sub>T</sub> ${esc(t("g_carc").toLowerCase())}</td>${series.map(s=>{const m=moet(s.res,b); return `<td class="num">${isFinite(m)?fmt(m):"–"}</td>`;}).join("")}</tr>`;
+  th += `<tr><td>${t("cmp_th_exceed")}</td>${series.map(s=>`<td class="num">${Object.values(s.res.S).filter(r=>r.RQ[b]>=1).length}</td>`).join("")}</tr>`;
+  th += `<tr><td>${t("cmp_th_g")}</td>${series.map(s=>`<td class="num">${fmt(s.res.grams,0)}</td>`).join("")}</tr>`;
+  SU.forEach(s => th += `<tr><td class="small">${esc(sname(s.k))} <span class="muted">(${s.type==="HBGV"?"%":"MOE"})</span></td>${series.map(se=>`<td class="num small">${metricText(se.res.S[s.k]).replace("MOE ","")}</td>`).join("")}</tr>`);
+  document.getElementById("cmpTable").innerHTML = th + "</tbody>";
+}
+document.getElementById("btnSave").addEventListener("click", () => {
+  if(S.scen.length>=4) return;
+  S.scen.push({name:`${t("scen_default")} ${String.fromCharCode(65+S.scen.length)}`, bw:S.bw, meals:JSON.parse(JSON.stringify(S.meals))});
+  update();
+});
+document.getElementById("scenList").addEventListener("click", e => {
+  const l = e.target.dataset.load, d = e.target.dataset.del;
+  if(l!==undefined){ const sc=S.scen[+l]; S.meals=JSON.parse(JSON.stringify(sc.meals)); MEALS.forEach(k=>{if(!S.meals[k])S.meals[k]=[];}); S.bw=sc.bw; document.getElementById("bw").value=S.bw; setView("diet"); update(); }
+  if(d!==undefined){ S.scen.splice(+d,1); update(); }
+});
+document.getElementById("scenList").addEventListener("change", e => { if(e.target.dataset.i!==undefined){ S.scen[+e.target.dataset.i].name = e.target.value; update(); } });
+document.getElementById("btnExport").addEventListener("click", () => {
+  const pack = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({food:byId[it.id].fr, g:+it.g}))); return o; };
+  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1 (25.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, meals:pack(S.meals), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
+});
+document.getElementById("fileIn").addEventListener("change", e => {
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { try{
+    const d = JSON.parse(rd.result);
+    const unpack = m => { const o=emptyMeals(); MEALS.forEach(k=>(m&&m[k]||[]).forEach(it=>{ const fd=byFr[it.food]; if(fd) o[k].push({id:fd.id, g:+it.g||0}); })); return o; };
+    S.meals = unpack(d.meals); S.bw = +d.bw||70; S.scen = (d.scenarios||[]).slice(0,4).map(s=>({name:String(s.name||"?"), bw:+s.bw||70, meals:unpack(s.meals)}));
+    document.getElementById("bw").value=S.bw; update(); ioMsg(t("imported"));
+  }catch(err){ ioMsg(t("import_err")); } };
+  rd.readAsText(f); e.target.value="";
+});
+
+/* ---------------------------------------------------------------- 6 · methods */
+function renderMethods(){
+  const SU = subs();
+  let h = `<thead><tr><th>${t("th_sub")}</th><th>${t("th_type")}</th><th class="num">${t("th_value")}</th><th>${t("th_unit")}</th><th class="num">${t("th_thr")}</th><th>${t("th_endpoint")}</th><th>${t("th_conf")}</th></tr></thead><tbody>`;
+  SU.forEach(s => {
+    h += `<tr><td><b>${esc(sname(s.k))}</b></td><td><span class="pill">${s.type==="HBGV"?(S.lang==="en"?"HBGV":(S.lang==="fr"?"VTR":"VBS")):"MOE"}</span></td>
+      <td class="num"><input class="rpin" type="number" step="any" min="0" data-k="${s.k}" data-f="rp" value="${+s.rp.toPrecision(4)}"></td>
+      <td class="small muted">${unitOf(s)}</td>
+      <td class="num">${s.type==="MOE"?`<input class="rpin" style="width:90px!important" type="number" step="any" min="0" data-k="${s.k}" data-f="thr" value="${s.thr}">`:"–"}</td>
+      <td class="small">${esc(SUBTXT[s.k].ep[S.lang])}</td><td class="small">${t("conf_"+s.conf)}</td></tr>`;
+  });
+  document.getElementById("refTable").innerHTML = h + "</tbody>";
+  // coverage
+  const n = FOODS.length;
+  document.getElementById("covMatrix").innerHTML = `<table class="t" style="max-width:520px"><tbody>${SU.map(s=>{ const c = FOODS.filter(f=>f.c[s.k]).length; return `<tr><td>${esc(sname(s.k))}</td><td class="num">${c} / ${n}</td><td style="width:220px"><div style="height:10px;border-radius:3px;background:var(--surface-2)"><div style="height:10px;border-radius:3px;width:${c/n*100}%;background:var(--series-1)"></div></div></td></tr>`; }).join("")}</tbody></table>`;
+}
+document.getElementById("refTable").addEventListener("change", e => {
+  const el = e.target; if(!el.dataset.k) return;
+  const v = +el.value; if(!(v>0)) { el.value = subs().find(s=>s.k===el.dataset.k)[el.dataset.f]; return; }
+  S.rp[el.dataset.k] = Object.assign(S.rp[el.dataset.k]||{}, {[el.dataset.f]: v});
+  update();
+});
+document.getElementById("btnResetRP").addEventListener("click", () => { S.rp = {}; update(); });
+
+/* ---------------------------------------------------------------- navigation & global controls */
+function setView(v){
+  S.view = v;
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.v===v));
+  document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on", s.id==="v-"+v));
+  update(false);
+}
+document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ setView(b.dataset.v); window.scrollTo({top:0}); } });
+document.getElementById("langSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.lang=b.dataset.l; applyI18n(); update(); } });
+document.getElementById("boundSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.bound=b.dataset.b; applyI18n(); update(false); } });
+document.getElementById("bw").addEventListener("input", e => { const v=+e.target.value; if(v>=10 && v<=250){ S.bw=v; update(false); } });
+document.getElementById("allFoods").addEventListener("change", e => { S.all = e.target.checked; store(); });
+let clearArmed = 0;
+document.getElementById("btnClear").addEventListener("click", e => {
+  const btn = e.currentTarget;
+  if(Date.now() - clearArmed < 4000){ clearArmed = 0; btn.textContent = t("clear"); S.meals = emptyMeals(); update(); return; }
+  clearArmed = Date.now(); btn.textContent = t("confirm_clear");
+  setTimeout(()=>{ if(clearArmed && Date.now()-clearArmed>=3900){ clearArmed=0; btn.textContent=t("clear"); } }, 4000);
+});
+document.getElementById("preset").addEventListener("change", e => {
+  const p = PRESETS[e.target.value]; if(!p) return;
+  S.meals = emptyMeals();
+  MEALS.forEach(m => (p[m]||[]).forEach(([fr,g]) => { const f = byFr[fr]; if(f) S.meals[m].push({id:f.id, g}); }));
+  e.target.value = ""; update();
+});
+document.getElementById("btnCSV").addEventListener("click", csvExport);
+document.getElementById("sortSeg").addEventListener("click", e => { const x=e.target.closest("button"); if(x){ S.sort=x.dataset.s; update(false); } });
+document.getElementById("btnPrint").addEventListener("click", () => { try{ window.print(); }catch(e){} });
+function ioMsg(m){ const el = document.getElementById("ioMsg"); el.textContent = m; setTimeout(()=>{ if(el.textContent===m) el.textContent=""; }, 5000); }
+
+function update(full=true){
+  const res = compute(S.meals, S.bw);
+  if(full) renderMeals();
+  renderLive(res);
+  if(S.view==="expo") renderExpo(res);
+  if(S.view==="contrib") renderContrib(res);
+  if(S.view==="risk") renderRisk(res);
+  if(S.view==="compare") renderCompare(res);
+  if(S.view==="methods") renderMethods();
+  store();
+}
+
+let rzT; addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(()=>update(false), 150); });
+/* ---------------------------------------------------------------- boot */
+if(!Object.values(S.meals).some(a=>a.length)){
+  const p = PRESETS.p_excel; MEALS.forEach(m => (p[m]||[]).forEach(([fr,g]) => { const f=byFr[fr]; if(f) S.meals[m].push({id:f.id,g}); }));
+}
+document.getElementById("bw").value = S.bw;
+document.getElementById("allFoods").checked = !!S.all;
+applyI18n();
+setView("diet");
+update();
+</script>
+</body>
+</html>
