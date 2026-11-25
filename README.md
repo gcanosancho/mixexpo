@@ -1,6 +1,6 @@
 # MixExpo · Chemical mixture exposure calculator
 
-**MixExpo v1 (25.11.2026)** — a pedagogical web tool to explore dietary exposure to chemical mixtures and the associated risks, based on the French Second Total Diet Study (TDS2 / EAT2, ANSES).
+**MixExpo v1.1 (25.11.2026)** — a pedagogical web tool to explore dietary exposure to chemical mixtures and the associated risks, based on the French Second Total Diet Study (TDS2 / EAT2, ANSES).
 
 👉 **Open the calculator:** https://gcanosancho.github.io/mixexpo/
 
@@ -12,7 +12,7 @@ Author: **German Cano-Sancho** (INRAE, LABERCA, Nantes, France)
 
 ## What students do
 
-The tool follows six steps (interface in Spanish, French and English):
+The tool follows six steps (interface in English by default, with Spanish and French; a link such as `…/mixexpo/?lang=es` or `?lang=fr` opens it directly in another language). Chemicals are grouped and colour-coded by family: metals, process contaminants, mycotoxins, persistent organic pollutants, pesticides and food-contact materials.
 
 1. **My 24 h diet:** a 24-hour dietary recall, meal by meal (breakfast, lunch, snack, dinner, other), with household portions or grams. A live panel shows exposure and risk while the diet is being entered.
 2. **Exposure:** daily exposure per substance (ng/kg bw/day) with lower/middle/upper-bound (LB/MB/UB) uncertainty, shown next to the risk quotient to contrast *how much* with *how risky*.
@@ -31,7 +31,7 @@ Four example diets are included (original spreadsheet example, Mediterranean wit
 - Compare the ranking of substances by **exposure** versus by **risk**: why is the most abundant chemical not the most concerning one?
 - Switch between **LB and UB**: which conclusions depend on analytical sensitivity rather than on measured contamination?
 - Replace canned foods with fresh ones and follow the change in **bisphenol A** exposure.
-- Change a reference value (e.g. BPA: EFSA 0.2 ng/kg bw/day vs BfR 200 ng/kg bw/day) and discuss how hazard characterisation drives the conclusion.
+- Switch the bisphenol A reference value from the BfR (200 ng/kg bw/day, default) to EFSA's (0.2 ng/kg bw/day) and discuss how hazard characterisation drives the conclusion.
 - Explore how the **hazard index** and the **Tier-1 groups** change the interpretation of the same diet.
 
 ---
@@ -71,7 +71,7 @@ The concentration data belong to ANSES and are reproduced with attribution for t
 | Chlorpyrifos | ADI | 0.001 mg/kg bw/day | Developmental neurotoxicity — EFSA 2014; no safe level could be set in 2019 |
 | Dimethoate | ADI | 0.001 mg/kg bw/day | Cholinesterase inhibition — EFSA |
 | Carbendazim | ADI | 0.02 mg/kg bw/day | Reproductive toxicity — EFSA 2010 |
-| Bisphenol A | TDI | 0.2 ng/kg bw/day | Immune system (Th17 cells) — EFSA 2023 (BfR 2023 proposes 200 ng/kg bw/day) |
+| Bisphenol A | TDI | 200 ng/kg bw/day | BfR 2023 (default). ⚠ EFSA 2023 set 0.2 ng/kg bw/day (immune effects, Th17 cells), 1000 times lower; the tool displays a warning and the risk quotient under both values |
 
 Reference values should be checked against the latest scientific opinions before any use beyond teaching.
 
@@ -91,10 +91,11 @@ No installation is needed: `index.html` is a single self-contained file with no 
 
 ## How to cite
 
-> Cano-Sancho G. (2026). *MixExpo: a pedagogical calculator of dietary exposure to chemical mixtures based on French TDS2 data.* Version 1 (25.11.2026). https://github.com/gcanosancho/mixexpo
+> Cano-Sancho G. (2026). *MixExpo: a pedagogical calculator of dietary exposure to chemical mixtures based on French TDS2 data.* Version 1.1 (25.11.2026). https://github.com/gcanosancho/mixexpo
 
 ## Versions
 
+- **v1.1 (25.11.2026)** — English by default; chemicals grouped and colour-coded by family with full names; bisphenol A assessed against the BfR TDI with a warning on the EFSA value; clearer display of substances never detected (LB = 0).
 - **v1 (25.11.2026)** — first web version, replacing the earlier Excel calculator; adds bisphenol A, LB/MB/UB scenarios, tiered mixture assessment and scenario comparison.
 
 ## Licence

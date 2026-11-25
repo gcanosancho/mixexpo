@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MixExpo v1 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
+<title>MixExpo v1.1 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
 <meta name="author" content="German Cano-Sancho">
-<meta name="description" content="MixExpo v1 (25.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
+<meta name="description" content="MixExpo v1.1 (25.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
 <style>
 :root{
   color-scheme: light;
@@ -16,6 +16,8 @@
   --good:#0aac23; --good-ink:#006c10; --warning:#fbb315; --warning-ink:#8a5a00; --critical:#dc3c3d; --critical-ink:#b0282a;
   --seq-0:#f3f7fc; --seq-1:#cce3fd; --seq-2:#9dc8f7; --seq-3:#6aabf1; --seq-4:#338ced; --seq-5:#2370cd; --seq-6:#1757ac; --seq-7:#0e3d7e;
   --grid:#ecebe6; --radius:10px;
+  /* chemical families (validated categorical order: blue, orange, aqua, violet, magenta, brown) */
+  --fam-metal:#257de0; --fam-proc:#f47230; --fam-myco:#00b894; --fam-pop:#6a4ce2; --fam-pest:#ee7fac; --fam-fcm:#9a6b1f;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){
@@ -28,6 +30,7 @@
     --good-ink:#3fcf55; --warning-ink:#fbb315; --critical-ink:#f07071;
     --seq-0:#1d232b; --seq-1:#0e3d7e; --seq-2:#0f4a96; --seq-3:#1757ac; --seq-4:#2370cd; --seq-5:#338ced; --seq-6:#6aabf1; --seq-7:#b6d5f8;
     --grid:#2a2a2a;
+    --fam-metal:#338ced; --fam-proc:#e76624; --fam-myco:#00a888; --fam-pop:#9887ef; --fam-pest:#e24d8b; --fam-fcm:#c98a3a;
   }
 }
 *{box-sizing:border-box}
@@ -88,6 +91,9 @@ p.lead{margin:0 0 18px;color:var(--text-secondary);max-width:80ch}
 .dd .opt{padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:14px}
 .dd .opt small{color:var(--text-muted);white-space:nowrap}
 .dd .opt.act,.dd .opt:hover{background:var(--accent-soft)}
+.fdot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;flex:none}
+.famleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--text-secondary);margin:6px 0 2px}
+.famleg span{display:inline-flex;align-items:center}
 .cov{display:inline-flex;gap:1px;vertical-align:middle;margin-left:4px}
 .cov i{width:4px;height:9px;border-radius:1px;background:var(--line-strong)}
 .cov i.y{background:var(--text-secondary)}
@@ -131,7 +137,7 @@ table.t tr.fam td{background:var(--surface-2);font-size:11.5px;text-transform:up
 .heat{overflow:auto}
 .heat table{border-collapse:separate;border-spacing:2px;font-size:12px}
 .heat th{font-weight:550;color:var(--text-secondary);padding:2px 4px;white-space:nowrap}
-.heat th.sub{writing-mode:vertical-rl;transform:rotate(180deg);height:118px;vertical-align:bottom;text-align:left;cursor:pointer}
+.heat th.sub{writing-mode:vertical-rl;transform:rotate(180deg);height:160px;vertical-align:bottom;text-align:left;cursor:pointer}
 .heat th.sub.sel{color:var(--text-primary);text-decoration:underline}
 .heat th.fd{text-align:right;max-width:230px;overflow:hidden;text-overflow:ellipsis}
 .heat td{width:44px;min-width:44px;height:26px;text-align:center;border-radius:4px;font-variant-numeric:tabular-nums;cursor:default}
@@ -142,7 +148,7 @@ table.t tr.fam td{background:var(--surface-2);font-size:11.5px;text-transform:up
 .note{background:var(--surface-2);border-left:3px solid var(--line-strong);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px;color:var(--text-secondary);margin:12px 0}
 .note.warn{border-left-color:var(--warning)}
 .pill{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:20px;background:var(--surface-2);color:var(--text-secondary);white-space:nowrap}
-.mix-row{display:grid;grid-template-columns:210px minmax(0,1fr) 120px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.mix-row{display:grid;grid-template-columns:210px minmax(0,1fr) 150px;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
 .mix-row:first-of-type{border-top:0}
 .mix-row .gname b{display:block;font-weight:600}
 .mix-row .gname small{color:var(--text-muted)}
@@ -168,7 +174,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
 <header class="top">
   <div class="wrap">
     <div class="top-row">
-      <div class="brand"><b>MixExpo <span class="ver">v1 · 25.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
+      <div class="brand"><b>MixExpo <span class="ver">v1.1 · 25.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
       <label class="ctrl"><span data-i18n="bw"></span> <input id="bw" type="number" min="10" max="200" step="1" value="70"> kg</label>
       <div class="ctrl"><span data-i18n="bound"></span>
         <div class="seg" id="boundSeg" role="group">
@@ -215,6 +221,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
             <div class="kpi"><div class="v" id="kMOET">–</div><div class="l" data-i18n-html="k_moet"></div></div>
           </div>
           <div class="chart" id="liveChart"></div>
+          <div class="note warn small" id="bpaWarnLive" style="margin:10px 0 0"></div>
           <p class="small muted" style="margin:8px 0 0" data-i18n-html="live_note"></p>
         </div>
         <div class="card small sec" data-i18n-html="portion_help"></div>
@@ -232,6 +239,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       <div class="legend" id="rqLegend"></div>
       <div class="chart" id="rqChart"></div>
       <div class="note" id="rankNote"></div>
+      <div class="note warn" id="bpaWarnExpo"></div>
     </div>
     <div class="card">
       <div class="toolbar" style="margin-bottom:6px"><h3 style="margin:0;flex:1" data-i18n="expo_table_h"></h3><button class="btn small" id="btnCSV" data-i18n="export_csv"></button></div>
@@ -282,6 +290,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       <h3 data-i18n="groups_h"></h3>
       <p class="small sec" style="margin-top:-4px" data-i18n="groups_lead"></p>
       <div id="mixRows"></div>
+      <div class="note warn" id="bpaWarnRisk"></div>
       <div class="note warn" data-i18n-html="mix_caveat"></div>
     </div>
   </section>
@@ -564,7 +573,7 @@ const SUBS_DEFAULT = [
  {k:"CPF",  fam:"pest",  u:"ng", type:"HBGV", rp:1000,   grp:"neuro",  conf:"low"},
  {k:"DMT",  fam:"pest",  u:"ng", type:"HBGV", rp:1000,   grp:"neuro",  conf:"medium"},
  {k:"CBZ",  fam:"pest",  u:"ng", type:"HBGV", rp:20000,  grp:"repro",  conf:"medium"},
- {k:"BPA",  fam:"fcm",   u:"ng", type:"HBGV", rp:0.2,    grp:"immune", conf:"medium"},
+ {k:"BPA",  fam:"fcm",   u:"ng", type:"HBGV", rp:200,    grp:"immune", conf:"low"},   // BfR 2023; EFSA 2023 = 0.2 (see warning)
 ];
 const FAMS = ["metal","proc","myco","pop","pest","fcm"];
 const GROUPS = ["neuro","kidney","carc","repro","immune","other"];
@@ -637,7 +646,7 @@ es:{
  m4:"<p>Sustancias con valor basado en salud (TDI/TWI/ADI): RQ = E / VBS; se muestra el % del VBS. Sustancias evaluadas con margen de exposición: MOE = BMDL / E; preocupación si MOE &lt; umbral (10 000 para carcinógenos genotóxicos, 10 para Pb, 25 para PBDE según EFSA 2024). Para combinarlas se usa RQ = umbral / MOE. HI = Σ RQ de las sustancias con umbral (nivel 0, guía MixTox de EFSA 2019); los carcinógenos genotóxicos no se suman al HI sino que se combinan con MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Los grupos de nivel 1 son una simplificación pedagógica de los grupos de evaluación acumulativa.</p><p><b>Limitaciones:</b> 1 día ≠ exposición habitual; datos de 2007–2009; no todas las sustancias se analizaron en todos los alimentos; solo exposición alimentaria (sin agua de bebida para la mayoría de sustancias, aire, polvo…).</p>",
  m5_s:"5. Cobertura analítica del catálogo",
  m5:"<p>Número de alimentos del catálogo EAT2 de esta herramienta con datos para cada sustancia.</p>",
- footer:"MixExpo v1 (25.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
+ footer:"MixExpo v1.1 (25.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
  preset_ph:"Cargar una dieta de ejemplo…", p_excel:"Ejemplo de la hoja Excel original", p_med:"Mediterránea con pescado", p_fast:"Comida rápida / ultraprocesados", p_veg:"Vegetariana",
  cat_bread:"Pan, cereales y féculas", cat_pastry:"Bollería, galletas y dulces", cat_fish:"Pescados y mariscos", cat_meat:"Carnes y embutidos", cat_dairy:"Lácteos y huevos", cat_fat:"Grasas y aceites", cat_veg:"Verduras y legumbres", cat_fruit:"Frutas y frutos secos", cat_dishes:"Platos preparados y salsas", cat_drinks:"Bebidas",
  u_slice:"rebanada", u_unit:"unidad", u_cup:"taza", u_serving:"ración", u_glass:"vaso", u_handful:"puñado", u_tsp:"cucharadita", u_tbsp:"cucharada", u_can:"lata", u_bowl:"plato",
@@ -658,6 +667,13 @@ es:{
  sort_rq:"riesgo",
  rank_note:"Mayor exposición: <b>{a}</b> ({ea}). Mayor riesgo: <b>{b}</b> (RQ {rb}).",
  rank_diff:"La sustancia a la que más te expones no es la que más riesgo supone: el riesgo depende de la potencia tóxica (valor de referencia), no solo de la cantidad. Ordena por «exposición» y por «riesgo» para comparar los rankings.",
+ lb_zero:"No detectado en ningún alimento consumido (LB = 0): el valor real está entre 0 y el final de la línea discontinua (UB).",
+ leg_lbzero:"nunca detectado (entre 0 y UB)",
+ bpa_warn:"<b>⚠ Valor de referencia del bisfenol A.</b> Esta herramienta usa la TDI del BfR alemán (2023), {rp} ng/kg pc/día. La EFSA (2023) fijó una TDI de 0,2 ng/kg pc/día, 1000 veces menor; ambas agencias discrepan sobre los efectos y factores de incertidumbre a considerar. Los resultados del bisfenol A dependen mucho de esta elección (puedes cambiarla en «Métodos y datos»).",
+ bpa_warn_efsa:"<b>⚠ Valor de referencia del bisfenol A.</b> Estás usando la TDI de la EFSA 2023 ({rp} ng/kg pc/día). El BfR alemán (2023) propuso 200 ng/kg pc/día, 1000 veces más. Con el valor de la EFSA casi cualquier dieta supera la referencia.",
+ bpa_rq:"Tu cociente de riesgo para el bisfenol A sería <b>{rb}</b> con el valor del BfR y <b>{re}</b> con el de la EFSA.",
+ bpa_short:"⚠ El bisfenol A se evalúa con el valor del BfR (200 ng/kg pc/día); el de la EFSA es 1000 veces menor. Ver pestaña 2.",
+ bpa_short_efsa:"⚠ El bisfenol A se evalúa con el valor de la EFSA (0,2 ng/kg pc/día); el del BfR es 1000 veces mayor. Ver pestaña 2.",
 },
 en:{
  subtitle:"Chemical mixture exposure calculator · French TDS2 data (ANSES)",
@@ -723,7 +739,7 @@ en:{
  m4:"<p>Substances with a health-based guidance value (TDI/TWI/ADI): RQ = E / HBGV; shown as % of HBGV. Substances assessed by margin of exposure: MOE = BMDL / E; concern if MOE &lt; threshold (10,000 for genotoxic carcinogens, 10 for Pb, 25 for PBDEs per EFSA 2024). To combine them, RQ = threshold / MOE. HI = Σ RQ of threshold substances (tier 0, EFSA 2019 MixTox guidance); genotoxic carcinogens are not added to the HI but combined as MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Tier-1 groups are a teaching simplification of cumulative assessment groups.</p><p><b>Limitations:</b> 1 day ≠ usual exposure; data from 2007–2009; not every substance was analysed in every food; diet only (no drinking water for most substances, air, dust…).</p>",
  m5_s:"5. Analytical coverage of the catalogue",
  m5:"<p>Number of foods in this tool’s TDS2 catalogue with data for each substance.</p>",
- footer:"MixExpo v1 (25.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
+ footer:"MixExpo v1.1 (25.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
  preset_ph:"Load an example diet…", p_excel:"Example from the original Excel sheet", p_med:"Mediterranean with fish", p_fast:"Fast food / ultra-processed", p_veg:"Vegetarian",
  cat_bread:"Bread, cereals & starches", cat_pastry:"Pastries, biscuits & sweets", cat_fish:"Fish & seafood", cat_meat:"Meat & cold cuts", cat_dairy:"Dairy & eggs", cat_fat:"Fats & oils", cat_veg:"Vegetables & pulses", cat_fruit:"Fruit & nuts", cat_dishes:"Mixed dishes & sauces", cat_drinks:"Drinks",
  u_slice:"slice", u_unit:"unit", u_cup:"cup", u_serving:"serving", u_glass:"glass", u_handful:"handful", u_tsp:"teaspoon", u_tbsp:"tablespoon", u_can:"can", u_bowl:"bowl",
@@ -744,6 +760,13 @@ en:{
  sort_rq:"risk",
  rank_note:"Highest exposure: <b>{a}</b> ({ea}). Highest risk: <b>{b}</b> (RQ {rb}).",
  rank_diff:"The substance you are most exposed to is not the riskiest one: risk depends on toxic potency (the reference value), not only on the amount. Sort by “exposure” and by “risk” to compare the rankings.",
+ lb_zero:"Not detected in any food eaten (LB = 0): the true value lies between 0 and the end of the dashed line (UB).",
+ leg_lbzero:"never detected (between 0 and UB)",
+ bpa_warn:"<b>⚠ Bisphenol A reference value.</b> This tool uses the TDI of the German BfR (2023), {rp} ng/kg bw/day. EFSA (2023) set a TDI of 0.2 ng/kg bw/day, 1000 times lower; the two agencies disagree on which effects and uncertainty factors to use. Results for bisphenol A therefore depend strongly on this choice (change it in “Methods &amp; data”).",
+ bpa_warn_efsa:"<b>⚠ Bisphenol A reference value.</b> You are using EFSA’s 2023 TDI ({rp} ng/kg bw/day). The German BfR (2023) proposed 200 ng/kg bw/day, 1000 times higher. With EFSA’s value almost any diet exceeds the reference.",
+ bpa_rq:"Your bisphenol A risk quotient would be <b>{rb}</b> with the BfR value and <b>{re}</b> with EFSA’s.",
+ bpa_short:"⚠ Bisphenol A is assessed with the BfR value (200 ng/kg bw/day); EFSA’s value is 1000 times lower. See tab 2.",
+ bpa_short_efsa:"⚠ Bisphenol A is assessed with EFSA’s value (0.2 ng/kg bw/day); the BfR value is 1000 times higher. See tab 2.",
 },
 fr:{
  subtitle:"Calculateur d’exposition aux mélanges chimiques · données EAT2 (ANSES)",
@@ -809,7 +832,7 @@ fr:{
  m4:"<p>Substances avec valeur toxicologique de référence (DJT/DHT/DJA) : QR = E / VTR ; affiché en % de la VTR. Substances évaluées par marge d’exposition : MOE = BMDL / E ; préoccupation si MOE &lt; seuil (10 000 pour les cancérogènes génotoxiques, 10 pour le Pb, 25 pour les PBDE selon l’EFSA 2024). Pour les combiner : QR = seuil / MOE. HI = Σ QR des substances à seuil (palier 0, guide MixTox EFSA 2019) ; les cancérogènes génotoxiques ne sont pas ajoutés au HI mais combinés via MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Les groupes du palier 1 sont une simplification pédagogique des groupes d’évaluation cumulée.</p><p><b>Limites :</b> 1 jour ≠ exposition habituelle ; données 2007–2009 ; toutes les substances n’ont pas été analysées dans tous les aliments ; voie alimentaire uniquement (pas d’eau de boisson pour la plupart des substances, air, poussières…).</p>",
  m5_s:"5. Couverture analytique du catalogue",
  m5:"<p>Nombre d’aliments du catalogue EAT2 de l’outil disposant de données pour chaque substance.</p>",
- footer:"MixExpo v1 (25.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
+ footer:"MixExpo v1.1 (25.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
  preset_ph:"Charger un régime exemple…", p_excel:"Exemple de la feuille Excel d’origine", p_med:"Méditerranéen avec poisson", p_fast:"Restauration rapide / ultra-transformés", p_veg:"Végétarien",
  cat_bread:"Pain, céréales et féculents", cat_pastry:"Viennoiseries, biscuits et sucreries", cat_fish:"Poissons et fruits de mer", cat_meat:"Viandes et charcuteries", cat_dairy:"Produits laitiers et œufs", cat_fat:"Matières grasses", cat_veg:"Légumes et légumineuses", cat_fruit:"Fruits et fruits à coque", cat_dishes:"Plats composés et sauces", cat_drinks:"Boissons",
  u_slice:"tranche", u_unit:"unité", u_cup:"bol", u_serving:"portion", u_glass:"verre", u_handful:"poignée", u_tsp:"cuillère à café", u_tbsp:"cuillère à soupe", u_can:"canette", u_bowl:"assiette",
@@ -830,21 +853,28 @@ fr:{
  sort_rq:"risque",
  rank_note:"Exposition la plus élevée : <b>{a}</b> ({ea}). Risque le plus élevé : <b>{b}</b> (QR {rb}).",
  rank_diff:"La substance à laquelle vous êtes le plus exposé n’est pas la plus préoccupante : le risque dépend de la puissance toxique (valeur de référence), pas seulement de la quantité. Triez par « exposition » puis par « risque » pour comparer les classements.",
+ lb_zero:"Non détecté dans les aliments consommés (LB = 0) : la vraie valeur se situe entre 0 et la fin de la ligne pointillée (UB).",
+ leg_lbzero:"jamais détecté (entre 0 et UB)",
+ bpa_warn:"<b>⚠ Valeur de référence du bisphénol A.</b> Cet outil utilise la DJT du BfR allemand (2023), {rp} ng/kg pc/j. L’EFSA (2023) a fixé une DJT de 0,2 ng/kg pc/j, 1000 fois plus basse ; les deux agences divergent sur les effets et facteurs d’incertitude à retenir. Les résultats du bisphénol A dépendent donc fortement de ce choix (modifiable dans « Méthodes et données »).",
+ bpa_warn_efsa:"<b>⚠ Valeur de référence du bisphénol A.</b> Vous utilisez la DJT de l’EFSA 2023 ({rp} ng/kg pc/j). Le BfR allemand (2023) a proposé 200 ng/kg pc/j, 1000 fois plus. Avec la valeur de l’EFSA, presque tout régime dépasse la référence.",
+ bpa_rq:"Votre quotient de risque pour le bisphénol A serait de <b>{rb}</b> avec la valeur du BfR et de <b>{re}</b> avec celle de l’EFSA.",
+ bpa_short:"⚠ Le bisphénol A est évalué avec la valeur du BfR (200 ng/kg pc/j) ; celle de l’EFSA est 1000 fois plus basse. Voir l’onglet 2.",
+ bpa_short_efsa:"⚠ Le bisphénol A est évalué avec la valeur de l’EFSA (0,2 ng/kg pc/j) ; celle du BfR est 1000 fois plus élevée. Voir l’onglet 2.",
 }};
 const SUBTXT = {
- Cd:{sh:{es:"Cd",en:"Cd",fr:"Cd"}, n:{es:"Cadmio",en:"Cadmium",fr:"Cadmium"}, ep:{es:"Toxicidad renal (β2-microglobulina). TWI 2,5 µg/kg pc/sem – EFSA 2009/2011",en:"Kidney toxicity (β2-microglobulin). TWI 2.5 µg/kg bw/wk – EFSA 2009/2011",fr:"Toxicité rénale (β2-microglobuline). DHT 2,5 µg/kg pc/sem – EFSA 2009/2011"}},
- Hg:{sh:{es:"Hg",en:"Hg",fr:"Hg"}, n:{es:"Mercurio (como MeHg)",en:"Mercury (as MeHg)",fr:"Mercure (comme MeHg)"}, ep:{es:"Neurodesarrollo. TWI metilmercurio 1,3 µg/kg pc/sem – EFSA 2012",en:"Neurodevelopment. Methylmercury TWI 1.3 µg/kg bw/wk – EFSA 2012",fr:"Neurodéveloppement. DHT méthylmercure 1,3 µg/kg pc/sem – EFSA 2012"}},
- Pb:{sh:{es:"Pb",en:"Pb",fr:"Pb"}, n:{es:"Plomo",en:"Lead",fr:"Plomb"}, ep:{es:"Nefrotoxicidad en adultos. BMDL10 0,63 µg/kg pc/día; MOE ≥ 10 sin riesgo apreciable – EFSA 2010 (neurodesarrollo infantil: BMDL01 0,50)",en:"Nephrotoxicity in adults. BMDL10 0.63 µg/kg bw/day; MOE ≥ 10 no appreciable risk – EFSA 2010 (child neurodevelopment: BMDL01 0.50)",fr:"Néphrotoxicité chez l’adulte. BMDL10 0,63 µg/kg pc/j ; MOE ≥ 10 sans risque appréciable – EFSA 2010 (neurodéveloppement enfant : BMDL01 0,50)"}},
- ACR:{n:{es:"Acrilamida",en:"Acrylamide",fr:"Acrylamide"}, ep:{es:"Tumores (genotóxico). BMDL10 0,17 mg/kg pc/día – EFSA 2015",en:"Tumours (genotoxic). BMDL10 0.17 mg/kg bw/day – EFSA 2015",fr:"Tumeurs (génotoxique). BMDL10 0,17 mg/kg pc/j – EFSA 2015"}},
- PAH4:{sh:{es:"HAP4",en:"PAH4",fr:"HAP4"}, n:{es:"HAP4",en:"PAH4",fr:"HAP4"}, ep:{es:"Carcinogenicidad. BMDL10 HAP4 0,34 mg/kg pc/día – EFSA 2008 (sustituye al fenantreno de la versión Excel)",en:"Carcinogenicity. PAH4 BMDL10 0.34 mg/kg bw/day – EFSA 2008 (replaces phenanthrene from the Excel version)",fr:"Cancérogénicité. BMDL10 HAP4 0,34 mg/kg pc/j – EFSA 2008 (remplace le phénanthrène de la version Excel)"}},
- DON:{sh:{es:"DON",en:"DON",fr:"DON"}, n:{es:"Deoxinivalenol (DON)",en:"Deoxynivalenol (DON)",fr:"Déoxynivalénol (DON)"}, ep:{es:"Reducción de ganancia de peso. TDI de grupo 1 µg/kg pc/día – EFSA 2017",en:"Reduced body-weight gain. Group TDI 1 µg/kg bw/day – EFSA 2017",fr:"Réduction du gain de poids. DJT de groupe 1 µg/kg pc/j – EFSA 2017"}},
- TEQ:{sh:{es:"PCDD/F+PCB",en:"PCDD/F+PCB",fr:"PCDD/F+PCB"}, n:{es:"Dioxinas + PCB-DL",en:"Dioxins + dl-PCBs",fr:"Dioxines + PCB-DL"}, ep:{es:"Calidad espermática. TWI 2 pg EQT-OMS/kg pc/sem – EFSA 2018",en:"Sperm quality. TWI 2 pg WHO-TEQ/kg bw/wk – EFSA 2018",fr:"Qualité du sperme. DHT 2 pg TEQ-OMS/kg pc/sem – EFSA 2018"}},
- PBDE:{sh:{es:"PBDE",en:"PBDE",fr:"PBDE"}, n:{es:"PBDE (Σ7)",en:"PBDEs (Σ7)",fr:"PBDE (Σ7)"}, ep:{es:"Neurodesarrollo. Nivel 1 EFSA 2024: punto de referencia del congénere más potente (BDE-153, 3,2 ng/kg pc/día) aplicado a la suma; MOE < 25 = preocupación",en:"Neurodevelopment. EFSA 2024 tier 1: reference point of the most potent congener (BDE-153, 3.2 ng/kg bw/day) applied to the sum; MOE < 25 = concern",fr:"Neurodéveloppement. Palier 1 EFSA 2024 : point de référence du congénère le plus puissant (BDE-153, 3,2 ng/kg pc/j) appliqué à la somme ; MOE < 25 = préoccupation"}},
- PFAS4:{sh:{es:"PFAS",en:"PFAS",fr:"PFAS"}, n:{es:"PFAS (Σ4)",en:"PFAS (Σ4)",fr:"PFAS (Σ4)"}, ep:{es:"Inmunotoxicidad (vacunas). TWI 4,4 ng/kg pc/sem – EFSA 2020",en:"Immunotoxicity (vaccine response). TWI 4.4 ng/kg bw/wk – EFSA 2020",fr:"Immunotoxicité (réponse vaccinale). DHT 4,4 ng/kg pc/sem – EFSA 2020"}},
- CPF:{n:{es:"Clorpirifós",en:"Chlorpyrifos",fr:"Chlorpyriphos"}, ep:{es:"Neurotoxicidad del desarrollo. ADI 0,001 mg/kg pc/día (EFSA 2014); en 2019 EFSA concluyó que no puede fijarse un nivel seguro; no aprobado en la UE desde 2020",en:"Developmental neurotoxicity. ADI 0.001 mg/kg bw/day (EFSA 2014); in 2019 EFSA concluded no safe level can be set; not approved in the EU since 2020",fr:"Neurotoxicité développementale. DJA 0,001 mg/kg pc/j (EFSA 2014) ; en 2019 l’EFSA a conclu qu’aucun niveau sûr ne pouvait être fixé ; non approuvé dans l’UE depuis 2020"}},
- DMT:{n:{es:"Dimetoato",en:"Dimethoate",fr:"Diméthoate"}, ep:{es:"Inhibición de colinesterasa. ADI 0,001 mg/kg pc/día – EFSA; no aprobado en la UE desde 2019",en:"Cholinesterase inhibition. ADI 0.001 mg/kg bw/day – EFSA; not approved in the EU since 2019",fr:"Inhibition des cholinestérases. DJA 0,001 mg/kg pc/j – EFSA ; non approuvé dans l’UE depuis 2019"}},
- BPA:{sh:{es:"BPA",en:"BPA",fr:"BPA"}, n:{es:"Bisfenol A (BPA)",en:"Bisphenol A (BPA)",fr:"Bisphénol A (BPA)"}, ep:{es:"Sistema inmunitario (aumento de linfocitos Th17). TDI 0,2 ng/kg pc/día – EFSA 2023 (el BfR propone 200 ng/kg pc/día: prueba a cambiarlo)",en:"Immune system (increase in Th17 cells). TDI 0.2 ng/kg bw/day – EFSA 2023 (BfR proposes 200 ng/kg bw/day: try changing it)",fr:"Système immunitaire (augmentation des lymphocytes Th17). DJT 0,2 ng/kg pc/j – EFSA 2023 (le BfR propose 200 ng/kg pc/j : essayez de la modifier)"}},
- CBZ:{n:{es:"Carbendazima",en:"Carbendazim",fr:"Carbendazime"}, ep:{es:"Toxicidad reproductiva / aneugenicidad. ADI 0,02 mg/kg pc/día – EFSA 2010",en:"Reproductive toxicity / aneugenicity. ADI 0.02 mg/kg bw/day – EFSA 2010",fr:"Toxicité pour la reproduction / aneugénicité. DJA 0,02 mg/kg pc/j – EFSA 2010"}},
+ Cd:{sh:{es:"Cadmio",en:"Cadmium",fr:"Cadmium"}, n:{es:"Cadmio",en:"Cadmium",fr:"Cadmium"}, ep:{es:"Toxicidad renal (β2-microglobulina). TWI 2,5 µg/kg pc/sem – EFSA 2009/2011",en:"Kidney toxicity (β2-microglobulin). TWI 2.5 µg/kg bw/wk – EFSA 2009/2011",fr:"Toxicité rénale (β2-microglobuline). DHT 2,5 µg/kg pc/sem – EFSA 2009/2011"}},
+ Hg:{sh:{es:"Mercurio",en:"Mercury",fr:"Mercure"}, n:{es:"Mercurio (evaluado como metilmercurio)",en:"Mercury (assessed as methylmercury)",fr:"Mercure (évalué comme méthylmercure)"}, ep:{es:"Neurodesarrollo. TWI metilmercurio 1,3 µg/kg pc/sem – EFSA 2012",en:"Neurodevelopment. Methylmercury TWI 1.3 µg/kg bw/wk – EFSA 2012",fr:"Neurodéveloppement. DHT méthylmercure 1,3 µg/kg pc/sem – EFSA 2012"}},
+ Pb:{sh:{es:"Plomo",en:"Lead",fr:"Plomb"}, n:{es:"Plomo",en:"Lead",fr:"Plomb"}, ep:{es:"Nefrotoxicidad en adultos. BMDL10 0,63 µg/kg pc/día; MOE ≥ 10 sin riesgo apreciable – EFSA 2010 (neurodesarrollo infantil: BMDL01 0,50)",en:"Nephrotoxicity in adults. BMDL10 0.63 µg/kg bw/day; MOE ≥ 10 no appreciable risk – EFSA 2010 (child neurodevelopment: BMDL01 0.50)",fr:"Néphrotoxicité chez l’adulte. BMDL10 0,63 µg/kg pc/j ; MOE ≥ 10 sans risque appréciable – EFSA 2010 (neurodéveloppement enfant : BMDL01 0,50)"}},
+ ACR:{sh:{es:"Acrilamida",en:"Acrylamide",fr:"Acrylamide"}, n:{es:"Acrilamida",en:"Acrylamide",fr:"Acrylamide"}, ep:{es:"Tumores (genotóxico). BMDL10 0,17 mg/kg pc/día – EFSA 2015",en:"Tumours (genotoxic). BMDL10 0.17 mg/kg bw/day – EFSA 2015",fr:"Tumeurs (génotoxique). BMDL10 0,17 mg/kg pc/j – EFSA 2015"}},
+ PAH4:{sh:{es:"Hidrocarburos aromáticos",en:"Aromatic hydrocarbons",fr:"Hydrocarbures aromatiques"}, n:{es:"Hidrocarburos aromáticos policíclicos (HAP4)",en:"Polycyclic aromatic hydrocarbons (PAH4)",fr:"Hydrocarbures aromatiques polycycliques (HAP4)"}, ep:{es:"Carcinogenicidad. BMDL10 HAP4 0,34 mg/kg pc/día – EFSA 2008 (sustituye al fenantreno de la versión Excel)",en:"Carcinogenicity. PAH4 BMDL10 0.34 mg/kg bw/day – EFSA 2008 (replaces phenanthrene from the Excel version)",fr:"Cancérogénicité. BMDL10 HAP4 0,34 mg/kg pc/j – EFSA 2008 (remplace le phénanthrène de la version Excel)"}},
+ DON:{sh:{es:"Deoxinivalenol",en:"Deoxynivalenol",fr:"Déoxynivalénol"}, n:{es:"Deoxinivalenol (micotoxina)",en:"Deoxynivalenol (mycotoxin)",fr:"Déoxynivalénol (mycotoxine)"}, ep:{es:"Reducción de ganancia de peso. TDI de grupo 1 µg/kg pc/día – EFSA 2017",en:"Reduced body-weight gain. Group TDI 1 µg/kg bw/day – EFSA 2017",fr:"Réduction du gain de poids. DJT de groupe 1 µg/kg pc/j – EFSA 2017"}},
+ TEQ:{sh:{es:"Dioxinas y PCB",en:"Dioxins and PCBs",fr:"Dioxines et PCB"}, n:{es:"Dioxinas y PCB de tipo dioxina",en:"Dioxins and dioxin-like PCBs",fr:"Dioxines et PCB de type dioxine"}, ep:{es:"Calidad espermática. TWI 2 pg EQT-OMS/kg pc/sem – EFSA 2018",en:"Sperm quality. TWI 2 pg WHO-TEQ/kg bw/wk – EFSA 2018",fr:"Qualité du sperme. DHT 2 pg TEQ-OMS/kg pc/sem – EFSA 2018"}},
+ PBDE:{sh:{es:"Retardantes de llama",en:"Flame retardants",fr:"Retardateurs de flamme"}, n:{es:"Retardantes de llama bromados (PBDE)",en:"Brominated flame retardants (PBDEs)",fr:"Retardateurs de flamme bromés (PBDE)"}, ep:{es:"Neurodesarrollo. Nivel 1 EFSA 2024: punto de referencia del congénere más potente (BDE-153, 3,2 ng/kg pc/día) aplicado a la suma; MOE < 25 = preocupación",en:"Neurodevelopment. EFSA 2024 tier 1: reference point of the most potent congener (BDE-153, 3.2 ng/kg bw/day) applied to the sum; MOE < 25 = concern",fr:"Neurodéveloppement. Palier 1 EFSA 2024 : point de référence du congénère le plus puissant (BDE-153, 3,2 ng/kg pc/j) appliqué à la somme ; MOE < 25 = préoccupation"}},
+ PFAS4:{sh:{es:"Perfluorados (PFAS)",en:"Perfluorinated (PFAS)",fr:"Perfluorés (PFAS)"}, n:{es:"Compuestos perfluorados (PFAS, suma de 4)",en:"Perfluoroalkyl substances (PFAS, sum of 4)",fr:"Composés perfluorés (PFAS, somme de 4)"}, ep:{es:"Inmunotoxicidad (vacunas). TWI 4,4 ng/kg pc/sem – EFSA 2020",en:"Immunotoxicity (vaccine response). TWI 4.4 ng/kg bw/wk – EFSA 2020",fr:"Immunotoxicité (réponse vaccinale). DHT 4,4 ng/kg pc/sem – EFSA 2020"}},
+ CPF:{sh:{es:"Clorpirifós",en:"Chlorpyrifos",fr:"Chlorpyriphos"}, n:{es:"Clorpirifós",en:"Chlorpyrifos",fr:"Chlorpyriphos"}, ep:{es:"Neurotoxicidad del desarrollo. ADI 0,001 mg/kg pc/día (EFSA 2014); en 2019 EFSA concluyó que no puede fijarse un nivel seguro; no aprobado en la UE desde 2020",en:"Developmental neurotoxicity. ADI 0.001 mg/kg bw/day (EFSA 2014); in 2019 EFSA concluded no safe level can be set; not approved in the EU since 2020",fr:"Neurotoxicité développementale. DJA 0,001 mg/kg pc/j (EFSA 2014) ; en 2019 l’EFSA a conclu qu’aucun niveau sûr ne pouvait être fixé ; non approuvé dans l’UE depuis 2020"}},
+ DMT:{sh:{es:"Dimetoato",en:"Dimethoate",fr:"Diméthoate"}, n:{es:"Dimetoato",en:"Dimethoate",fr:"Diméthoate"}, ep:{es:"Inhibición de colinesterasa. ADI 0,001 mg/kg pc/día – EFSA; no aprobado en la UE desde 2019",en:"Cholinesterase inhibition. ADI 0.001 mg/kg bw/day – EFSA; not approved in the EU since 2019",fr:"Inhibition des cholinestérases. DJA 0,001 mg/kg pc/j – EFSA ; non approuvé dans l’UE depuis 2019"}},
+ BPA:{sh:{es:"Bisfenol A",en:"Bisphenol A",fr:"Bisphénol A"}, n:{es:"Bisfenol A",en:"Bisphenol A",fr:"Bisphénol A"}, ep:{es:"Sistema inmunitario / reproducción. Por defecto TDI del BfR (2023): 200 ng/kg pc/día. ⚠ La EFSA (2023) fijó 0,2 ng/kg pc/día (efecto en linfocitos Th17), 1000 veces menor: con ese valor casi cualquier dieta lo supera. Puedes cambiarlo arriba.",en:"Immune system / reproduction. Default: BfR (2023) TDI of 200 ng/kg bw/day. ⚠ EFSA (2023) set 0.2 ng/kg bw/day (effect on Th17 cells), 1000 times lower: with that value almost any diet exceeds it. You can change it above.",fr:"Système immunitaire / reproduction. Par défaut : DJT du BfR (2023), 200 ng/kg pc/j. ⚠ L’EFSA (2023) a fixé 0,2 ng/kg pc/j (effet sur les lymphocytes Th17), 1000 fois plus bas : avec cette valeur presque tout régime la dépasse. Vous pouvez la modifier ci-dessus."}},
+ CBZ:{sh:{es:"Carbendazima",en:"Carbendazim",fr:"Carbendazime"}, n:{es:"Carbendazima",en:"Carbendazim",fr:"Carbendazime"}, ep:{es:"Toxicidad reproductiva / aneugenicidad. ADI 0,02 mg/kg pc/día – EFSA 2010",en:"Reproductive toxicity / aneugenicity. ADI 0.02 mg/kg bw/day – EFSA 2010",fr:"Toxicité pour la reproduction / aneugénicité. DJA 0,02 mg/kg pc/j – EFSA 2010"}},
 };
 
 /* ---------------------------------------------------------------- example diets (by EAT2 French libellé) */
@@ -863,7 +893,7 @@ const packM = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({fr:b
 const unpackM = m => { const o={}; MEALS.forEach(k=>o[k]=[]); MEALS.forEach(k=>((m&&m[k])||[]).forEach(it=>{ const f=byFr[it.fr||it.food]; if(f) o[k].push({id:f.id, g:+it.g||0}); })); return o; };
 function store(){ try{ localStorage.setItem(LS, JSON.stringify({lang:S.lang,bw:S.bw,bound:S.bound,meals:packM(S.meals),scen:S.scen.map(x=>({name:x.name,bw:x.bw,meals:packM(x.meals)})),rp:S.rp,all:S.all,sort:S.sort})); }catch(e){} }
 function emptyMeals(){ const m={}; MEALS.forEach(k=>m[k]=[]); return m; }
-let S = {lang:"es", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"diet", sel:"Cd", sort:"fam"};
+let S = {lang:"en", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"diet", sel:"Cd", sort:"fam"};
 try{ const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ Object.assign(S, s); S.meals = unpackM(s.meals); S.scen = (s.scen||[]).map(x=>({name:x.name,bw:x.bw,meals:unpackM(x.meals)})); } }catch(e){ S.meals = emptyMeals(); S.scen = []; }
 if(!S.meals || !Object.values(S.meals).some(a=>a.length)) { if(!localStorage.getItem || true) {} }
 
@@ -872,6 +902,10 @@ const t = k => (I18N[S.lang][k] ?? I18N.en[k] ?? k);
 const fname = f => f[S.lang] || f.fr;
 const sname = k => SUBTXT[k].n[S.lang];
 const shname = k => SUBTXT[k].sh ? SUBTXT[k].sh[S.lang] : SUBTXT[k].n[S.lang];
+const famOf = k => SUBS_DEFAULT.find(x=>x.k===k).fam;
+const famColor = f => `var(--fam-${f})`;
+const fdot = k => `<i class="fdot" style="background:${famColor(famOf(k))}"></i>`;
+const famLegend = () => `<div class="famleg">${FAMS.map(f=>`<span><i class="fdot" style="background:${famColor(f)}"></i>${esc(t("fam_"+f))}</span>`).join("")}</div>`;
 const unitOf = s => (s.u==="pg" ? "pg TEQ/kg bw/d" : "ng/kg bw/d").replace("bw", S.lang==="en"?"bw":"pc").replace("/d", S.lang==="en"?"/day":(S.lang==="es"?"/día":"/j"));
 
 /* ---------------------------------------------------------------- core computation */
@@ -979,18 +1013,22 @@ function decAxis(lo, hi, x0, w, y0, y1, compact){
   }
   return g;
 }
-function whisker(x1, x2, cy){
+function whisker(x1, x2, cy, dashed){
   if(x2-x1 <= 1) return "";
   const st = `stroke="var(--text-primary)" stroke-width="1.2" pointer-events="none"`;
-  return `<line x1="${x1}" x2="${x2}" y1="${cy}" y2="${cy}" ${st}/><line x1="${x1}" x2="${x1}" y1="${cy-4}" y2="${cy+4}" ${st}/><line x1="${x2}" x2="${x2}" y1="${cy-4}" y2="${cy+4}" ${st}/>`;
+  return `<line x1="${x1}" x2="${x2}" y1="${cy}" y2="${cy}" ${st} ${dashed?'stroke-dasharray="3 2"':""}/>` + (dashed ? "" : `<line x1="${x1}" x2="${x1}" y1="${cy-4}" y2="${cy+4}" ${st}/>`) + `<line x1="${x2}" x2="${x2}" y1="${cy-4}" y2="${cy+4}" ${st}/>`;
 }
-/* Two aligned panels sharing the substance labels: left = how much (exposure), right = how risky (RQ). */
+/* Two aligned panels sharing the substance labels: left = how much (exposure, coloured by chemical family),
+   right = how risky (RQ, coloured by status). When sorted by family, rows are grouped with a family header. */
 function dualChart(el, res, opts={}){
-  const b = S.bound, SU = sortedSubs(res, opts.sort||"fam"), compact = !!opts.compact;
-  const W = cw(el, opts.w || 760), lab = opts.labW || 180, gap = compact ? 16 : 34, padR = 12;
-  const rowH = opts.rowH || 26, top = compact ? 34 : 40, n = SU.length, H = top + n*rowH + 22;
+  const b = S.bound, sort = opts.sort||"fam", SU = sortedSubs(res, sort), compact = !!opts.compact;
+  const W = cw(el, opts.w || 760), lab = opts.labW || 190, gap = compact ? 14 : 34, padR = 12;
+  const rowH = opts.rowH || 26, headH = sort==="fam" ? (compact ? 6 : 22) : 0, top = compact ? 22 : 40;
+  // layout rows (with family headers / gaps)
+  const rows = []; let y = top, prevFam = null;
+  SU.forEach(s => { if(sort==="fam" && s.fam!==prevFam){ rows.push({head:s.fam, y}); y += headH; prevFam = s.fam; } rows.push({s, y}); y += rowH; });
+  const yEnd = y, H = yEnd + 22;
   const colW = (W - lab - gap - padR) / 2, xa = lab, xb = lab + colW + gap;
-  // exposure axis: decades covering LB..UB of all substances
   const vals = SU.flatMap(s => ["lb","ub",b].map(k => expoNg(res.S[s.k], k))).filter(v => v > 0);
   let lo = vals.length ? Math.floor(Math.log10(Math.min(...vals))) : -3, hi = vals.length ? Math.ceil(Math.log10(Math.max(...vals))) : 3;
   lo = Math.max(lo, -7); if(hi - lo < 4) lo = hi - 4;
@@ -999,23 +1037,43 @@ function dualChart(el, res, opts={}){
   g += `<text class="lbl" x="${xa}" y="14" style="font-weight:600">${esc(t(compact?"dual_expo_s":"dual_expo"))}</text>`;
   g += `<text class="lbl" x="${xb}" y="14" style="font-weight:600">${esc(t(compact?"dual_rq_s":"dual_rq"))}</text>`;
   if(!compact) g += `<text x="${xa}" y="29">${esc(t("dual_expo_sub"))}</text><text x="${xb}" y="29">${esc(t("dual_rq_sub"))}</text>`;
-  g += decAxis(lo, hi, xa, colW, top, top + n*rowH, compact) + decAxis(rlo, rhi, xb, colW, top, top + n*rowH, compact);
+  g += decAxis(lo, hi, xa, colW, top, yEnd, compact) + decAxis(rlo, rhi, xb, colW, top, yEnd, compact);
   const x1 = lpos(1, rlo, rhi, xb, colW);
-  g += `<line class="thr" x1="${x1}" x2="${x1}" y1="${top-4}" y2="${top + n*rowH}"/>`;
-  SU.forEach((s, i) => {
-    const r = res.S[s.k], y = top + i*rowH, cy = y + rowH/2, bh = Math.min(12, rowH - 9);
-    const e = expoNg(r, b), q = r.RQ[b];
-    const tipTxt = `<b>${esc(sname(s.k))}</b><br>${t("tip_expo")} (${b.toUpperCase()}): ${fmt(r.E[b])} ${unitOf(s)}<br>LB–UB: ${fmt(r.E.lb)} – ${fmt(r.E.ub)}<br>${t("tip_rq")}: ${fmt(q)} · ${metricText(r)}<br>${t("st_"+r.status)}`;
-    g += `<rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" data-tip="${esc(tipTxt)}"/>`;
-    g += `<text class="lbl" x="${lab-10}" y="${cy+4}" text-anchor="end" pointer-events="none">${esc(compact ? trunc(shname(s.k),18) : sname(s.k))}</text>`;
+  g += `<line class="thr" x1="${x1}" x2="${x1}" y1="${top-4}" y2="${yEnd}"/>`;
+  rows.forEach(row => {
+    if(row.head){
+      if(!compact) g += `<rect x="0" y="${row.y+6}" width="10" height="10" rx="3" fill="${famColor(row.head)}"/><text x="16" y="${row.y+15}" style="font-size:11px;font-weight:600;letter-spacing:.02em">${esc(t("fam_"+row.head))}</text>`;
+      return;
+    }
+    const s = row.s, r = res.S[s.k], cy = row.y + rowH/2, bh = Math.min(12, rowH - 9);
+    const e = expoNg(r, b), q = r.RQ[b], fc = famColor(s.fam), lbZero = r.RQ.lb === 0 && r.RQ.ub > 0;
+    const tipTxt = `<b>${esc(sname(s.k))}</b> · ${esc(t("fam_"+s.fam))}<br>${t("tip_expo")} (${b.toUpperCase()}): ${fmt(r.E[b])} ${unitOf(s)}<br>LB–UB: ${fmt(r.E.lb)} – ${fmt(r.E.ub)}<br>${t("tip_rq")}: ${fmt(q)} · ${metricText(r)}<br>${t("st_"+r.status)}${lbZero?"<br><i>"+esc(t("lb_zero"))+"</i>":""}`;
+    g += `<rect class="hit" x="0" y="${row.y}" width="${W}" height="${rowH}" data-tip="${esc(tipTxt)}"/>`;
+    g += `<text class="lbl" x="${lab-22}" y="${cy+4}" text-anchor="end" pointer-events="none">${esc(compact ? trunc(shname(s.k),26) : shname(s.k))}</text>`;
+    g += `<rect x="${lab-16}" y="${cy-5}" width="10" height="10" rx="3" fill="${fc}" pointer-events="none"/>`;
+    // exposure panel (family colour)
     const xa0 = lpos(Math.pow(10,lo), lo, hi, xa, colW), xe = lpos(e, lo, hi, xa, colW);
-    if(e > 0) g += `<rect x="${xa0}" y="${cy-bh/2}" width="${Math.max(2, xe-xa0)}" height="${bh}" rx="3" fill="var(--series-1)" pointer-events="none"/>`;
-    g += whisker(lpos(expoNg(r,"lb")||Math.pow(10,lo), lo, hi, xa, colW), lpos(expoNg(r,"ub")||Math.pow(10,lo), lo, hi, xa, colW), cy);
+    if(e > 0) g += `<rect x="${xa0}" y="${cy-bh/2}" width="${Math.max(2, xe-xa0)}" height="${bh}" rx="3" fill="${fc}" pointer-events="none"/>`;
+    const eub = lpos(expoNg(r,"ub")||Math.pow(10,lo), lo, hi, xa, colW);
+    g += whisker(lpos(expoNg(r,"lb")||Math.pow(10,lo), lo, hi, xa, colW), eub, cy, lbZero);
+    if(lbZero && e === 0) g += `<circle cx="${eub}" cy="${cy}" r="4" fill="${fc}" stroke="var(--surface-1)" stroke-width="1.5" pointer-events="none"/>`;
+    // risk panel (status colour)
     const xb0 = lpos(Math.pow(10,rlo), rlo, rhi, xb, colW), xq = lpos(q, rlo, rhi, xb, colW);
     if(q > 0) g += `<rect x="${xb0}" y="${cy-bh/2}" width="${Math.max(2, xq-xb0)}" height="${bh}" rx="3" fill="${STC[r.status]}" pointer-events="none"/>`;
-    g += whisker(lpos(r.RQ.lb||Math.pow(10,rlo), rlo, rhi, xb, colW), lpos(r.RQ.ub||Math.pow(10,rlo), rlo, rhi, xb, colW), cy);
+    const rub = lpos(r.RQ.ub||Math.pow(10,rlo), rlo, rhi, xb, colW);
+    g += whisker(lpos(r.RQ.lb||Math.pow(10,rlo), rlo, rhi, xb, colW), rub, cy, lbZero);
+    if(lbZero && q === 0) g += `<circle cx="${rub}" cy="${cy}" r="4.5" fill="${STC[r.status]}" stroke="var(--surface-1)" stroke-width="1.5" pointer-events="none"/>`;
   });
   el.innerHTML = g + `</svg>`;
+}
+function bpaWarn(res, short){
+  const s = subs().find(x=>x.k==="BPA"), E = res.S.BPA.E[S.bound];
+  const EFSA = 0.2, BFR = 200, rqE = E/EFSA, rqB = E/BFR;
+  const isEfsa = Math.abs(s.rp-EFSA) < 1e-9;
+  if(short) return t(isEfsa ? "bpa_short_efsa" : "bpa_short");
+  let h = t(isEfsa ? "bpa_warn_efsa" : "bpa_warn").replace("{rp}", fmt(s.rp));
+  if(res.foods.length) h += " " + t("bpa_rq").replace("{rb}", fmt(rqB)).replace("{re}", fmt(rqE));
+  return h;
 }
 function rankNote(res){
   const b = S.bound, SU = subs();
@@ -1053,7 +1111,7 @@ function applyI18n(){
   document.querySelectorAll("#boundSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b===S.bound));
   const ps = document.getElementById("preset");
   ps.innerHTML = `<option value="">${esc(t("preset_ph"))}</option>` + Object.keys(PRESETS).map(k=>`<option value="${k}">${esc(t(k))}</option>`).join("");
-  document.getElementById("subSel").innerHTML = subs().map(s=>`<option value="${s.k}">${esc(sname(s.k))}</option>`).join("");
+  document.getElementById("subSel").innerHTML = FAMS.map(f=>`<optgroup label="${esc(t("fam_"+f))}">${subs().filter(s=>s.fam===f).map(s=>`<option value="${s.k}">${esc(sname(s.k))}</option>`).join("")}</optgroup>`).join("");
   document.getElementById("subSel").value = S.sel;
 }
 
@@ -1153,20 +1211,24 @@ function renderLive(res){
   const m = moet(res, S.bound), km = document.getElementById("kMOET");
   km.textContent = isFinite(m) ? fmt(m) : "–";
   km.style.color = m<10000 ? "var(--critical-ink)" : "";
-  dualChart(document.getElementById("liveChart"), res, {w:420, labW:96, rowH:21, compact:true});
+  const lc = document.getElementById("liveChart");
+  dualChart(lc, res, {w:420, labW:172, rowH:21, compact:true});
+  lc.insertAdjacentHTML("beforeend", famLegend());
+  document.getElementById("bpaWarnLive").innerHTML = bpaWarn(res, true);
 }
 
 /* ---------------------------------------------------------------- 2 · exposure */
 function renderExpo(res){
   const b = S.bound;
-  document.getElementById("rqLegend").innerHTML = `<span><i style="background:var(--series-1)"></i>${esc(t("th_expo"))}</span>` + ["ok","unc","hi"].map(st=>`<span>${statusHTML(st)}</span>`).join("") + `<span><svg width="26" height="10"><line x1="1" x2="25" y1="5" y2="5" stroke="var(--text-primary)"/><line x1="1" x2="1" y1="1" y2="9" stroke="var(--text-primary)"/><line x1="25" x2="25" y1="1" y2="9" stroke="var(--text-primary)"/></svg>LB – UB</span><span><svg width="22" height="10"><line class="thr" x1="11" x2="11" y1="0" y2="10" stroke="var(--text-primary)" stroke-dasharray="3 2"/></svg>RQ = 1</span>`;
+  document.getElementById("rqLegend").innerHTML = FAMS.map(f=>`<span><i style="background:${famColor(f)}"></i>${esc(t("fam_"+f))}</span>`).join("") + `<span style="flex-basis:100%;height:0"></span>` + ["ok","unc","hi"].map(st=>`<span>${statusHTML(st)}</span>`).join("") + `<span><svg width="26" height="10"><line x1="1" x2="25" y1="5" y2="5" stroke="var(--text-primary)"/><line x1="1" x2="1" y1="1" y2="9" stroke="var(--text-primary)"/><line x1="25" x2="25" y1="1" y2="9" stroke="var(--text-primary)"/></svg>LB – UB</span><span><svg width="22" height="10"><line class="thr" x1="11" x2="11" y1="0" y2="10" stroke="var(--text-primary)" stroke-dasharray="3 2"/></svg>RQ = 1</span><span><svg width="30" height="10"><line x1="1" x2="24" y1="5" y2="5" stroke="var(--text-primary)" stroke-dasharray="3 2"/><circle cx="25" cy="5" r="4" fill="var(--text-secondary)"/></svg>${esc(t("leg_lbzero"))}</span>`;
   dualChart(document.getElementById("rqChart"), res, {w:1000, labW:190, rowH:28, sort:S.sort});
   document.querySelectorAll("#sortSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.s===S.sort));
   document.getElementById("rankNote").innerHTML = rankNote(res);
+  document.getElementById("bpaWarnExpo").innerHTML = bpaWarn(res);
   let h = `<thead><tr><th>${t("th_sub")}</th><th class="num">${t("th_expo")} (${b.toUpperCase()})</th><th class="num">${t("th_range")}</th><th>${t("th_unit")}</th><th>${t("th_ref")}</th><th class="num">${t("th_metric")}</th><th>${t("th_status")}</th><th class="num">${t("th_cov")}</th></tr></thead><tbody>`;
   FAMS.forEach(fm => {
     const ss = subs().filter(s=>s.fam===fm);
-    h += `<tr class="fam"><td colspan="8">${esc(t("fam_"+fm))}</td></tr>`;
+    h += `<tr class="fam"><td colspan="8"><i class="fdot" style="background:${famColor(fm)}"></i>${esc(t("fam_"+fm))}</td></tr>`;
     ss.forEach(s => { const r = res.S[s.k];
       const nf = res.foods.length, na = nf - r.missing.length;
       h += `<tr><td><b>${esc(sname(s.k))}</b></td><td class="num">${fmt(r.E[b])}</td><td class="num muted">${fmt(r.E.lb)} – ${fmt(r.E.ub)}</td><td class="small muted">${unitOf(s)}</td><td class="small">${refText(s)}</td><td class="num">${metricText(r)}</td><td>${statusHTML(r.status)}</td><td class="num small ${r.missing.length?"":"muted"}" data-tip="${esc(t("contrib_cov").replace(/<[^>]+>/g,""))}${esc(r.missing.map(id=>fname(byId[id])).join(", ")||"—")}">${na}/${nf}</td></tr>`;
@@ -1176,7 +1238,7 @@ function renderExpo(res){
 }
 function csvExport(){
   const res = compute(S.meals, S.bw), rows = [];
-  rows.push(["# MixExpo v1 (25.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
+  rows.push(["# MixExpo v1.1 (25.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
   rows.push(["section","item","value_LB","value_MB","value_UB","unit","reference","metric_selected_bound","status"]);
   MEALS.forEach(m=>S.meals[m].forEach(it=>rows.push(["diet_"+m, byId[it.id].fr+" | "+fname(byId[it.id]), it.g, it.g, it.g, "g/day","","",""])));
   rows.push(["body_weight","",S.bw,S.bw,S.bw,"kg","","",""]);
@@ -1195,7 +1257,7 @@ function seqColor(p){ if(p<=0) return "var(--seq-0)"; const i = Math.min(7, 1+Ma
 function renderContrib(res){
   const b = S.bound, SU = subs();
   const foods = res.foods.slice().sort((a,c)=>res.intake[c]-res.intake[a]);
-  let h = `<table><thead><tr><th></th>${SU.map(s=>`<th class="sub ${s.k===S.sel?"sel":""}" data-k="${s.k}" title="${esc(sname(s.k))}">${esc(shname(s.k))}</th>`).join("")}</tr></thead><tbody>`;
+  let h = `<table><thead><tr><th></th>${SU.map(s=>`<th class="sub ${s.k===S.sel?"sel":""}" data-k="${s.k}" title="${esc(sname(s.k))}">${fdot(s.k)}${esc(shname(s.k))}</th>`).join("")}</tr></thead><tbody>`;
   foods.forEach(id => {
     const f = byId[id];
     h += `<tr><th class="fd" title="${esc(fname(f))}">${esc(trunc(fname(f),28))} <span class="muted">${fmt(res.intake[id],0)} g</span></th>`;
@@ -1209,7 +1271,7 @@ function renderContrib(res){
     h += `</tr>`;
   });
   if(!foods.length) h += `<tr><td class="empty" colspan="13">${esc(t("no_items"))}</td></tr>`;
-  document.getElementById("heat").innerHTML = h + "</tbody></table>";
+  document.getElementById("heat").innerHTML = famLegend() + h + "</tbody></table>";
   document.getElementById("heatScale").innerHTML = `0 %<span class="bar">${SEQ.slice(1).map(v=>`<i style="background:var(${v})"></i>`).join("")}</span>100 % <span class="muted" style="margin-left:10px"><span class="cov" style="width:22px;height:10px;background:repeating-linear-gradient(135deg,var(--line-strong) 0 3px,var(--surface-1) 3px 6px);border-radius:2px"></span> ${esc(t("not_analysed"))}</span>`;
   // detail
   const s = SU.find(x=>x.k===S.sel), r = res.S[S.sel];
@@ -1217,7 +1279,7 @@ function renderContrib(res){
   const rows = Object.entries(r.contrib).map(([id,c])=>({id:+id, v:c[b]})).filter(x=>x.v>0).sort((a,c)=>c.v-a.v);
   const tot = r.E[b];
   if(!rows.length) { document.getElementById("contribChart").innerHTML = `<p class="empty">${esc(t("contrib_none"))}</p>`; }
-  else barList(document.getElementById("contribChart"), rows.slice(0,15).map(x=>({label:fname(byId[x.id]), v:x.v/tot, txt:fmt(x.v/tot*100,1)+" %", tip:`<b>${esc(fname(byId[x.id]))}</b><br>${fmt(res.intake[x.id],0)} g × ${fmt(byId[x.id].c[s.k][{lb:0,mb:1,ub:2}[b]])} ${s.u==="pg"?"pg TEQ/g":"ng/g"}<br>= ${fmt(x.v)} ${unitOf(s)} (${fmt(x.v/tot*100,1)} %)`})), {w:560, labW:220});
+  else barList(document.getElementById("contribChart"), rows.slice(0,15).map(x=>({label:fname(byId[x.id]), v:x.v/tot, txt:fmt(x.v/tot*100,1)+" %", color:famColor(s.fam), tip:`<b>${esc(fname(byId[x.id]))}</b><br>${fmt(res.intake[x.id],0)} g × ${fmt(byId[x.id].c[s.k][{lb:0,mb:1,ub:2}[b]])} ${s.u==="pg"?"pg TEQ/g":"ng/g"}<br>= ${fmt(x.v)} ${unitOf(s)} (${fmt(x.v/tot*100,1)} %)`})), {w:560, labW:220});
   const n = document.getElementById("contribNote");
   n.innerHTML = r.missing.length ? t("contrib_cov") + r.missing.map(id=>esc(fname(byId[id]))).join(", ") : `<b>${esc(sname(s.k))}</b> · ${esc(SUBTXT[s.k].ep[S.lang])}`;
 }
@@ -1234,14 +1296,14 @@ function renderRisk(res){
   document.getElementById("moetCarc").innerHTML = `${isFinite(MT)?fmt(MT):"–"} <span class="small" style="font-weight:500">${statusHTML(stC)}</span>`;
   // drivers (threshold substances)
   const drv = SU.filter(s=>s.grp!=="carc").map(s=>({k:s.k, v:res.S[s.k].RQ[b]})).sort((a,c)=>c.v-a.v);
-  if(H>0) barList(document.getElementById("driversChart"), drv.map(d=>({label:sname(d.k), v:d.v/H, txt:fmt(d.v/H*100,1)+" %", tip:`<b>${esc(sname(d.k))}</b><br>RQ ${fmt(d.v)} / HI ${fmt(H,2)}`})), {w:520, labW:180});
+  if(H>0) barList(document.getElementById("driversChart"), drv.map(d=>({label:shname(d.k), color:famColor(famOf(d.k)), v:d.v/H, txt:fmt(d.v/H*100,1)+" %", tip:`<b>${esc(sname(d.k))}</b><br>RQ ${fmt(d.v)} / HI ${fmt(H,2)}`})), {w:520, labW:180});
   else document.getElementById("driversChart").innerHTML = `<p class="empty">${esc(t("no_items"))}</p>`;
   // groups (threshold substances); shared linear scale so rows are comparable
   const TG = GROUPS.filter(g=>g!=="carc");
   const maxG = Math.max(1.2, ...TG.map(g=>SU.filter(s=>s.grp===g).reduce((a,s)=>a+res.S[s.k].RQ[b],0)));
   const scaleMax = maxG<=1.2 ? 1.5 : Math.pow(10, Math.ceil(Math.log10(maxG)*4)/4);
   const box = document.getElementById("mixRows");
-  const W = Math.max(260, (box.clientWidth||900) - 210 - 120 - 24), Hh=46, w=W-30;
+  const W = Math.max(260, (box.clientWidth||900) - 210 - 150 - 24), Hh=46, w=W-30;
   const short = k => (SUBTXT[k].sh ? SUBTXT[k].sh[S.lang] : sname(k));
   let h = "";
   TG.forEach(g => {
@@ -1252,23 +1314,21 @@ function renderRisk(res){
     ss.slice().sort((a,c)=>res.S[c.k].RQ[b]-res.S[a.k].RQ[b]).forEach((s,i)=>{
       const v = res.S[s.k].RQ[b], ww = v/scaleMax*w;
       if(ww<=0) return;
-      const shade = ["var(--seq-6)","var(--seq-4)","var(--seq-3)","var(--seq-2)"][i%4];
-      segs += `<rect x="${x}" y="6" width="${Math.max(1.5,ww-2)}" height="16" rx="3" fill="${shade}" data-tip="<b>${esc(sname(s.k))}</b><br>RQ ${fmt(v)} (${fmt(tot>0?v/tot*100:0,0)} %)"/>`;
-      const lbl = short(s.k);
-      if(ww > lbl.length*6.5+10) segs += `<text x="${x+5}" y="18" style="fill:${i<2?"#fff":"#0e3d7e"};font-size:11px" pointer-events="none">${esc(lbl)}</text>`;
+      segs += `<rect x="${x}" y="6" width="${Math.max(1.5,ww-2)}" height="16" rx="3" fill="${famColor(s.fam)}" data-tip="<b>${esc(sname(s.k))}</b><br>RQ ${fmt(v)} (${fmt(tot>0?v/tot*100:0,0)} %)"/>`;
       x += ww;
     });
     const xt = 1/scaleMax*w;
     const axis = `<line class="thr" x1="${xt}" x2="${xt}" y1="2" y2="26"/><text x="${xt}" y="40" text-anchor="middle">1</text><text x="0" y="40">0</text><text x="${w}" y="40" text-anchor="end">${fmt(scaleMax)}</text>`;
-    h += `<div class="mix-row"><div class="gname"><b>${esc(t("g_"+g))}</b><small>${esc(t("g_"+g+"_d"))} · ${ss.map(s=>esc(sname(s.k))).join(", ")}</small></div>
+    h += `<div class="mix-row"><div class="gname"><b>${esc(t("g_"+g))}</b><small>${esc(t("g_"+g+"_d"))} · ${ss.map(s=>fdot(s.k)+esc(shname(s.k))).join(" &nbsp;")}</small></div>
       <div class="chart"><svg viewBox="0 0 ${W} ${Hh}"><line class="gl" x1="0" x2="${w}" y1="14" y2="14"/>${segs}${axis}</svg></div>
       <div><div style="font-size:20px;font-weight:650;font-variant-numeric:tabular-nums">HI ${fmt(tot,2)}</div>${statusHTML(st)}</div></div>`;
   });
   // genotoxic carcinogens: MOE approach, no HI
-  h += `<div class="mix-row"><div class="gname"><b>${esc(t("g_carc"))}</b><small>${esc(t("g_carc_d"))} · ${carc.map(s=>esc(sname(s.k))).join(", ")}</small></div>
+  h += `<div class="mix-row"><div class="gname"><b>${esc(t("g_carc"))}</b><small>${esc(t("g_carc_d"))} · ${carc.map(s=>fdot(s.k)+esc(shname(s.k))).join(" &nbsp;")}</small></div>
     <div class="small sec">${t("carc_row")}:<br>${carc.map(s=>{ const m = s.rp/res.S[s.k].E[b]; return `<b>${esc(sname(s.k))}</b> MOE ${isFinite(m)?fmt(m):"–"} ${statusHTML(res.S[s.k].status)}`; }).join(" &nbsp;·&nbsp; ")}</div>
     <div><div style="font-size:20px;font-weight:650;font-variant-numeric:tabular-nums">MOE<sub>T</sub> ${isFinite(MT)?fmt(MT):"–"}</div>${statusHTML(stC)}</div></div>`;
   document.getElementById("mixRows").innerHTML = h;
+  document.getElementById("bpaWarnRisk").innerHTML = bpaWarn(res);
 }
 
 /* ---------------------------------------------------------------- 5 · compare */
@@ -1285,11 +1345,11 @@ function renderCompare(res){
   const b = S.bound, SU = subs();
   // grouped log bars
   if(S.scen.length){
-    const W=cw(ch,760), lab=170, padR=16, x0=lab, w=W-lab-padR, n=series.length, bh=6, gap=2, rowH = n*(bh+gap)+12, top=8, H = top+SU.length*rowH+24;
+    const W=cw(ch,760), lab=200, padR=16, x0=lab, w=W-lab-padR, n=series.length, bh=6, gap=2, rowH = n*(bh+gap)+12, top=8, H = top+SU.length*rowH+24;
     let g = `<svg viewBox="0 0 ${W} ${H}">` + logAxis(x0, w, top, top+SU.length*rowH);
     SU.forEach((s,i)=>{
       const y = top+i*rowH;
-      g += `<text class="lbl" x="${lab-10}" y="${y+rowH/2+4}" text-anchor="end">${esc(sname(s.k))}</text>`;
+      g += `<text class="lbl" x="${lab-22}" y="${y+rowH/2+4}" text-anchor="end">${esc(shname(s.k))}</text><rect x="${lab-16}" y="${y+rowH/2-5}" width="10" height="10" rx="3" fill="${famColor(s.fam)}"/>`;
       if(i>0) g += `<line class="gl" x1="0" x2="${W}" y1="${y}" y2="${y}" stroke-dasharray="1 3"/>`;
       series.forEach((se,j)=>{
         const v = se.res.S[s.k].RQ[b], xs=lx(Math.pow(10,LOGMIN),x0,w), xv=lx(v,x0,w), yy = y+6+j*(bh+gap);
@@ -1306,7 +1366,7 @@ function renderCompare(res){
   th += `<tr><td>MOE<sub>T</sub> ${esc(t("g_carc").toLowerCase())}</td>${series.map(s=>{const m=moet(s.res,b); return `<td class="num">${isFinite(m)?fmt(m):"–"}</td>`;}).join("")}</tr>`;
   th += `<tr><td>${t("cmp_th_exceed")}</td>${series.map(s=>`<td class="num">${Object.values(s.res.S).filter(r=>r.RQ[b]>=1).length}</td>`).join("")}</tr>`;
   th += `<tr><td>${t("cmp_th_g")}</td>${series.map(s=>`<td class="num">${fmt(s.res.grams,0)}</td>`).join("")}</tr>`;
-  SU.forEach(s => th += `<tr><td class="small">${esc(sname(s.k))} <span class="muted">(${s.type==="HBGV"?"%":"MOE"})</span></td>${series.map(se=>`<td class="num small">${metricText(se.res.S[s.k]).replace("MOE ","")}</td>`).join("")}</tr>`);
+  SU.forEach(s => th += `<tr><td class="small">${fdot(s.k)}${esc(shname(s.k))} <span class="muted">(${s.type==="HBGV"?"%":"MOE"})</span></td>${series.map(se=>`<td class="num small">${metricText(se.res.S[s.k]).replace("MOE ","")}</td>`).join("")}</tr>`);
   document.getElementById("cmpTable").innerHTML = th + "</tbody>";
 }
 document.getElementById("btnSave").addEventListener("click", () => {
@@ -1322,7 +1382,7 @@ document.getElementById("scenList").addEventListener("click", e => {
 document.getElementById("scenList").addEventListener("change", e => { if(e.target.dataset.i!==undefined){ S.scen[+e.target.dataset.i].name = e.target.value; update(); } });
 document.getElementById("btnExport").addEventListener("click", () => {
   const pack = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({food:byId[it.id].fr, g:+it.g}))); return o; };
-  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1 (25.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, meals:pack(S.meals), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
+  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1.1 (25.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, meals:pack(S.meals), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
 });
 document.getElementById("fileIn").addEventListener("change", e => {
   const f = e.target.files[0]; if(!f) return;
@@ -1341,7 +1401,7 @@ function renderMethods(){
   const SU = subs();
   let h = `<thead><tr><th>${t("th_sub")}</th><th>${t("th_type")}</th><th class="num">${t("th_value")}</th><th>${t("th_unit")}</th><th class="num">${t("th_thr")}</th><th>${t("th_endpoint")}</th><th>${t("th_conf")}</th></tr></thead><tbody>`;
   SU.forEach(s => {
-    h += `<tr><td><b>${esc(sname(s.k))}</b></td><td><span class="pill">${s.type==="HBGV"?(S.lang==="en"?"HBGV":(S.lang==="fr"?"VTR":"VBS")):"MOE"}</span></td>
+    h += `<tr><td>${fdot(s.k)}<b>${esc(sname(s.k))}</b><div class="small muted">${esc(t("fam_"+s.fam))}</div></td><td><span class="pill">${s.type==="HBGV"?(S.lang==="en"?"HBGV":(S.lang==="fr"?"VTR":"VBS")):"MOE"}</span></td>
       <td class="num"><input class="rpin" type="number" step="any" min="0" data-k="${s.k}" data-f="rp" value="${+s.rp.toPrecision(4)}"></td>
       <td class="small muted">${unitOf(s)}</td>
       <td class="num">${s.type==="MOE"?`<input class="rpin" style="width:90px!important" type="number" step="any" min="0" data-k="${s.k}" data-f="thr" value="${s.thr}">`:"–"}</td>
@@ -1407,6 +1467,13 @@ let rzT; addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(
 if(!Object.values(S.meals).some(a=>a.length)){
   const p = PRESETS.p_excel; MEALS.forEach(m => (p[m]||[]).forEach(([fr,g]) => { const f=byFr[fr]; if(f) S.meals[m].push({id:f.id,g}); }));
 }
+// language: ?lang=xx or #xx in the link > user's saved choice > English
+(function(){
+  const ok = l => ["es","fr","en"].includes(l) ? l : null;
+  const fromUrl = ok((new URLSearchParams(location.search).get("lang")||"").toLowerCase()) || ok(location.hash.replace("#","").toLowerCase());
+  let saved = null; try{ saved = ok((JSON.parse(localStorage.getItem(LS)||"null")||{}).lang); }catch(e){}
+  S.lang = fromUrl || saved || "en";
+})();
 document.getElementById("bw").value = S.bw;
 document.getElementById("allFoods").checked = !!S.all;
 applyI18n();
