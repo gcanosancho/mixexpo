@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MixExpo v1.2 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
+<title>MixExpo v1.3 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
 <meta name="author" content="German Cano-Sancho">
-<meta name="description" content="MixExpo v1.2 (25.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
+<meta name="description" content="MixExpo v1.3 (26.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
 <style>
 :root{
   color-scheme: light;
@@ -98,6 +98,9 @@ p.lead{margin:0 0 18px;color:var(--text-secondary);max-width:80ch}
 .cov i{width:4px;height:9px;border-radius:1px;background:var(--line-strong)}
 .cov i.y{background:var(--text-secondary)}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.toolbar select{max-width:100%;min-width:0}
+#trajSel,#presetDays,#preset,#subSel{max-width:min(100%,420px)}
+@media (max-width:700px){.toolbar select{width:100%}}
 .btn{border:1px solid var(--line-strong);background:var(--surface-1);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13.5px}
 .btn:hover{background:var(--surface-2)}
 .btn.primary{background:var(--text-primary);color:var(--surface-1);border-color:var(--text-primary)}
@@ -121,6 +124,7 @@ table.t tr.fam td{background:var(--surface-2);font-size:11.5px;text-transform:up
 .muted{color:var(--text-muted)} .sec{color:var(--text-secondary)}
 .small{font-size:12.5px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.two>*,.grid-diet>*,.stack>*{min-width:0}
 @media (max-width:980px){.two{grid-template-columns:1fr}}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
 .chart text{fill:var(--text-secondary);font-size:11.5px}
@@ -163,8 +167,31 @@ details.method{border-top:1px solid var(--line);padding:10px 0}
 details.method summary{cursor:pointer;font-weight:600}
 details.method[open] summary{margin-bottom:8px}
 .rpin{width:110px!important;text-align:right}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin:6px 0 18px}
+.step{background:var(--surface-1);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.step .num{width:30px;height:30px;border-radius:50%;background:var(--text-primary);color:var(--surface-1);display:grid;place-items:center;font-weight:700;font-size:14px}
+.step h3{margin:0;font-size:16px}
+.step p{margin:0;color:var(--text-secondary);font-size:14px;flex:1}
+.step .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.step label{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--text-secondary)}
+.step input{width:80px}
+.daychips{display:flex;gap:6px;flex-wrap:wrap}
+.daychips button{border:1px solid var(--line-strong);background:var(--surface-1);border-radius:20px;padding:5px 12px;cursor:pointer;font-size:13.5px}
+.daychips button[aria-pressed=true]{background:var(--text-primary);color:var(--surface-1);border-color:var(--text-primary)}
+table.dgrid{border-collapse:separate;border-spacing:2px;font-size:11.5px;width:100%}
+table.dgrid th{font-weight:600;color:var(--text-secondary);padding:2px 3px;white-space:nowrap}
+table.dgrid th.sub{text-align:right;font-weight:500;color:var(--text-primary);max-width:190px;overflow:hidden;text-overflow:ellipsis}
+table.dgrid td{text-align:center;padding:3px 2px;border-radius:4px;font-variant-numeric:tabular-nums;min-width:34px}
+table.dgrid td.ok{background:color-mix(in srgb,var(--good) 14%,transparent)}
+table.dgrid td.unc{background:color-mix(in srgb,var(--warning) 30%,transparent)}
+table.dgrid td.hi{background:color-mix(in srgb,var(--critical) 25%,transparent);font-weight:600}
+table.dgrid td.na{color:var(--text-muted)}
+table.dgrid td.mean,table.dgrid th.mean{border-left:2px solid var(--text-primary)}
+table.dgrid tr.tot th,table.dgrid tr.tot td{border-top:1px solid var(--line-strong);font-weight:650}
+#basisBanner{display:none;margin:0 0 14px}
 footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px solid var(--line)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:700px){.item{grid-template-columns:minmax(0,1fr) 14px minmax(0,1fr) 28px}.item .nm{grid-column:1/-1}}
 @media print{
   header.top{position:static} nav.tabs,.toolbar,.adder,.item .x,#tip{display:none!important}
   section.view{display:block!important;page-break-after:always} body{background:#fff}
@@ -175,8 +202,12 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
 <header class="top">
   <div class="wrap">
     <div class="top-row">
-      <div class="brand"><b>MixExpo <span class="ver">v1.2 · 25.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
+      <div class="brand"><b>MixExpo <span class="ver">v1.3 · 26.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
       <label class="ctrl"><span data-i18n="bw"></span> <input id="bw" type="number" min="10" max="200" step="1" value="70"> kg</label>
+      <label class="ctrl"><span data-i18n="age"></span> <input id="age" type="number" min="1" max="110" step="1" placeholder="–" style="width:62px"> <span data-i18n="yrs"></span></label>
+      <div class="ctrl" id="basisCtrl"><span data-i18n="basis"></span>
+        <div class="seg" id="basisSeg" role="group"><button data-x="day" data-i18n="basis_day"></button><button data-x="mean" id="basisMeanBtn"></button></div>
+      </div>
       <div class="ctrl"><span data-i18n="bound"></span>
         <div class="seg" id="boundSeg" role="group">
           <button data-b="lb">LB</button><button data-b="mb">MB</button><button data-b="ub">UB</button>
@@ -189,17 +220,41 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       </div>
     </div>
     <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-v="intro"><span class="n">0</span><span data-i18n="tab_intro"></span></button>
       <button role="tab" data-v="diet"><span class="n">1</span><span data-i18n="tab_diet"></span></button>
-      <button role="tab" data-v="expo"><span class="n">2</span><span data-i18n="tab_expo"></span></button>
-      <button role="tab" data-v="contrib"><span class="n">3</span><span data-i18n="tab_contrib"></span></button>
-      <button role="tab" data-v="risk"><span class="n">4</span><span data-i18n="tab_risk"></span></button>
-      <button role="tab" data-v="compare"><span class="n">5</span><span data-i18n="tab_compare"></span></button>
+      <button role="tab" data-v="days"><span class="n">2</span><span data-i18n="tab_days"></span></button>
+      <button role="tab" data-v="expo"><span class="n">3</span><span data-i18n="tab_expo"></span></button>
+      <button role="tab" data-v="contrib"><span class="n">4</span><span data-i18n="tab_contrib"></span></button>
+      <button role="tab" data-v="risk"><span class="n">5</span><span data-i18n="tab_risk"></span></button>
+      <button role="tab" data-v="compare"><span class="n">6</span><span data-i18n="tab_compare"></span></button>
       <button role="tab" data-v="methods"><span class="n">i</span><span data-i18n="tab_methods"></span></button>
     </nav>
   </div>
 </header>
 
 <main class="wrap">
+  <div class="note" id="basisBanner"></div>
+  <!-- 0 INTRO -->
+  <section class="view" id="v-intro">
+    <h2 data-i18n="intro_h"></h2>
+    <p class="lead" data-i18n-html="intro_lead"></p>
+    <div class="steps">
+      <div class="step"><div class="num">1</div><h3 data-i18n="s1_t"></h3><p data-i18n-html="s1_d"></p>
+        <div class="row"><label><span data-i18n="bw"></span> <input id="introBw" type="number" min="10" max="200" step="1"> kg</label><label><span data-i18n="age"></span> <input id="introAge" type="number" min="1" max="110" step="1" placeholder="–"> <span data-i18n="yrs"></span></label></div></div>
+      <div class="step"><div class="num">2</div><h3 data-i18n="s2_t"></h3><p data-i18n-html="s2_d"></p><div class="row"><button class="btn primary" data-go="diet" data-i18n="s2_b"></button></div></div>
+      <div class="step"><div class="num">3</div><h3 data-i18n="s3_t"></h3><p data-i18n-html="s3_d"></p><div class="row"><button class="btn" data-go="days" data-i18n="s3_b"></button></div></div>
+      <div class="step"><div class="num">4</div><h3 data-i18n="s4_t"></h3><p data-i18n-html="s4_d"></p><div class="row"><button class="btn" data-go="expo" data-i18n="s4_b"></button></div></div>
+      <div class="step"><div class="num">5</div><h3 data-i18n="s5_t"></h3><p data-i18n-html="s5_d"></p><div class="row"><button class="btn" data-go="contrib" data-i18n="s5_b"></button></div></div>
+      <div class="step"><div class="num">6</div><h3 data-i18n="s6_t"></h3><p data-i18n-html="s6_d"></p><div class="row"><button class="btn" data-go="risk" data-i18n="s6_b"></button></div></div>
+      <div class="step"><div class="num">7</div><h3 data-i18n="s7_t"></h3><p data-i18n-html="s7_d"></p><div class="row"><button class="btn" data-go="compare" data-i18n="s7_b"></button></div></div>
+      <div class="step"><div class="num">8</div><h3 data-i18n="s8_t"></h3><p data-i18n-html="s8_d"></p><div class="row"><button class="btn" data-go="methods" data-i18n="s8_b"></button></div></div>
+    </div>
+    <div class="two">
+      <div class="card small sec" data-i18n-html="good_html"></div>
+      <div class="card small sec" data-i18n-html="discuss_html"></div>
+    </div>
+  </section>
+
   <!-- 1 DIET -->
   <section class="view" id="v-diet">
     <h2 data-i18n="diet_h"></h2>
@@ -230,7 +285,42 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
     </div>
   </section>
 
-  <!-- 2 EXPOSURE -->
+  <!-- 2 SEVERAL DAYS -->
+  <section class="view" id="v-days">
+    <h2 data-i18n="days_h"></h2>
+    <p class="lead" data-i18n-html="days_lead"></p>
+    <div class="toolbar">
+      <select id="presetDays"></select>
+      <div class="daychips" id="dayChips"></div>
+      <button class="btn" id="btnAddDay" data-i18n="add_day"></button>
+      <button class="btn" id="btnDupDay" data-i18n="dup_day"></button>
+      <button class="btn" id="btnDelDay" data-i18n="del_day"></button>
+    </div>
+    <div class="grid-diet">
+      <div class="stack"><div class="note small" id="dayInfo" style="margin:0"></div><div class="stack" id="dayMeals" data-day="0"></div></div>
+      <div class="stack side">
+        <div class="card">
+          <h3 data-i18n="days_live_h"></h3>
+          <div class="kpis">
+            <div class="kpi"><div class="v" id="kDays">1</div><div class="l" data-i18n="k_days"></div></div>
+            <div class="kpi"><div class="v" id="kMExceed">0</div><div class="l" data-i18n="k_mexceed"></div></div>
+            <div class="kpi"><div class="v" id="kMHI">–</div><div class="l" data-i18n="k_mhi"></div></div>
+            <div class="kpi"><div class="v" id="kMMOET">–</div><div class="l" data-i18n-html="k_mmoet"></div></div>
+          </div>
+          <div style="overflow-x:auto" id="daysGrid"></div>
+          <p class="small muted" style="margin:8px 0 0" data-i18n-html="days_grid_note"></p>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <div class="toolbar" style="margin-bottom:4px"><h3 style="margin:0;flex:1" data-i18n="traj_h"></h3><select id="trajSel"></select></div>
+      <div class="legend" id="trajLegend"></div>
+      <div class="chart" id="trajChart"></div>
+      <div class="note" id="trajNote"></div>
+    </div>
+  </section>
+
+  <!-- 3 EXPOSURE -->
   <section class="view" id="v-expo">
     <h2 data-i18n="expo_h"></h2>
     <p class="lead" data-i18n-html="expo_lead"></p>
@@ -633,7 +723,7 @@ es:{
  cmp_h:"Comparar escenarios dietéticos",
  cmp_lead:"Guarda tu dieta actual como escenario, modifícala (cambia el pescado, el pan, las bebidas…) y compara cómo cambian los perfiles de exposición y de riesgo. Hasta 4 escenarios.",
  cmp_chart_h:"Cociente de riesgo (RQ) por escenario", scen_h:"Escenarios guardados", save_scen:"Guardar dieta actual como escenario",
- scen_note:"Haz clic en «Cargar» para volver a editar un escenario en la pestaña 1. Los escenarios se guardan en este navegador.",
+ scen_note:"Haz clic en «Cargar» para volver a editar un escenario en la página «Mi dieta 24 h». Los escenarios se guardan en este navegador.",
  load:"Cargar", del:"Eliminar", current:"Dieta actual", scen_default:"Escenario",
  io_h:"Guardar / compartir", export_json:"Exportar dieta y escenarios (JSON)", import_json:"Importar JSON", print:"Imprimir / PDF",
  cmp_empty:"Guarda al menos un escenario para compararlo con la dieta actual.",
@@ -653,7 +743,7 @@ es:{
  m4:"<p>Sustancias con valor basado en salud (TDI/TWI/ADI): RQ = E / VBS; se muestra el % del VBS. Sustancias evaluadas con margen de exposición: MOE = BMDL / E; preocupación si MOE &lt; umbral (10 000 para carcinógenos genotóxicos, 10 para Pb, 25 para PBDE según EFSA 2024). Para combinarlas se usa RQ = umbral / MOE. HI = Σ RQ de las sustancias con umbral (nivel 0, guía MixTox de EFSA 2019); los carcinógenos genotóxicos no se suman al HI sino que se combinan con MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Los grupos de nivel 1 son una simplificación pedagógica de los grupos de evaluación acumulativa.</p><p><b>Limitaciones:</b> 1 día ≠ exposición habitual; datos de 2007–2009; no todas las sustancias se analizaron en todos los alimentos; solo exposición alimentaria (sin agua de bebida para la mayoría de sustancias, aire, polvo…).</p>",
  m5_s:"5. Cobertura analítica del catálogo",
  m5:"<p>Número de alimentos del catálogo EAT2 de esta herramienta con datos para cada sustancia.</p>",
- footer:"MixExpo v1.2 (25.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
+ footer:"MixExpo v1.3 (26.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
  preset_ph:"Cargar una dieta de ejemplo…", p_excel:"Ejemplo de la hoja Excel original", p_med:"Mediterránea con pescado", p_fast:"Comida rápida / ultraprocesados", p_veg:"Vegetariana",
  cat_bread:"Pan, cereales y féculas", cat_pastry:"Bollería, galletas y dulces", cat_fish:"Pescados y mariscos", cat_meat:"Carnes y embutidos", cat_dairy:"Lácteos y huevos", cat_fat:"Grasas y aceites", cat_veg:"Verduras y legumbres", cat_fruit:"Frutas y frutos secos", cat_dishes:"Platos preparados y salsas", cat_drinks:"Bebidas",
  u_slice:"rebanada", u_unit:"unidad", u_cup:"taza", u_serving:"ración", u_glass:"vaso", u_handful:"puñado", u_tsp:"cucharadita", u_tbsp:"cucharada", u_can:"lata", u_bowl:"plato",
@@ -679,8 +769,8 @@ es:{
  bpa_warn:"<b>⚠ Valor de referencia del bisfenol A.</b> Esta herramienta usa la TDI del BfR alemán (2023), {rp} ng/kg pc/día. La EFSA (2023) fijó una TDI de 0,2 ng/kg pc/día, 1000 veces menor; ambas agencias discrepan sobre los efectos y factores de incertidumbre a considerar. Los resultados del bisfenol A dependen mucho de esta elección (puedes cambiarla en «Métodos y datos»).",
  bpa_warn_efsa:"<b>⚠ Valor de referencia del bisfenol A.</b> Estás usando la TDI de la EFSA 2023 ({rp} ng/kg pc/día). El BfR alemán (2023) propuso 200 ng/kg pc/día, 1000 veces más. Con el valor de la EFSA casi cualquier dieta supera la referencia.",
  bpa_rq:"Tu cociente de riesgo para el bisfenol A sería <b>{rb}</b> con el valor del BfR y <b>{re}</b> con el de la EFSA.",
- bpa_short:"⚠ El bisfenol A se evalúa con el valor del BfR (200 ng/kg pc/día); el de la EFSA es 1000 veces menor. Ver pestaña 2.",
- bpa_short_efsa:"⚠ El bisfenol A se evalúa con el valor de la EFSA (0,2 ng/kg pc/día); el del BfR es 1000 veces mayor. Ver pestaña 2.",
+ bpa_short:"⚠ El bisfenol A se evalúa con el valor del BfR (200 ng/kg pc/día); el de la EFSA es 1000 veces menor. Ver la pestaña Exposición.",
+ bpa_short_efsa:"⚠ El bisfenol A se evalúa con el valor de la EFSA (0,2 ng/kg pc/día); el del BfR es 1000 veces mayor. Ver la pestaña Exposición.",
  fam_add:"Aditivos alimentarios",
  fam_phyto:"Fitoestrógenos (origen vegetal)",
  g_liver:"Hígado / tiroides",
@@ -691,6 +781,76 @@ es:{
  occ_note:"Porcentaje de muestras EAT2 con un valor cuantificado (criterio de selección: ≥ 10 %). *Metales: % de alimentos con valor en la hoja docente original.",
  not_in_diet:"no analizado en tus alimentos",
  not_in_diet_s:"no analizado",
+ tab_intro:"Inicio",
+ tab_days:"Varios días",
+ age:"Edad",
+ yrs:"años",
+ basis:"Resultados de",
+ basis_day:"Día 1",
+ basis_mean:"Media de {n} días",
+ basis_banner_mean:"Los resultados se refieren a la <b>media de {n} días</b> (estimación de la ingesta habitual). Elige «Día 1» en la cabecera para ver solo el recordatorio de 24 h.",
+ basis_banner_day:"Los resultados se refieren solo al <b>día 1</b>. Has registrado {n} días: elige «Media de {n} días» en la cabecera para evaluar la ingesta habitual (crónica).",
+ basis_banner_one:"Los resultados se refieren a tu recordatorio de 24 h (día 1). Añade días en la pestaña «Varios días» para acercarte a la exposición crónica.",
+ days_h:"Varios días: hacia la exposición crónica",
+ days_lead:"Los valores de referencia (TDI, TWI, ADI, BMDL) se refieren a la exposición <b>a largo plazo</b>, pero un solo recordatorio de 24 h puede ser inusualmente alto o bajo. Registra hasta 7 días con el mismo editor de la página 1: cada día se evalúa por separado y la <b>media de los días</b> estima la ingesta habitual. El día 1 es tu página «Mi dieta 24 h».",
+ add_day:"+ Añadir un día",
+ dup_day:"Duplicar este día",
+ del_day:"Eliminar este día",
+ day_n:"Día",
+ day_s:"D",
+ day1_is:"Estás editando el <b>día 1</b>, la misma dieta que la página «Mi dieta 24 h».",
+ dayk_is:"Estás editando el <b>día {k}</b>.",
+ days_live_h:"Día a día y media",
+ k_days:"días registrados",
+ k_mexceed:"sustancias ≥ referencia (media)",
+ k_mhi:"Índice de peligro HI (media)",
+ k_mmoet:"MOE<sub>T</sub> genotóxicos (media)",
+ days_grid_note:"Cociente de riesgo (RQ) de cada día y de la media. Verde: por debajo del valor de referencia; amarillo: por encima solo en UB; rojo: por encima. Pasa el cursor sobre una celda para ver la exposición.",
+ mean_col:"Media",
+ row_hi:"Índice de peligro",
+ traj_h:"Trayectoria a lo largo de los días",
+ traj_hi:"Índice de peligro (sustancias con umbral)",
+ traj_y_hi:"Índice de peligro (escala log)",
+ traj_y_rq:"Cociente de riesgo (escala log)",
+ traj_daily:"Valor diario",
+ traj_run:"Media acumulada (del día 1 al día d)",
+ traj_ref:"Referencia (RQ = 1)",
+ traj_need2:"Añade al menos otro día para dibujar una trayectoria.",
+ traj_summary:"Día más alto: <b>{max} {u}</b> (día {d}). Media de {n} días: <b>{mean} {u}</b>.",
+ traj_above_but_mean_ok:"La referencia se superó {a} día(s), pero la media queda por debajo: para un valor de referencia crónico, esto no es en sí preocupante.",
+ traj_mean_above:"La media de los días supera el valor de referencia: la superación se mantiene en el tiempo.",
+ traj_explain:"La media acumulada se estabiliza al añadir días: por eso las encuestas alimentarias usan varios días no consecutivos para estimar la ingesta habitual.",
+ preset_days_ph:"Cargar un ejemplo de varios días…",
+ d_pnns:"3 días equilibrados (PNNS)",
+ d_contrast:"3 días contrastados (equilibrado, comida rápida, mediterráneo con pescado)",
+ p_pnns:"Día equilibrado (recomendaciones francesas PNNS)",
+ intro_h:"Bienvenido/a a MixExpo",
+ intro_lead:"MixExpo estima cuánto ingieres de 17 sustancias químicas a través de la dieta y qué significa para la salud cuando se combinan. Utiliza las concentraciones medidas en el <b>segundo Estudio de Dieta Total francés</b> (ANSES), en alimentos preparados «tal como se consumen». Sigue los pasos; todo funciona en tu navegador y no se envía nada.",
+ s1_t:"Descríbete",
+ s1_d:"La exposición se expresa por kilo de peso corporal: indica tu <b>peso</b>. La <b>edad</b> es opcional: por debajo de 12 años se usa el valor más estricto de isoflavonas para niños. Las porciones y los ejemplos están pensados para adultos.",
+ s2_t:"Registra tu dieta de 24 h",
+ s2_d:"En <b>Mi dieta 24 h</b>, anota todo lo que comiste y bebiste ayer, comida por comida: busca un alimento e indica porciones o gramos. Para empezar se carga un ejemplo equilibrado (PNNS); vacíalo o carga otro ejemplo.",
+ s2_b:"Ir a Mi dieta 24 h",
+ s3_t:"Añade más días (opcional)",
+ s3_d:"En <b>Varios días</b>, añade hasta 7 días para acercarte a tu ingesta habitual (crónica), seguir la trayectoria día a día y comparar cada día con la media.",
+ s3_b:"Ir a Varios días",
+ s4_t:"Observa tu exposición",
+ s4_d:"<b>Exposición</b> muestra cuánto ingieres de cada sustancia (izquierda) y cómo se compara con su valor de referencia (derecha). Cambia entre LB, MB y UB para ver el efecto de los resultados no detectados.",
+ s4_b:"Ir a Exposición",
+ s5_t:"Encuentra los alimentos responsables",
+ s5_d:"<b>Alimentos que contribuyen</b> muestra qué alimentos impulsan cada exposición. Las celdas rayadas indican que la sustancia no se analizó en ese alimento.",
+ s5_b:"Ir a Alimentos",
+ s6_t:"Evalúa la mezcla",
+ s6_d:"<b>Riesgo y mezclas</b> suma los cocientes de riesgo (índice de peligro), agrupa las sustancias con un efecto común y combina los carcinógenos genotóxicos.",
+ s6_b:"Ir a Riesgo y mezclas",
+ s7_t:"Cambia tus elecciones",
+ s7_d:"En <b>Comparar escenarios</b>, guarda tu dieta, modifícala (pescado, pan, conservas o frescos, bebidas…) y compara hasta 4 versiones.",
+ s7_b:"Ir a Comparar escenarios",
+ s8_t:"Guarda y comprende",
+ s8_d:"Exporta tus resultados (CSV) o tu dieta (JSON) desde la pestaña Comparar y consulta <b>Métodos y datos</b> para las fuentes, hipótesis y valores de referencia.",
+ s8_b:"Ir a Métodos y datos",
+ good_html:"<h3>Para tener en cuenta</h3><ul><li>Uso <b>exclusivamente docente</b>: no es una herramienta de diagnóstico.</li><li>Tus datos se quedan en <b>este navegador</b>; en un ordenador compartido, vacía la dieta al terminar.</li><li>Las concentraciones son de <b>2007–2009</b> y se midieron en alimentos preparados para su consumo.</li><li>Las 17 sustancias se eligieron porque se <b>cuantificaron en al menos el 10 %</b> de las muestras del estudio.</li><li>Los valores de referencia son para una <b>exposición de por vida</b>: un día por encima no supone, en sí mismo, un riesgo.</li></ul>",
+ discuss_html:"<h3>Preguntas para explorar</h3><ul><li>¿La sustancia a la que más te expones es también la más peligrosa? ¿Por qué no?</li><li>¿Qué conclusiones cambian entre LB y UB? ¿Qué dice eso de los métodos analíticos?</li><li>Sustituye un alimento (p. ej. conserva por fresco, atún por otro pescado): ¿qué cambia y qué no?</li><li>¿Cómo se compara tu media de varios días con tu peor día?</li><li>Cambia el valor de referencia del bisfenol A del BfR a la EFSA: ¿cuánto depende la conclusión de la caracterización del peligro?</li></ul>",
 },
 en:{
  subtitle:"Chemical mixture exposure calculator · French TDS2 data (ANSES)",
@@ -736,7 +896,7 @@ en:{
  cmp_h:"Compare dietary scenarios",
  cmp_lead:"Save your current diet as a scenario, change it (swap the fish, the bread, the drinks…) and compare how the exposure and risk profiles shift. Up to 4 scenarios.",
  cmp_chart_h:"Risk quotient (RQ) by scenario", scen_h:"Saved scenarios", save_scen:"Save current diet as scenario",
- scen_note:"Click “Load” to edit a scenario again in tab 1. Scenarios are stored in this browser.",
+ scen_note:"Click “Load” to edit a scenario again on the “My 24 h diet” page. Scenarios are stored in this browser.",
  load:"Load", del:"Delete", current:"Current diet", scen_default:"Scenario",
  io_h:"Save / share", export_json:"Export diet & scenarios (JSON)", import_json:"Import JSON", print:"Print / PDF",
  cmp_empty:"Save at least one scenario to compare it with the current diet.",
@@ -756,7 +916,7 @@ en:{
  m4:"<p>Substances with a health-based guidance value (TDI/TWI/ADI): RQ = E / HBGV; shown as % of HBGV. Substances assessed by margin of exposure: MOE = BMDL / E; concern if MOE &lt; threshold (10,000 for genotoxic carcinogens, 10 for Pb, 25 for PBDEs per EFSA 2024). To combine them, RQ = threshold / MOE. HI = Σ RQ of threshold substances (tier 0, EFSA 2019 MixTox guidance); genotoxic carcinogens are not added to the HI but combined as MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Tier-1 groups are a teaching simplification of cumulative assessment groups.</p><p><b>Limitations:</b> 1 day ≠ usual exposure; data from 2007–2009; not every substance was analysed in every food; diet only (no drinking water for most substances, air, dust…).</p>",
  m5_s:"5. Analytical coverage of the catalogue",
  m5:"<p>Number of foods in this tool’s TDS2 catalogue with data for each substance.</p>",
- footer:"MixExpo v1.2 (25.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
+ footer:"MixExpo v1.3 (26.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
  preset_ph:"Load an example diet…", p_excel:"Example from the original Excel sheet", p_med:"Mediterranean with fish", p_fast:"Fast food / ultra-processed", p_veg:"Vegetarian",
  cat_bread:"Bread, cereals & starches", cat_pastry:"Pastries, biscuits & sweets", cat_fish:"Fish & seafood", cat_meat:"Meat & cold cuts", cat_dairy:"Dairy & eggs", cat_fat:"Fats & oils", cat_veg:"Vegetables & pulses", cat_fruit:"Fruit & nuts", cat_dishes:"Mixed dishes & sauces", cat_drinks:"Drinks",
  u_slice:"slice", u_unit:"unit", u_cup:"cup", u_serving:"serving", u_glass:"glass", u_handful:"handful", u_tsp:"teaspoon", u_tbsp:"tablespoon", u_can:"can", u_bowl:"bowl",
@@ -782,8 +942,8 @@ en:{
  bpa_warn:"<b>⚠ Bisphenol A reference value.</b> This tool uses the TDI of the German BfR (2023), {rp} ng/kg bw/day. EFSA (2023) set a TDI of 0.2 ng/kg bw/day, 1000 times lower; the two agencies disagree on which effects and uncertainty factors to use. Results for bisphenol A therefore depend strongly on this choice (change it in “Methods &amp; data”).",
  bpa_warn_efsa:"<b>⚠ Bisphenol A reference value.</b> You are using EFSA’s 2023 TDI ({rp} ng/kg bw/day). The German BfR (2023) proposed 200 ng/kg bw/day, 1000 times higher. With EFSA’s value almost any diet exceeds the reference.",
  bpa_rq:"Your bisphenol A risk quotient would be <b>{rb}</b> with the BfR value and <b>{re}</b> with EFSA’s.",
- bpa_short:"⚠ Bisphenol A is assessed with the BfR value (200 ng/kg bw/day); EFSA’s value is 1000 times lower. See tab 2.",
- bpa_short_efsa:"⚠ Bisphenol A is assessed with EFSA’s value (0.2 ng/kg bw/day); the BfR value is 1000 times higher. See tab 2.",
+ bpa_short:"⚠ Bisphenol A is assessed with the BfR value (200 ng/kg bw/day); EFSA’s value is 1000 times lower. See the Exposure tab.",
+ bpa_short_efsa:"⚠ Bisphenol A is assessed with EFSA’s value (0.2 ng/kg bw/day); the BfR value is 1000 times higher. See the Exposure tab.",
  fam_add:"Food additives",
  fam_phyto:"Phytoestrogens (plant origin)",
  g_liver:"Liver / thyroid",
@@ -794,6 +954,76 @@ en:{
  occ_note:"Share of TDS2 samples with a quantified value (selection criterion: ≥ 10 %). *Metals: share of foods with a value in the original teaching sheet.",
  not_in_diet:"not analysed in the foods eaten",
  not_in_diet_s:"not analysed",
+ tab_intro:"Start",
+ tab_days:"Several days",
+ age:"Age",
+ yrs:"yrs",
+ basis:"Results for",
+ basis_day:"Day 1",
+ basis_mean:"Mean of {n} days",
+ basis_banner_mean:"Results below are for the <b>mean of {n} days</b> (usual intake estimate). Switch to “Day 1” in the header to see the single 24 h recall.",
+ basis_banner_day:"Results below are for <b>day 1 only</b>. You have entered {n} days: choose “Mean of {n} days” in the header to assess the usual (chronic) intake.",
+ basis_banner_one:"Results below are for your 24 h recall (day 1). Add more days in the “Several days” tab to approach chronic exposure.",
+ days_h:"Several days: towards chronic exposure",
+ days_lead:"Reference values (TDI, TWI, ADI, BMDL) concern <b>long-term</b> exposure, but a single 24 h recall can be unusually high or low. Record up to 7 days with the same editor as page 1: each day is assessed separately, and the <b>mean of the days</b> estimates usual intake. Day 1 is your “My 24 h diet” page.",
+ add_day:"+ Add a day",
+ dup_day:"Duplicate this day",
+ del_day:"Delete this day",
+ day_n:"Day",
+ day_s:"D",
+ day1_is:"You are editing <b>day 1</b>, the same diet as the “My 24 h diet” page.",
+ dayk_is:"You are editing <b>day {k}</b>.",
+ days_live_h:"Day by day and mean",
+ k_days:"days recorded",
+ k_mexceed:"substances ≥ reference (mean)",
+ k_mhi:"Hazard index HI (mean)",
+ k_mmoet:"MOE<sub>T</sub> genotoxic (mean)",
+ days_grid_note:"Risk quotient (RQ) per day and for the mean of the days. Green: below the reference value; yellow: above only under the upper bound; red: above. Hover a cell for the exposure.",
+ mean_col:"Mean",
+ row_hi:"Hazard index",
+ traj_h:"Trajectory over the days",
+ traj_hi:"Hazard index (threshold substances)",
+ traj_y_hi:"Hazard index (log scale)",
+ traj_y_rq:"Risk quotient (log scale)",
+ traj_daily:"Daily value",
+ traj_run:"Running mean (day 1 to day d)",
+ traj_ref:"Reference (RQ = 1)",
+ traj_need2:"Add at least one more day to draw a trajectory.",
+ traj_summary:"Highest day: <b>{max} {u}</b> (day {d}). Mean over {n} days: <b>{mean} {u}</b>.",
+ traj_above_but_mean_ok:"The reference was exceeded on {a} day(s), but the mean stays below it: for a chronic reference value, this is not in itself a concern.",
+ traj_mean_above:"The mean of the days is above the reference value: the exceedance persists over time.",
+ traj_explain:"The running mean stabilises as days are added: this is why dietary surveys use several non-consecutive days to estimate usual intake.",
+ preset_days_ph:"Load a multi-day example…",
+ d_pnns:"3 balanced days (PNNS)",
+ d_contrast:"3 contrasted days (balanced, fast food, Mediterranean with fish)",
+ p_pnns:"Balanced day (French PNNS recommendations)",
+ intro_h:"Welcome to MixExpo",
+ intro_lead:"MixExpo estimates how much of 17 food chemicals you take in through your diet, and what this means for health when they are combined. It uses the concentrations measured in the <b>second French Total Diet Study</b> (ANSES), in foods prepared “as eaten”. Follow the steps below; everything runs in your browser and nothing is sent anywhere.",
+ s1_t:"Describe yourself",
+ s1_d:"Exposure is expressed per kilogram of body weight, so enter your <b>weight</b>. Your <b>age</b> is optional: under 12, the stricter isoflavone value for children is used. Portions and examples are designed for adults.",
+ s2_t:"Record your 24 h diet",
+ s2_d:"In <b>My 24 h diet</b>, list everything you ate and drank yesterday, meal by meal: search a food, then set portions or grams. A balanced example (PNNS) is loaded to start with; clear it or load another example.",
+ s2_b:"Go to My 24 h diet",
+ s3_t:"Add more days (optional)",
+ s3_d:"In <b>Several days</b>, add up to 7 days to approach your usual (chronic) intake, follow the trajectory day by day and compare each day with the mean.",
+ s3_b:"Go to Several days",
+ s4_t:"Look at your exposure",
+ s4_d:"<b>Exposure</b> shows how much of each chemical you take in (left) and how this compares with its reference value (right). Switch between LB, MB and UB to see the effect of non-detected results.",
+ s4_b:"Go to Exposure",
+ s5_t:"Find the foods responsible",
+ s5_d:"<b>Contributing foods</b> shows which foods drive each exposure. Hatched cells mean the chemical was not analysed in that food.",
+ s5_b:"Go to Contributing foods",
+ s6_t:"Assess the mixture",
+ s6_d:"<b>Risk & mixtures</b> adds up the risk quotients (hazard index), groups chemicals with a common effect, and combines the genotoxic carcinogens.",
+ s6_b:"Go to Risk & mixtures",
+ s7_t:"Change your choices",
+ s7_d:"In <b>Compare scenarios</b>, save your diet, modify it (fish, bread, canned or fresh foods, drinks…) and compare up to 4 versions.",
+ s7_b:"Go to Compare scenarios",
+ s8_t:"Save and understand",
+ s8_d:"Export your results (CSV) or your diet (JSON) from the Compare tab, and read <b>Methods & data</b> for the sources, assumptions and reference values.",
+ s8_b:"Go to Methods & data",
+ good_html:"<h3>Good to know</h3><ul><li>For <b>teaching only</b>: not a diagnostic tool.</li><li>Your data stay in <b>this browser</b>; on a shared computer, clear the diet when you finish.</li><li>Concentrations date from <b>2007–2009</b> and were measured in foods as prepared for eating.</li><li>The 17 chemicals were chosen because they were <b>quantified in at least 10 %</b> of the study’s samples.</li><li>Reference values are for <b>lifetime exposure</b>: one day above a reference value is not, in itself, a health risk.</li></ul>",
+ discuss_html:"<h3>Questions to explore</h3><ul><li>Is the chemical you are most exposed to also the riskiest one? Why not?</li><li>Which conclusions change between LB and UB? What does that say about analytical methods?</li><li>Replace one food (e.g. canned by fresh, tuna by another fish): what changes, and what does not?</li><li>How does your mean over several days compare with your worst day?</li><li>Change the bisphenol A reference value from BfR to EFSA: how much does the conclusion depend on hazard characterisation?</li></ul>",
 },
 fr:{
  subtitle:"Calculateur d’exposition aux mélanges chimiques · données EAT2 (ANSES)",
@@ -839,7 +1069,7 @@ fr:{
  cmp_h:"Comparer des scénarios alimentaires",
  cmp_lead:"Enregistrez votre régime actuel comme scénario, modifiez-le (changez le poisson, le pain, les boissons…) et comparez l’évolution des profils d’exposition et de risque. Jusqu’à 4 scénarios.",
  cmp_chart_h:"Quotient de risque (QR) par scénario", scen_h:"Scénarios enregistrés", save_scen:"Enregistrer le régime actuel",
- scen_note:"Cliquez sur « Charger » pour modifier à nouveau un scénario dans l’onglet 1. Les scénarios sont stockés dans ce navigateur.",
+ scen_note:"Cliquez sur « Charger » pour modifier à nouveau un scénario dans la page « Mon alimentation 24 h ». Les scénarios sont stockés dans ce navigateur.",
  load:"Charger", del:"Supprimer", current:"Régime actuel", scen_default:"Scénario",
  io_h:"Enregistrer / partager", export_json:"Exporter régime et scénarios (JSON)", import_json:"Importer JSON", print:"Imprimer / PDF",
  cmp_empty:"Enregistrez au moins un scénario pour le comparer au régime actuel.",
@@ -859,7 +1089,7 @@ fr:{
  m4:"<p>Substances avec valeur toxicologique de référence (DJT/DHT/DJA) : QR = E / VTR ; affiché en % de la VTR. Substances évaluées par marge d’exposition : MOE = BMDL / E ; préoccupation si MOE &lt; seuil (10 000 pour les cancérogènes génotoxiques, 10 pour le Pb, 25 pour les PBDE selon l’EFSA 2024). Pour les combiner : QR = seuil / MOE. HI = Σ QR des substances à seuil (palier 0, guide MixTox EFSA 2019) ; les cancérogènes génotoxiques ne sont pas ajoutés au HI mais combinés via MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Les groupes du palier 1 sont une simplification pédagogique des groupes d’évaluation cumulée.</p><p><b>Limites :</b> 1 jour ≠ exposition habituelle ; données 2007–2009 ; toutes les substances n’ont pas été analysées dans tous les aliments ; voie alimentaire uniquement (pas d’eau de boisson pour la plupart des substances, air, poussières…).</p>",
  m5_s:"5. Couverture analytique du catalogue",
  m5:"<p>Nombre d’aliments du catalogue EAT2 de l’outil disposant de données pour chaque substance.</p>",
- footer:"MixExpo v1.2 (25.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
+ footer:"MixExpo v1.3 (26.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
  preset_ph:"Charger un régime exemple…", p_excel:"Exemple de la feuille Excel d’origine", p_med:"Méditerranéen avec poisson", p_fast:"Restauration rapide / ultra-transformés", p_veg:"Végétarien",
  cat_bread:"Pain, céréales et féculents", cat_pastry:"Viennoiseries, biscuits et sucreries", cat_fish:"Poissons et fruits de mer", cat_meat:"Viandes et charcuteries", cat_dairy:"Produits laitiers et œufs", cat_fat:"Matières grasses", cat_veg:"Légumes et légumineuses", cat_fruit:"Fruits et fruits à coque", cat_dishes:"Plats composés et sauces", cat_drinks:"Boissons",
  u_slice:"tranche", u_unit:"unité", u_cup:"bol", u_serving:"portion", u_glass:"verre", u_handful:"poignée", u_tsp:"cuillère à café", u_tbsp:"cuillère à soupe", u_can:"canette", u_bowl:"assiette",
@@ -885,8 +1115,8 @@ fr:{
  bpa_warn:"<b>⚠ Valeur de référence du bisphénol A.</b> Cet outil utilise la DJT du BfR allemand (2023), {rp} ng/kg pc/j. L’EFSA (2023) a fixé une DJT de 0,2 ng/kg pc/j, 1000 fois plus basse ; les deux agences divergent sur les effets et facteurs d’incertitude à retenir. Les résultats du bisphénol A dépendent donc fortement de ce choix (modifiable dans « Méthodes et données »).",
  bpa_warn_efsa:"<b>⚠ Valeur de référence du bisphénol A.</b> Vous utilisez la DJT de l’EFSA 2023 ({rp} ng/kg pc/j). Le BfR allemand (2023) a proposé 200 ng/kg pc/j, 1000 fois plus. Avec la valeur de l’EFSA, presque tout régime dépasse la référence.",
  bpa_rq:"Votre quotient de risque pour le bisphénol A serait de <b>{rb}</b> avec la valeur du BfR et de <b>{re}</b> avec celle de l’EFSA.",
- bpa_short:"⚠ Le bisphénol A est évalué avec la valeur du BfR (200 ng/kg pc/j) ; celle de l’EFSA est 1000 fois plus basse. Voir l’onglet 2.",
- bpa_short_efsa:"⚠ Le bisphénol A est évalué avec la valeur de l’EFSA (0,2 ng/kg pc/j) ; celle du BfR est 1000 fois plus élevée. Voir l’onglet 2.",
+ bpa_short:"⚠ Le bisphénol A est évalué avec la valeur du BfR (200 ng/kg pc/j) ; celle de l’EFSA est 1000 fois plus basse. Voir l’onglet Exposition.",
+ bpa_short_efsa:"⚠ Le bisphénol A est évalué avec la valeur de l’EFSA (0,2 ng/kg pc/j) ; celle du BfR est 1000 fois plus élevée. Voir l’onglet Exposition.",
  fam_add:"Additifs alimentaires",
  fam_phyto:"Phyto-œstrogènes (origine végétale)",
  g_liver:"Foie / thyroïde",
@@ -897,6 +1127,76 @@ fr:{
  occ_note:"Part des échantillons EAT2 avec une valeur quantifiée (critère de sélection : ≥ 10 %). *Métaux : part des aliments avec une valeur dans la feuille pédagogique d’origine.",
  not_in_diet:"non analysé dans vos aliments",
  not_in_diet_s:"non analysé",
+ tab_intro:"Accueil",
+ tab_days:"Plusieurs jours",
+ age:"Âge",
+ yrs:"ans",
+ basis:"Résultats pour",
+ basis_day:"Jour 1",
+ basis_mean:"Moyenne de {n} jours",
+ basis_banner_mean:"Les résultats portent sur la <b>moyenne de {n} jours</b> (estimation de l’apport habituel). Choisissez « Jour 1 » dans l’en-tête pour voir le seul rappel de 24 h.",
+ basis_banner_day:"Les résultats portent sur le <b>jour 1 seulement</b>. Vous avez saisi {n} jours : choisissez « Moyenne de {n} jours » dans l’en-tête pour évaluer l’apport habituel (chronique).",
+ basis_banner_one:"Les résultats portent sur votre rappel de 24 h (jour 1). Ajoutez des jours dans l’onglet « Plusieurs jours » pour approcher l’exposition chronique.",
+ days_h:"Plusieurs jours : vers l’exposition chronique",
+ days_lead:"Les valeurs de référence (DJT, DHT, DJA, BMDL) concernent l’exposition <b>à long terme</b>, mais un seul rappel de 24 h peut être inhabituellement haut ou bas. Saisissez jusqu’à 7 jours avec le même éditeur qu’en page 1 : chaque jour est évalué séparément et la <b>moyenne des jours</b> estime l’apport habituel. Le jour 1 est votre page « Mon alimentation 24 h ».",
+ add_day:"+ Ajouter un jour",
+ dup_day:"Dupliquer ce jour",
+ del_day:"Supprimer ce jour",
+ day_n:"Jour",
+ day_s:"J",
+ day1_is:"Vous modifiez le <b>jour 1</b>, le même régime que la page « Mon alimentation 24 h ».",
+ dayk_is:"Vous modifiez le <b>jour {k}</b>.",
+ days_live_h:"Jour par jour et moyenne",
+ k_days:"jours saisis",
+ k_mexceed:"substances ≥ référence (moyenne)",
+ k_mhi:"Indice de danger HI (moyenne)",
+ k_mmoet:"MOE<sub>T</sub> génotoxiques (moyenne)",
+ days_grid_note:"Quotient de risque (QR) par jour et pour la moyenne. Vert : sous la valeur de référence ; jaune : au-dessus seulement en UB ; rouge : au-dessus. Survolez une cellule pour voir l’exposition.",
+ mean_col:"Moy.",
+ row_hi:"Indice de danger",
+ traj_h:"Trajectoire au fil des jours",
+ traj_hi:"Indice de danger (substances à seuil)",
+ traj_y_hi:"Indice de danger (échelle log)",
+ traj_y_rq:"Quotient de risque (échelle log)",
+ traj_daily:"Valeur du jour",
+ traj_run:"Moyenne cumulée (jour 1 au jour j)",
+ traj_ref:"Référence (QR = 1)",
+ traj_need2:"Ajoutez au moins un autre jour pour tracer une trajectoire.",
+ traj_summary:"Jour le plus élevé : <b>{max} {u}</b> (jour {d}). Moyenne sur {n} jours : <b>{mean} {u}</b>.",
+ traj_above_but_mean_ok:"La référence a été dépassée {a} jour(s), mais la moyenne reste en dessous : pour une valeur de référence chronique, ce n’est pas en soi préoccupant.",
+ traj_mean_above:"La moyenne des jours dépasse la valeur de référence : le dépassement persiste dans le temps.",
+ traj_explain:"La moyenne cumulée se stabilise à mesure que l’on ajoute des jours : c’est pourquoi les enquêtes alimentaires utilisent plusieurs jours non consécutifs pour estimer l’apport habituel.",
+ preset_days_ph:"Charger un exemple sur plusieurs jours…",
+ d_pnns:"3 jours équilibrés (PNNS)",
+ d_contrast:"3 jours contrastés (équilibré, restauration rapide, méditerranéen avec poisson)",
+ p_pnns:"Journée équilibrée (recommandations du PNNS)",
+ intro_h:"Bienvenue dans MixExpo",
+ intro_lead:"MixExpo estime la quantité de 17 substances chimiques que vous ingérez par l’alimentation et ce que cela signifie pour la santé lorsqu’elles sont combinées. Il utilise les concentrations mesurées dans la <b>deuxième Étude de l’alimentation totale</b> (ANSES), sur des aliments préparés « tels que consommés ». Suivez les étapes ; tout fonctionne dans votre navigateur et rien n’est envoyé.",
+ s1_t:"Décrivez-vous",
+ s1_d:"L’exposition s’exprime par kilo de poids corporel : indiquez votre <b>poids</b>. L’<b>âge</b> est facultatif : en dessous de 12 ans, la valeur plus stricte des isoflavones pour les enfants est utilisée. Les portions et exemples sont conçus pour des adultes.",
+ s2_t:"Saisissez votre alimentation de 24 h",
+ s2_d:"Dans <b>Mon alimentation 24 h</b>, notez tout ce que vous avez mangé et bu hier, repas par repas : cherchez un aliment puis indiquez portions ou grammes. Un exemple équilibré (PNNS) est chargé pour commencer ; videz-le ou chargez un autre exemple.",
+ s2_b:"Aller à Mon alimentation",
+ s3_t:"Ajoutez des jours (facultatif)",
+ s3_d:"Dans <b>Plusieurs jours</b>, ajoutez jusqu’à 7 jours pour approcher votre apport habituel (chronique), suivre la trajectoire jour après jour et comparer chaque jour à la moyenne.",
+ s3_b:"Aller à Plusieurs jours",
+ s4_t:"Observez votre exposition",
+ s4_d:"<b>Exposition</b> montre la quantité ingérée de chaque substance (à gauche) et sa comparaison avec la valeur de référence (à droite). Passez de LB à MB et UB pour voir l’effet des résultats non détectés.",
+ s4_b:"Aller à Exposition",
+ s5_t:"Repérez les aliments en cause",
+ s5_d:"<b>Aliments contributeurs</b> montre quels aliments pilotent chaque exposition. Les cellules hachurées signifient que la substance n’a pas été analysée dans cet aliment.",
+ s5_b:"Aller aux Aliments",
+ s6_t:"Évaluez le mélange",
+ s6_d:"<b>Risque et mélanges</b> additionne les quotients de risque (indice de danger), regroupe les substances à effet commun et combine les cancérogènes génotoxiques.",
+ s6_b:"Aller à Risque et mélanges",
+ s7_t:"Changez vos choix",
+ s7_d:"Dans <b>Comparer des scénarios</b>, enregistrez votre régime, modifiez-le (poisson, pain, conserves ou frais, boissons…) et comparez jusqu’à 4 versions.",
+ s7_b:"Aller à Comparer",
+ s8_t:"Enregistrez et comprenez",
+ s8_d:"Exportez vos résultats (CSV) ou votre régime (JSON) depuis l’onglet Comparer, et lisez <b>Méthodes et données</b> pour les sources, hypothèses et valeurs de référence.",
+ s8_b:"Aller à Méthodes",
+ good_html:"<h3>À savoir</h3><ul><li>Usage <b>pédagogique uniquement</b> : ce n’est pas un outil de diagnostic.</li><li>Vos données restent dans <b>ce navigateur</b> ; sur un ordinateur partagé, videz le régime en fin de séance.</li><li>Les concentrations datent de <b>2007–2009</b> et ont été mesurées sur des aliments préparés pour être consommés.</li><li>Les 17 substances ont été retenues car <b>quantifiées dans au moins 10 %</b> des échantillons de l’étude.</li><li>Les valeurs de référence portent sur une <b>exposition vie entière</b> : un jour au-dessus n’est pas, en soi, un risque.</li></ul>",
+ discuss_html:"<h3>Questions à explorer</h3><ul><li>La substance à laquelle vous êtes le plus exposé est-elle aussi la plus préoccupante ? Pourquoi pas ?</li><li>Quelles conclusions changent entre LB et UB ? Qu’est-ce que cela dit des méthodes analytiques ?</li><li>Remplacez un aliment (conserve par frais, thon par un autre poisson…) : qu’est-ce qui change, et qu’est-ce qui ne change pas ?</li><li>Comment votre moyenne sur plusieurs jours se compare-t-elle à votre pire journée ?</li><li>Passez la valeur de référence du bisphénol A du BfR à l’EFSA : à quel point la conclusion dépend-elle de la caractérisation du danger ?</li></ul>",
 }};
 const SUBTXT = {
  NDLPCB:{sh:{es:"PCB no dioxínicos",en:"Non-dioxin-like PCBs",fr:"PCB non dioxine-like"}, n:{es:"PCB no similares a dioxinas (suma de 6 indicadores)",en:"Non-dioxin-like PCBs (sum of 6 indicators)",fr:"PCB non dioxine-like (somme des 6 indicateurs)"}, ep:{es:"Hígado, tiroides y neurodesarrollo. TDI 10 ng/kg pc/día para la suma de los 6 PCB indicadores – AFSSA 2007 (la EFSA no ha fijado un valor)",en:"Liver, thyroid and neurodevelopment. TDI 10 ng/kg bw/day for the sum of the 6 indicator PCBs – AFSSA 2007 (EFSA has not set a value)",fr:"Foie, thyroïde et neurodéveloppement. DJT 10 ng/kg pc/j pour la somme des 6 PCB indicateurs – AFSSA 2007 (l’EFSA n’a pas fixé de valeur)"}},
@@ -923,26 +1223,64 @@ const SUBTXT = {
 };
 
 /* ---------------------------------------------------------------- example diets (by EAT2 French libellé) */
+// p_pnns: one adult day following the French PNNS 4 recommendations (>= 5 fruit & veg, wholegrain starch,
+// 2 dairy, a small handful of nuts, legumes, poultry, rapeseed/olive oil, water)
+const PNNS_A = {breakfast:[["pain complet ou intégral",60],["beurre",5],["lait demi-écrémé",200],["orange",160],["café noir",150]],
+ lunch:[["poulet",110],["haricot",150],["blé dur précuit",150],["salade",40],["huile de colza",10],["yaourt au lait partiellement écrémé",125],["pomme",150]],
+ snack:[["graine oléagineuse",30],["kiwi",80]],
+ dinner:[["lentille",150],["carotte",60],["ratatouille",150],["pain complet ou intégral",40],["clémentine ou mandarine",70]],
+ other:[["eau du robinet",1000]]};
+const PNNS_B = {breakfast:[["muesli",40],["lait demi-écrémé",200],["banane",120],["thé ou tisane",200]],
+ lunch:[["saumon",130],["pomme de terre cuite à l'eau",150],["épinard",150],["huile d'olive vierge 1ère pression",10],["pain complet ou intégral",40],["compote de pomme",100]],
+ snack:[["yaourt au lait partiellement écrémé",125],["graine oléagineuse",30]],
+ dinner:[["soupe de légumes",250],["œuf brouillé, omelette",110],["salade",40],["huile de colza",10],["pain de campagne",40],["gruyère",30],["pomme",150]],
+ other:[["eau du robinet",1000]]};
+const PNNS_C = {breakfast:[["pain complet ou intégral",60],["confiture",15],["fromage blanc non allégé",100],["clémentine ou mandarine",70],["café noir",150]],
+ lunch:[["lieu ou colin",130],["riz",150],["courgette",150],["huile d'olive vierge 1ère pression",10],["tomate",120],["pêche",150]],
+ snack:[["graine oléagineuse",30],["banane",120]],
+ dinner:[["haricot blanc",150],["bœuf steak",100],["carotte",60],["salade",40],["vinaigrette",15],["pain complet ou intégral",40],["yaourt au lait partiellement écrémé",125],["poire",150]],
+ other:[["eau du robinet",1000]]};
 const PRESETS = {
- p_excel:{breakfast:[["pain grillé",10],["pain de mie",25]], lunch:[["pâtes alimentaires aux oeufs cuites",100],["poisson pané",100],["pain de mie",10],["concombre",150],["eau du robinet",200]], snack:[["pomme de terre chips salées",20],["pomme",60]], dinner:[["pain aux céréales",50],["bière",200]], other:[]},
+ p_pnns: PNNS_A,
  p_med:{breakfast:[["lait demi-écrémé",200],["pain complet ou intégral",60],["huile d'olive vierge 1ère pression",10],["tomate",60],["café noir",150]], lunch:[["lentille",200],["saumon",130],["salade",40],["huile d'olive vierge 1ère pression",10],["pain de campagne",50],["orange",160]], snack:[["yaourt au lait partiellement écrémé",125],["graine oléagineuse",30]], dinner:[["thon",130],["épinard",150],["riz",150],["pomme",150],["vin",125]], other:[["eau du robinet",750]]},
  p_fast:{breakfast:[["céréales au chocolat",40],["lait entier",200],["croissant",55]], lunch:[["hamburger",200],["pomme de terre sautée ou frite",150],["boisson gazeuse à l'orange avec pulpe sucrée",330]], snack:[["pomme de terre chips salées",30],["chocolat au lait",40]], dinner:[["pizza",300],["bière",330],["mousse au chocolat rayon frais",60]], other:[]},
  p_veg:{breakfast:[["muesli",50],["boisson au soja ou tonyu",200],["banane",120]], lunch:[["tofu",150],["riz",150],["ratatouille",150],["pain complet ou intégral",60],["pomme",150]], snack:[["yaourt au lait entier",125],["graine oléagineuse",30]], dinner:[["lentille",200],["salade",40],["tomate",120],["huile d'olive vierge 1ère pression",10],["poire",150],["thé ou tisane",200]], other:[["eau du robinet",750]]},
 };
 
 /* ---------------------------------------------------------------- state */
+const PRESETS_DAYS = {
+ d_pnns: [PNNS_A, PNNS_B, PNNS_C],
+ d_contrast: [PNNS_A, PRESETS.p_fast, PRESETS.p_med],
+};
 const byFr = {}; FOODS.forEach(f => byFr[f.fr] = f);
 const byId = {}; FOODS.forEach(f => byId[f.id] = f);
 const LS = "mixexpo.v2";
 const packM = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({fr:byId[it.id].fr, g:+it.g}))); return o; };
 const unpackM = m => { const o={}; MEALS.forEach(k=>o[k]=[]); MEALS.forEach(k=>((m&&m[k])||[]).forEach(it=>{ const f=byFr[it.fr||it.food]; if(f) o[k].push({id:f.id, g:+it.g||0}); })); return o; };
-function store(){ try{ localStorage.setItem(LS, JSON.stringify({lang:S.lang,bw:S.bw,bound:S.bound,meals:packM(S.meals),scen:S.scen.map(x=>({name:x.name,bw:x.bw,meals:packM(x.meals)})),rp:S.rp,all:S.all,sort:S.sort})); }catch(e){} }
+function store(){ try{ localStorage.setItem(LS, JSON.stringify({bw:S.bw,age:S.age,basis:S.basis,traj:S.traj,extra:S.extra.map(packM),bound:S.bound,meals:packM(S.meals),scen:S.scen.map(x=>({name:x.name,bw:x.bw,meals:packM(x.meals)})),rp:S.rp,all:S.all,sort:S.sort})); }catch(e){} }
 function emptyMeals(){ const m={}; MEALS.forEach(k=>m[k]=[]); return m; }
-let S = {lang:"en", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"diet", sel:"Cd", sort:"fam"};
-try{ const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ Object.assign(S, s); S.meals = unpackM(s.meals); S.scen = (s.scen||[]).map(x=>({name:x.name,bw:x.bw,meals:unpackM(x.meals)})); } }catch(e){ S.meals = emptyMeals(); S.scen = []; }
+const MAXDAYS = 7;
+let S = {lang:"en", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"intro", sel:"Cd", sort:"fam", extra:[], dsel:0, basis:"day", age:null, traj:"HI"};
+try{ const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ Object.assign(S, s); S.meals = unpackM(s.meals); S.scen = (s.scen||[]).map(x=>({name:x.name,bw:x.bw,meals:unpackM(x.meals)})); S.extra = (s.extra||[]).slice(0,MAXDAYS-1).map(unpackM); S.view="intro"; S.dsel=0; } }catch(e){ S.meals = emptyMeals(); S.scen = []; S.extra = []; }
 if(!S.meals || !Object.values(S.meals).some(a=>a.length)) { if(!localStorage.getItem || true) {} }
 
-function subs(){ return SUBS_DEFAULT.map(s => Object.assign({}, s, S.rp[s.k]||{})); }
+function subs(){
+  return SUBS_DEFAULT.map(s => {
+    const o = Object.assign({}, s);
+    if(s.k==="ISO" && S.age && S.age < 12) o.rp = 10000;   // ANSES 2025: 0.01 mg/kg bw/day for prepubertal children
+    return Object.assign(o, S.rp[s.k]||{});
+  });
+}
+const allDays = () => [S.meals, ...S.extra];
+function dayMeals(d){ return d===0 ? S.meals : S.extra[d-1]; }
+function meanMeals(){
+  const D = allDays(), N = D.length, o = emptyMeals();
+  D.forEach(m => MEALS.forEach(k => (m[k]||[]).forEach(it => o[k].push({id:it.id, g:it.g/N}))));
+  return o;
+}
+const useMean = () => S.basis==="mean" && S.extra.length>0;
+const analysed = () => useMean() ? meanMeals() : S.meals;
+function loadPreset(p){ const o = emptyMeals(); MEALS.forEach(m => (p[m]||[]).forEach(([fr,g]) => { const f = byFr[fr]; if(f) o[m].push({id:f.id, g}); })); return o; }
 const t = k => (I18N[S.lang][k] ?? I18N.en[k] ?? k);
 const fname = f => f[S.lang] || f.fr;
 const sname = k => SUBTXT[k].n[S.lang];
@@ -1166,6 +1504,7 @@ function applyI18n(){
   document.querySelectorAll("#boundSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b===S.bound));
   const ps = document.getElementById("preset");
   ps.innerHTML = `<option value="">${esc(t("preset_ph"))}</option>` + Object.keys(PRESETS).map(k=>`<option value="${k}">${esc(t(k))}</option>`).join("");
+  document.getElementById("presetDays").innerHTML = `<option value="">${esc(t("preset_days_ph"))}</option>` + Object.keys(PRESETS_DAYS).map(k=>`<option value="${k}">${esc(t(k))}</option>`).join("");
   document.getElementById("subSel").innerHTML = FAMS.map(f=>`<optgroup label="${esc(t("fam_"+f))}">${subs().filter(s=>s.fam===f).map(s=>`<option value="${s.k}">${esc(sname(s.k))}</option>`).join("")}</optgroup>`).join("");
   document.getElementById("subSel").value = S.sel;
 }
@@ -1176,10 +1515,10 @@ function covHTML(f){
   const segs = Math.round(n/SU.length*6);
   return `<span class="cov" data-tip="${n}/${SU.length} ${esc(t("data_of"))}${f.c.Cd?"":" · "+esc(t("no_metals"))}">${Array.from({length:6},(_,i)=>`<i class="${i<segs?"y":""}"></i>`).join("")}</span>`;
 }
-function renderMeals(){
-  const box = document.getElementById("meals");
+function renderMeals(box, meals){
+  box = box || document.getElementById("meals"); meals = meals || S.meals;
   box.innerHTML = MEALS.map(m => {
-    const items = S.meals[m];
+    const items = meals[m];
     const tot = items.reduce((a,it)=>a+(+it.g||0),0);
     return `<div class="card" data-meal="${m}">
       <div class="meal-head"><h3>${esc(t("m_"+m))}</h3><span class="tot">${fmt(tot,0)} g</span></div>
@@ -1194,7 +1533,6 @@ function renderMeals(){
       <div class="adder"><input type="text" class="search" placeholder="${esc(t("add_food"))}" autocomplete="off"><div class="dd"></div></div>
     </div>`;
   }).join("");
-  // units header hint
 }
 function norm(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
 function searchFoods(q){
@@ -1219,41 +1557,138 @@ function openDD(input){
   const first = dd.querySelector(".opt"); if(first) first.classList.add("act");
 }
 function closeDD(){ document.querySelectorAll(".dd.open").forEach(d=>d.classList.remove("open")); }
-function addFood(meal, id){
+const boxMeals = box => dayMeals(+box.dataset.day || 0);
+function addFood(box, meal, id){
   const f = byId[id];
-  S.meals[meal].push({id, g:f.g});
+  boxMeals(box)[meal].push({id, g:f.g});
   update();
-  const inp = document.querySelector(`[data-meal="${meal}"] .search`); if(inp){ inp.focus(); }
+  const inp = box.querySelector(`[data-meal="${meal}"] .search`); if(inp){ inp.focus(); }
 }
-const mealsBox = document.getElementById("meals");
-mealsBox.addEventListener("focusin", e => { if(e.target.classList.contains("search")) openDD(e.target); });
-mealsBox.addEventListener("input", e => {
-  const el = e.target, card = el.closest("[data-meal]"); if(!card) return;
-  const meal = card.dataset.meal;
-  if(el.classList.contains("search")) return openDD(el);
-  const row = el.closest(".item"); if(!row) return;
-  const it = S.meals[meal][+row.dataset.i], f = byId[it.id];
-  if(el.classList.contains("por")){ it.g = Math.max(0, (+el.value||0)*f.g); row.querySelector(".gr").value = Math.round(it.g*10)/10; }
-  if(el.classList.contains("gr")){ it.g = Math.max(0, +el.value||0); row.querySelector(".por").value = +(it.g/f.g).toFixed(2); }
-  card.querySelector(".tot").textContent = fmt(S.meals[meal].reduce((a,x)=>a+(+x.g||0),0),0)+" g";
-  update(false);
-});
-mealsBox.addEventListener("click", e => {
-  const card = e.target.closest("[data-meal]"); if(!card) return;
-  const meal = card.dataset.meal;
-  const opt = e.target.closest(".opt");
-  if(opt){ closeDD(); addFood(meal, +opt.dataset.id); return; }
-  if(e.target.classList.contains("x")){ S.meals[meal].splice(+e.target.closest(".item").dataset.i,1); update(); }
-});
-mealsBox.addEventListener("keydown", e => {
-  if(!e.target.classList.contains("search")) return;
-  const dd = e.target.nextElementSibling, opts=[...dd.querySelectorAll(".opt")];
-  let i = opts.findIndex(o=>o.classList.contains("act"));
-  if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(i>=0) opts[i].classList.remove("act"); i = e.key==="ArrowDown"? Math.min(opts.length-1,i+1) : Math.max(0,i-1); if(opts[i]){opts[i].classList.add("act"); opts[i].scrollIntoView({block:"nearest"});} }
-  if(e.key==="Enter" && opts[i]){ e.preventDefault(); const meal=e.target.closest("[data-meal]").dataset.meal; closeDD(); addFood(meal, +opts[i].dataset.id); }
-  if(e.key==="Escape"){ closeDD(); e.target.blur(); }
-});
+function bindEditor(box){
+  box.addEventListener("focusin", e => { if(e.target.classList.contains("search")) openDD(e.target); });
+  box.addEventListener("input", e => {
+    const el = e.target, card = el.closest("[data-meal]"); if(!card) return;
+    const meal = card.dataset.meal, M = boxMeals(box);
+    if(el.classList.contains("search")) return openDD(el);
+    const row = el.closest(".item"); if(!row) return;
+    const it = M[meal][+row.dataset.i], f = byId[it.id];
+    if(el.classList.contains("por")){ it.g = Math.max(0, (+el.value||0)*f.g); row.querySelector(".gr").value = Math.round(it.g*10)/10; }
+    if(el.classList.contains("gr")){ it.g = Math.max(0, +el.value||0); row.querySelector(".por").value = +(it.g/f.g).toFixed(2); }
+    card.querySelector(".tot").textContent = fmt(M[meal].reduce((a,x)=>a+(+x.g||0),0),0)+" g";
+    update(false);
+  });
+  box.addEventListener("click", e => {
+    const card = e.target.closest("[data-meal]"); if(!card) return;
+    const meal = card.dataset.meal;
+    const opt = e.target.closest(".opt");
+    if(opt){ closeDD(); addFood(box, meal, +opt.dataset.id); return; }
+    if(e.target.classList.contains("x")){ boxMeals(box)[meal].splice(+e.target.closest(".item").dataset.i,1); update(); }
+  });
+  box.addEventListener("keydown", e => {
+    if(!e.target.classList.contains("search")) return;
+    const dd = e.target.nextElementSibling, opts=[...dd.querySelectorAll(".opt")];
+    let i = opts.findIndex(o=>o.classList.contains("act"));
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); if(i>=0) opts[i].classList.remove("act"); i = e.key==="ArrowDown"? Math.min(opts.length-1,i+1) : Math.max(0,i-1); if(opts[i]){opts[i].classList.add("act"); opts[i].scrollIntoView({block:"nearest"});} }
+    if(e.key==="Enter" && opts[i]){ e.preventDefault(); const meal=e.target.closest("[data-meal]").dataset.meal; closeDD(); addFood(box, meal, +opts[i].dataset.id); }
+    if(e.key==="Escape"){ closeDD(); e.target.blur(); }
+  });
+}
+bindEditor(document.getElementById("meals"));
+bindEditor(document.getElementById("dayMeals"));
 document.addEventListener("mousedown", e => { if(!e.target.closest(".adder")) closeDD(); });
+
+
+/* ---------------------------------------------------------------- 2 · several days (towards chronic exposure) */
+function dayStatus(r, b){ if(r.s.type==="NONE") return "na"; return r.RQ.ub < 1 ? "ok" : (r.RQ.lb >= 1 ? "hi" : "unc"); }
+function renderDays(){
+  const D = allDays(), N = D.length, b = S.bound;
+  if(S.dsel > N-1) S.dsel = N-1;
+  // chips
+  document.getElementById("dayChips").innerHTML = D.map((m,i)=>`<button data-d="${i}" aria-pressed="${i===S.dsel}">${esc(t("day_n"))} ${i+1}</button>`).join("");
+  document.getElementById("btnAddDay").disabled = N >= MAXDAYS;
+  document.getElementById("btnDupDay").disabled = N >= MAXDAYS;
+  document.getElementById("btnDelDay").disabled = S.dsel === 0;
+  document.getElementById("dayInfo").innerHTML = S.dsel===0 ? t("day1_is") : t("dayk_is").replace("{k}", S.dsel+1);
+  const box = document.getElementById("dayMeals"); box.dataset.day = S.dsel;
+  renderMeals(box, dayMeals(S.dsel));
+  renderDaysResults();
+}
+function renderDaysResults(){
+  const D = allDays(), N = D.length, b = S.bound, SU = subs();
+  const R = D.map(m => compute(m, S.bw)), M = compute(meanMeals(), S.bw);
+  document.getElementById("kDays").textContent = N;
+  document.getElementById("kMExceed").textContent = Object.values(M.S).filter(r=>r.RQ[b]>=1).length;
+  const mh = hi(M,b), km = document.getElementById("kMHI"); km.textContent = fmt(mh,2); km.style.color = mh>=1 ? "var(--critical-ink)" : "";
+  const mm = moet(M,b), kmm = document.getElementById("kMMOET"); kmm.textContent = isFinite(mm)?fmt(mm):"–"; kmm.style.color = mm<10000 ? "var(--critical-ink)" : "";
+  // grid: substances x days (risk quotient), plus mean
+  const cell = (r) => {
+    if(r.s.type==="NONE") return `<td class="na" data-tip="${esc(t("no_ref"))}">–</td>`;
+    const st = dayStatus(r,b), v = r.RQ[b];
+    return `<td class="${st}" data-tip="<b>${esc(sname(r.s.k))}</b><br>RQ ${fmt(v)} · ${esc(t("st_"+st))}<br>${t("tip_expo")}: ${fmt(r.E[b])} ${unitOf(r.s)}">${v===0?"0":fmt(v, v<0.01?3:2)}</td>`;
+  };
+  let h = `<table class="dgrid"><thead><tr><th></th>${D.map((m,i)=>`<th>${esc(t("day_s"))}${i+1}</th>`).join("")}<th class="mean">${esc(t("mean_col"))}</th></tr></thead><tbody>`;
+  FAMS.forEach(f => SU.filter(s=>s.fam===f).forEach(s => {
+    h += `<tr><th class="sub" title="${esc(sname(s.k))}">${esc(trunc(shname(s.k),26))} ${fdot(s.k).replace('margin-right:6px','margin:0 0 0 4px')}</th>${R.map(r=>cell(r.S[s.k])).join("")}${cell(M.S[s.k]).replace("<td ","<td style=\"font-weight:650\" ").replace('class="','class="mean ')}</tr>`;
+  }));
+  const hiCell = (res) => { const v = hi(res,b), st = hiStatus(res); return `<td class="${st}">${fmt(v,2)}</td>`; };
+  const moCell = (res) => { const v = moet(res,b), st = moetStatus(res); return `<td class="${st}">${isFinite(v)?fmt(v):"–"}</td>`; };
+  h += `<tr class="tot"><th class="sub">${esc(t("row_hi"))}</th>${R.map(hiCell).join("")}${hiCell(M).replace('class="','class="mean ')}</tr>`;
+  h += `<tr class="tot"><th class="sub">MOE<sub>T</sub></th>${R.map(moCell).join("")}${moCell(M).replace('class="','class="mean ')}</tr>`;
+  document.getElementById("daysGrid").innerHTML = h + "</tbody></table>";
+  renderTraj(R, M);
+}
+function renderTraj(R, M){
+  const b = S.bound, N = R.length, SU = subs();
+  const sel = document.getElementById("trajSel");
+  sel.innerHTML = `<option value="HI">${esc(t("traj_hi"))}</option>` + FAMS.map(f=>`<optgroup label="${esc(t("fam_"+f))}">${SU.filter(s=>s.fam===f).map(s=>`<option value="${s.k}">${esc(sname(s.k))}</option>`).join("")}</optgroup>`).join("");
+  if(![...sel.options].some(o=>o.value===S.traj)) S.traj = "HI";
+  sel.value = S.traj;
+  const k = S.traj, isHI = k==="HI", s = isHI ? null : SU.find(x=>x.k===k), noRef = s && s.type==="NONE";
+  const val = res => isHI ? hi(res,b) : (noRef ? res.S[k].E[b] : res.S[k].RQ[b]);
+  const daily = R.map(val);
+  const run = daily.map((v,i)=> daily.slice(0,i+1).reduce((a,x)=>a+x,0)/(i+1));
+  const color = isHI ? "var(--text-primary)" : famColor(s.fam);
+  const yLab = isHI ? t("traj_y_hi") : (noRef ? `${t("th_expo")} (${unitOf(s)})` : t("traj_y_rq"));
+  const el = document.getElementById("trajChart");
+  document.getElementById("trajLegend").innerHTML = `<span><svg width="26" height="12"><line x1="1" x2="25" y1="6" y2="6" stroke="${color}" stroke-width="2"/><circle cx="13" cy="6" r="4" fill="${color}"/></svg>${esc(t("traj_daily"))}</span><span><svg width="26" height="12"><line x1="1" x2="25" y1="6" y2="6" stroke="var(--text-primary)" stroke-width="2" stroke-dasharray="5 3"/><circle cx="13" cy="6" r="4" fill="var(--surface-1)" stroke="var(--text-primary)" stroke-width="2"/></svg>${esc(t("traj_run"))}</span>` + (noRef ? "" : `<span><svg width="22" height="10"><line x1="1" x2="21" y1="5" y2="5" stroke="var(--critical)" stroke-width="1.5" stroke-dasharray="4 3"/></svg>${esc(t("traj_ref"))}</span>`);
+  if(N < 2){ el.innerHTML = `<p class="empty">${esc(t("traj_need2"))}</p>`; document.getElementById("trajNote").innerHTML = t("traj_explain"); return; }
+  const W = cw(el, 900), H = 300, padL = 64, padR = 24, padT = 14, padB = 40, w = W-padL-padR, hgt = H-padT-padB;
+  const vals = daily.concat(run, noRef ? [] : [1]).filter(v=>v>0);
+  let lo = vals.length ? Math.floor(Math.log10(Math.min(...vals))) : -2, hiv = vals.length ? Math.ceil(Math.log10(Math.max(...vals))) : 1;
+  if(hiv-lo < 2) lo = hiv-2;
+  const y = v => padT + hgt - (Math.log10(Math.max(v, Math.pow(10,lo))) - lo)/(hiv-lo)*hgt;
+  const x = i => padL + (N===1 ? w/2 : i/(N-1)*w);
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t("traj_h"))}">`;
+  for(let p=lo; p<=hiv; p++){ const yy=y(Math.pow(10,p)); g += `<line class="gl" x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}"/><text x="${padL-8}" y="${yy+4}" text-anchor="end">${p===0?"1":(p<-2||p>3?"10"+superscript(p):fmt(Math.pow(10,p)))}</text>`; }
+  for(let i=0;i<N;i++) g += `<text x="${x(i)}" y="${H-padB+20}" text-anchor="middle">${esc(t("day_n"))} ${i+1}</text>`;
+  g += `<text x="14" y="${padT+hgt/2}" transform="rotate(-90 14 ${padT+hgt/2})" text-anchor="middle">${esc(yLab)}</text>`;
+  if(!noRef){ const y1 = y(1); g += `<line x1="${padL}" x2="${W-padR}" y1="${y1}" y2="${y1}" stroke="var(--critical)" stroke-width="1.5" stroke-dasharray="6 4"/>`; }
+  const path = arr => arr.map((v,i)=>`${i?"L":"M"}${x(i)},${y(v)}`).join(" ");
+  g += `<path d="${path(daily)}" fill="none" stroke="${color}" stroke-width="2"/>`;
+  g += `<path d="${path(run)}" fill="none" stroke="var(--text-primary)" stroke-width="2" stroke-dasharray="6 4"/>`;
+  const unitTxt = isHI ? "HI" : (noRef ? unitOf(s) : "RQ");
+  daily.forEach((v,i)=>{ g += `<circle cx="${x(i)}" cy="${y(v)}" r="5" fill="${color}" stroke="var(--surface-1)" stroke-width="2" data-tip="<b>${esc(t("day_n"))} ${i+1}</b><br>${esc(t("traj_daily"))}: ${fmt(v)} ${unitTxt}"/>`; });
+  run.forEach((v,i)=>{ g += `<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="var(--surface-1)" stroke="var(--text-primary)" stroke-width="2" data-tip="<b>${esc(t("traj_run"))}</b> (${esc(t("day_n"))} 1–${i+1})<br>${fmt(v)} ${unitTxt}"/>`; });
+  el.innerHTML = g + `</svg>`;
+  const imax = daily.indexOf(Math.max(...daily)), mean = run[N-1];
+  let note = t("traj_summary").replace("{max}", fmt(daily[imax])).replace("{d}", imax+1).replace("{mean}", fmt(mean)).replace("{n}", N).replace(/\{u\}/g, unitTxt);
+  if(!noRef){
+    const above = daily.filter(v=>v>=1).length;
+    if(above && mean < 1) note += " " + t("traj_above_but_mean_ok").replace("{a}", above);
+    else if(mean >= 1) note += " " + t("traj_mean_above");
+  }
+  document.getElementById("trajNote").innerHTML = note + " " + t("traj_explain");
+}
+document.getElementById("dayChips").addEventListener("click", e => { const x=e.target.closest("button"); if(x){ S.dsel=+x.dataset.d; renderDays(); } });
+document.getElementById("btnAddDay").addEventListener("click", () => { if(allDays().length>=MAXDAYS) return; S.extra.push(emptyMeals()); S.dsel = S.extra.length; update(); });
+document.getElementById("btnDupDay").addEventListener("click", () => { if(allDays().length>=MAXDAYS) return; S.extra.push(JSON.parse(JSON.stringify(dayMeals(S.dsel)))); S.dsel = S.extra.length; update(); });
+document.getElementById("btnDelDay").addEventListener("click", () => { if(S.dsel===0) return; S.extra.splice(S.dsel-1,1); S.dsel = Math.min(S.dsel, S.extra.length); if(!S.extra.length) S.basis="day"; update(); });
+document.getElementById("trajSel").addEventListener("change", e => { S.traj = e.target.value; renderDaysResults(); store(); });
+document.getElementById("presetDays").addEventListener("change", e => {
+  const P = PRESETS_DAYS[e.target.value]; if(!P) return;
+  S.meals = loadPreset(P[0]); S.extra = P.slice(1).map(loadPreset); S.dsel = 0;
+  e.target.value = ""; update();
+});
 
 /* ---------------------------------------------------------------- 1b · live panel */
 function renderLive(res){
@@ -1292,11 +1727,13 @@ function renderExpo(res){
   document.getElementById("expoTable").innerHTML = h + "</tbody>";
 }
 function csvExport(){
-  const res = compute(S.meals, S.bw), rows = [];
-  rows.push(["# MixExpo v1.2 (25.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
+  const res = compute(analysed(), S.bw), rows = [], D = allDays();
+  rows.push(["# MixExpo v1.3 (26.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
   rows.push(["section","item","value_LB","value_MB","value_UB","unit","reference","metric_selected_bound","status"]);
-  MEALS.forEach(m=>S.meals[m].forEach(it=>rows.push(["diet_"+m, byId[it.id].fr+" | "+fname(byId[it.id]), it.g, it.g, it.g, "g/day","","",""])));
+  D.forEach((day,d)=>MEALS.forEach(m=>day[m].forEach(it=>rows.push([`diet_day${d+1}_${m}`, byId[it.id].fr+" | "+fname(byId[it.id]), it.g, it.g, it.g, "g/day","","",""]))));
   rows.push(["body_weight","",S.bw,S.bw,S.bw,"kg","","",""]);
+  rows.push(["age","",S.age||"",S.age||"",S.age||"","years","","",""]);
+  rows.push(["results_basis", useMean() ? `mean of ${D.length} days` : "day 1 (24 h recall)", "","","","","","",""]);
   subs().forEach(s=>{ const r=res.S[s.k]; rows.push(["exposure", sname(s.k), r.E.lb, r.E.mb, r.E.ub, unitOf(s), refText(s), metricText(r), t("st_"+r.status)]); });
   subs().forEach(s=>{ const r=res.S[s.k]; rows.push(["risk_quotient", sname(s.k), r.RQ.lb, r.RQ.mb, r.RQ.ub, "", "", "", ""]); });
   rows.push(["hazard_index_threshold_substances","",hi(res,"lb"),hi(res,"mb"),hi(res,"ub"),"","","",t("st_"+hiStatus(res))]);
@@ -1426,7 +1863,7 @@ function renderCompare(res){
 }
 document.getElementById("btnSave").addEventListener("click", () => {
   if(S.scen.length>=4) return;
-  S.scen.push({name:`${t("scen_default")} ${String.fromCharCode(65+S.scen.length)}`, bw:S.bw, meals:JSON.parse(JSON.stringify(S.meals))});
+  S.scen.push({name:`${t("scen_default")} ${String.fromCharCode(65+S.scen.length)}${useMean()?" ("+t("basis_mean").replace("{n}",allDays().length)+")":""}`, bw:S.bw, meals:JSON.parse(JSON.stringify(analysed()))});
   update();
 });
 document.getElementById("scenList").addEventListener("click", e => {
@@ -1437,7 +1874,7 @@ document.getElementById("scenList").addEventListener("click", e => {
 document.getElementById("scenList").addEventListener("change", e => { if(e.target.dataset.i!==undefined){ S.scen[+e.target.dataset.i].name = e.target.value; update(); } });
 document.getElementById("btnExport").addEventListener("click", () => {
   const pack = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({food:byId[it.id].fr, g:+it.g}))); return o; };
-  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1.2 (25.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, meals:pack(S.meals), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
+  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1.3 (26.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, age:S.age, meals:pack(S.meals), extraDays:S.extra.map(pack), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
 });
 document.getElementById("fileIn").addEventListener("change", e => {
   const f = e.target.files[0]; if(!f) return;
@@ -1445,8 +1882,8 @@ document.getElementById("fileIn").addEventListener("change", e => {
   rd.onload = () => { try{
     const d = JSON.parse(rd.result);
     const unpack = m => { const o=emptyMeals(); MEALS.forEach(k=>(m&&m[k]||[]).forEach(it=>{ const fd=byFr[it.food]; if(fd) o[k].push({id:fd.id, g:+it.g||0}); })); return o; };
-    S.meals = unpack(d.meals); S.bw = +d.bw||70; S.scen = (d.scenarios||[]).slice(0,4).map(s=>({name:String(s.name||"?"), bw:+s.bw||70, meals:unpack(s.meals)}));
-    document.getElementById("bw").value=S.bw; update(); ioMsg(t("imported"));
+    S.meals = unpack(d.meals); S.extra = (d.extraDays||[]).slice(0,MAXDAYS-1).map(unpack); S.dsel = 0; S.age = +d.age||null; S.bw = +d.bw||70; S.scen = (d.scenarios||[]).slice(0,4).map(s=>({name:String(s.name||"?"), bw:+s.bw||70, meals:unpack(s.meals)}));
+    setBw(S.bw); setAge(S.age); update(); ioMsg(t("imported"));
   }catch(err){ ioMsg(t("import_err")); } };
   rd.readAsText(f); e.target.value="";
 });
@@ -1481,12 +1918,19 @@ function setView(v){
   S.view = v;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.v===v));
   document.querySelectorAll("section.view").forEach(s=>s.classList.toggle("on", s.id==="v-"+v));
-  update(false);
+  update(v==="days" || v==="diet");
 }
 document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ setView(b.dataset.v); window.scrollTo({top:0}); } });
-document.getElementById("langSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.lang=b.dataset.l; applyI18n(); update(); } });
+document.getElementById("langSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.lang=b.dataset.l; try{ localStorage.setItem(LS+".lang", S.lang); }catch(err){} applyI18n(); update(); } });
+document.getElementById("basisSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b && !b.disabled){ S.basis=b.dataset.x; update(false); } });
+function setAge(v){ S.age = (v>=1 && v<=110) ? v : null; document.getElementById("age").value = S.age||""; document.getElementById("introAge").value = S.age||""; update(false); }
+function setBw(v){ if(v>=10 && v<=250){ S.bw=v; document.getElementById("bw").value=v; document.getElementById("introBw").value=v; update(false); } }
+document.getElementById("age").addEventListener("change", e => setAge(+e.target.value));
+document.getElementById("introAge").addEventListener("change", e => setAge(+e.target.value));
+document.getElementById("introBw").addEventListener("input", e => setBw(+e.target.value));
+document.getElementById("v-intro").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b){ setView(b.dataset.go); window.scrollTo({top:0}); } });
 document.getElementById("boundSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.bound=b.dataset.b; applyI18n(); update(false); } });
-document.getElementById("bw").addEventListener("input", e => { const v=+e.target.value; if(v>=10 && v<=250){ S.bw=v; update(false); } });
+document.getElementById("bw").addEventListener("input", e => setBw(+e.target.value));
 document.getElementById("allFoods").addEventListener("change", e => { S.all = e.target.checked; store(); });
 let clearArmed = 0;
 document.getElementById("btnClear").addEventListener("click", e => {
@@ -1497,8 +1941,7 @@ document.getElementById("btnClear").addEventListener("click", e => {
 });
 document.getElementById("preset").addEventListener("change", e => {
   const p = PRESETS[e.target.value]; if(!p) return;
-  S.meals = emptyMeals();
-  MEALS.forEach(m => (p[m]||[]).forEach(([fr,g]) => { const f = byFr[fr]; if(f) S.meals[m].push({id:f.id, g}); }));
+  S.meals = loadPreset(p);
   e.target.value = ""; update();
 });
 document.getElementById("btnCSV").addEventListener("click", csvExport);
@@ -1507,9 +1950,21 @@ document.getElementById("btnPrint").addEventListener("click", () => { try{ windo
 function ioMsg(m){ const el = document.getElementById("ioMsg"); el.textContent = m; setTimeout(()=>{ if(el.textContent===m) el.textContent=""; }, 5000); }
 
 function update(full=true){
-  const res = compute(S.meals, S.bw);
+  const res1 = compute(S.meals, S.bw);
+  const res = useMean() ? compute(meanMeals(), S.bw) : res1;
   if(full) renderMeals();
-  renderLive(res);
+  renderLive(res1);
+  // diet basis switch + banner
+  const N = allDays().length;
+  document.getElementById("basisMeanBtn").textContent = t("basis_mean").replace("{n}", N);
+  document.getElementById("basisMeanBtn").disabled = N < 2;
+  document.getElementById("basisCtrl").style.display = N < 2 ? "none" : "";
+  document.querySelectorAll("#basisSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.x===(useMean()?"mean":"day")));
+  const bb = document.getElementById("basisBanner");
+  const showB = ["expo","contrib","risk","compare"].includes(S.view);
+  bb.style.display = showB ? "block" : "none";
+  if(showB) bb.innerHTML = useMean() ? t("basis_banner_mean").replace("{n}", N) : (N>1 ? t("basis_banner_day").replace("{n}", N) : t("basis_banner_one"));
+  if(S.view==="days") { if(full) renderDays(); else renderDaysResults(); }
   if(S.view==="expo") renderExpo(res);
   if(S.view==="contrib") renderContrib(res);
   if(S.view==="risk") renderRisk(res);
@@ -1520,20 +1975,19 @@ function update(full=true){
 
 let rzT; addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(()=>update(false), 150); });
 /* ---------------------------------------------------------------- boot */
-if(!Object.values(S.meals).some(a=>a.length)){
-  const p = PRESETS.p_excel; MEALS.forEach(m => (p[m]||[]).forEach(([fr,g]) => { const f=byFr[fr]; if(f) S.meals[m].push({id:f.id,g}); }));
-}
+if(!Object.values(S.meals).some(a=>a.length)) S.meals = loadPreset(PRESETS.p_pnns);
 // language: ?lang=xx or #xx in the link > user's saved choice > English
 (function(){
   const ok = l => ["es","fr","en"].includes(l) ? l : null;
   const fromUrl = ok((new URLSearchParams(location.search).get("lang")||"").toLowerCase()) || ok(location.hash.replace("#","").toLowerCase());
-  let saved = null; try{ saved = ok((JSON.parse(localStorage.getItem(LS)||"null")||{}).lang); }catch(e){}
+  let saved = null; try{ saved = ok(localStorage.getItem(LS+".lang")); }catch(e){}   // only set by an explicit click
   S.lang = fromUrl || saved || "en";
 })();
-document.getElementById("bw").value = S.bw;
+document.getElementById("bw").value = S.bw; document.getElementById("introBw").value = S.bw;
+document.getElementById("age").value = S.age||""; document.getElementById("introAge").value = S.age||"";
 document.getElementById("allFoods").checked = !!S.all;
 applyI18n();
-setView("diet");
+setView("intro");
 update();
 </script>
 </body>

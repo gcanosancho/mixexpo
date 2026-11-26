@@ -1,6 +1,6 @@
 # MixExpo · Chemical mixture exposure calculator
 
-**MixExpo v1.2 (25.11.2026)** — a pedagogical web tool to explore dietary exposure to chemical mixtures and the associated risks, based on the French Second Total Diet Study (TDS2 / EAT2, ANSES).
+**MixExpo v1.3 (26.11.2026)** — a pedagogical web tool to explore dietary exposure to chemical mixtures and the associated risks, based on the French Second Total Diet Study (TDS2 / EAT2, ANSES).
 
 👉 **Open the calculator:** https://gcanosancho.github.io/mixexpo/
 
@@ -12,19 +12,21 @@ Author: **German Cano-Sancho** (INRAE, LABERCA, Nantes, France)
 
 ## What students do
 
-The tool follows six steps (interface in English by default, with Spanish and French; a link such as `…/mixexpo/?lang=es` or `?lang=fr` opens it directly in another language). The 17 chemicals were selected because they were **quantified in at least 10 % of TDS2 samples**, and are grouped and colour-coded by family: metals, process contaminants, mycotoxins, persistent organic pollutants, pesticides, food-contact materials, food additives and phytoestrogens.
+The tool opens on a **Start** page that explains the steps, then follows them in tabs (interface in English by default, with Spanish and French; a link such as `…/mixexpo/?lang=es` or `?lang=fr` opens it directly in another language). The 17 chemicals were selected because they were **quantified in at least 10 % of TDS2 samples**, and are grouped and colour-coded by family: metals, process contaminants, mycotoxins, persistent organic pollutants, pesticides, food-contact materials, food additives and phytoestrogens.
 
-1. **My 24 h diet:** a 24-hour dietary recall, meal by meal (breakfast, lunch, snack, dinner, other), with household portions or grams. A live panel shows exposure and risk while the diet is being entered.
-2. **Exposure:** daily exposure per substance (ng/kg bw/day) with lower/middle/upper-bound (LB/MB/UB) uncertainty, shown next to the risk quotient to contrast *how much* with *how risky*.
-3. **Contributing foods:** a food × substance map of percentage contributions, distinguishing "not analysed" from "zero".
-4. **Risk & mixtures:** a tiered mixture assessment following the EFSA (2019) guidance on combined exposure:
+0. **Start:** instructions, body weight and (optional) age. Under 12 years, the stricter ANSES isoflavone value for children is applied.
+1. **My 24 h diet:** a 24-hour dietary recall, meal by meal, with household portions or grams. A live panel shows exposure and risk while the diet is being entered.
+2. **Several days:** up to 7 days with the same editor, to move from a single day towards **chronic exposure**: a day × substance grid of risk quotients, the mean of the days, and the trajectory of any substance (or of the hazard index) with its running mean. A header switch lets all other tabs show results either for day 1 or for the mean of the days.
+3. **Exposure:** daily exposure per substance (ng/kg bw/day) with lower/middle/upper-bound (LB/MB/UB) uncertainty, shown next to the risk quotient to contrast *how much* with *how risky*.
+4. **Contributing foods:** a food × substance map of percentage contributions, distinguishing "not analysed" from "zero".
+5. **Risk & mixtures:** a tiered mixture assessment following the EFSA (2019) guidance on combined exposure:
    - Tier 0: hazard index (HI) of all threshold substances;
-   - Tier 1: HI by common toxicological effect (neurotoxicity, nephrotoxicity, reproduction/development, immunotoxicity, other);
+   - Tier 1: HI by common toxicological effect (neurotoxicity, nephrotoxicity, liver/thyroid, reproduction/development, immunotoxicity, other);
    - genotoxic carcinogens combined as a total margin of exposure (MOE<sub>T</sub>).
-5. **Compare scenarios:** save up to four diets and compare exposure and risk profiles (e.g. canned vs fresh foods, fish choices, ultra-processed foods).
-6. **Methods & data:** data sources, assumptions and editable toxicological reference values.
+6. **Compare scenarios:** save up to four diets (single day or mean of days) and compare exposure and risk profiles.
+7. **Methods & data:** data sources, selection criterion, occurrence of each chemical, assumptions and editable toxicological reference values.
 
-Four example diets are included (original spreadsheet example, Mediterranean with fish, fast food, vegetarian). Results can be exported as CSV, and diets/scenarios saved and shared as JSON.
+Example diets: a **balanced day following the French PNNS 4 recommendations** (at least 5 fruit and vegetables, wholegrain starch, 2 dairy products, a handful of nuts, legumes, poultry, rapeseed/olive oil, water), Mediterranean with fish, fast food and vegetarian; and two multi-day examples (3 balanced PNNS days with poultry, fatty fish and lean fish/legumes; 3 contrasted days). Results can be exported as CSV (including all days, age and the results basis), and diets/days/scenarios saved and shared as JSON.
 
 ### Suggested classroom exercises
 
@@ -33,6 +35,8 @@ Four example diets are included (original spreadsheet example, Mediterranean wit
 - Replace canned foods with fresh ones and follow the change in **bisphenol A** exposure.
 - Switch the bisphenol A reference value from the BfR (200 ng/kg bw/day, default) to EFSA's (0.2 ng/kg bw/day) and discuss how hazard characterisation drives the conclusion.
 - Explore how the **hazard index** and the **Tier-1 groups** change the interpretation of the same diet.
+- Record several days: how does the **mean** compare with the worst day, and why do chronic reference values apply to the mean?
+- Even the **balanced PNNS diet** exceeds some references (acrylamide from coffee and bread, lead, PBDEs on fish days): what does this say about diet quality versus contaminant exposure?
 
 ---
 
@@ -83,7 +87,7 @@ Reference values should be checked against the latest scientific opinions before
 
 ### Main limitations
 
-- One day of intake does not represent usual (chronic) exposure.
+- One day of intake does not represent usual (chronic) exposure; the mean of a few days is a better, but still limited, estimate (dietary surveys use statistical modelling of several non-consecutive days).
 - Concentration data date from 2007–2009 and may not reflect current contamination levels.
 - Not every substance was analysed in every food; metals are only available for 45 foods.
 - Selection by occurrence favours chemicals measured with sensitive methods; a rarely quantified chemical (e.g. PFAS with 2007–2009 detection limits) is not necessarily of low concern.
@@ -98,10 +102,11 @@ No installation is needed: `index.html` is a single self-contained file with no 
 
 ## How to cite
 
-> Cano-Sancho G. (2026). *MixExpo: a pedagogical calculator of dietary exposure to chemical mixtures based on French TDS2 data.* Version 1.2 (25.11.2026). https://github.com/gcanosancho/mixexpo
+> Cano-Sancho G. (2026). *MixExpo: a pedagogical calculator of dietary exposure to chemical mixtures based on French TDS2 data.* Version 1.3 (26.11.2026). https://github.com/gcanosancho/mixexpo
 
 ## Versions
 
+- **v1.3 (26.11.2026)** — Start page with step-by-step instructions; age input; "Several days" tab (up to 7 days, day × substance grid, mean of days, trajectory with running mean) and a header switch to analyse day 1 or the mean; balanced PNNS example days replace the original spreadsheet example; English always the default unless a language is explicitly chosen; mobile layout fixes.
 - **v1.2 (25.11.2026)** — chemicals selected by occurrence (quantified in ≥ 10 % of TDS2 samples): adds non-dioxin-like PCBs, HBCDD, piperonyl butoxide, chlorpropham, sulfites, tartaric acid, isoflavones and lignans; removes PFAS, chlorpyrifos, dimethoate and carbendazim; new liver/thyroid mixture group; occurrence shown in the Methods tab.
 - **v1.1 (25.11.2026)** — English by default; chemicals grouped and colour-coded by family with full names; bisphenol A assessed against the BfR TDI with a warning on the EFSA value; clearer display of substances never detected (LB = 0).
 - **v1 (25.11.2026)** — first web version, replacing the earlier Excel calculator; adds bisphenol A, LB/MB/UB scenarios, tiered mixture assessment and scenario comparison.
