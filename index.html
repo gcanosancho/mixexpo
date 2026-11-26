@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MixExpo v1.4 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
+<title>MixExpo v1.5 · Chemical mixture exposure calculator (French TDS2) · G. Cano-Sancho</title>
 <meta name="author" content="German Cano-Sancho">
-<meta name="description" content="MixExpo v1.4 (26.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
+<meta name="description" content="MixExpo v1.5 (26.11.2026) – pedagogical chemical mixture exposure calculator based on French TDS2 data. Author: German Cano-Sancho. For teaching purposes only.">
 <style>
 :root{
   color-scheme: light;
@@ -46,6 +46,14 @@ header.top{background:var(--surface-1);border-bottom:1px solid var(--line);posit
 .brand .ver{font-size:11.5px;font-weight:600;color:var(--text-secondary);background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:1px 8px;margin-left:6px;vertical-align:middle}
 .brand .byline{font-size:12px;color:var(--text-muted)}
 .ctrl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)}
+.you{display:grid;grid-template-columns:auto auto;align-items:center;gap:3px 14px;padding:5px 12px 7px;border:2px solid var(--accent);border-radius:12px;background:var(--accent-soft)}
+.you-h{grid-column:1/-1;display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.you .ctrl{color:var(--text-primary);font-weight:550}
+.you input[type=number]{border:1.5px solid var(--accent);font-weight:650;font-size:14px;background:var(--surface-1)}
+.dtitle{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:8px 12px;border-left:4px solid var(--accent);background:var(--surface-1);border-radius:0 8px 8px 0;font-size:15px}
+.dtitle .tag{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent)}
+.dtitle b{font-weight:650}
+.dtitle .ed{font-size:12px;color:var(--text-muted)}
 .ctrl input[type=number]{width:72px}
 input[type=number],input[type=text],select{background:var(--surface-1);border:1px solid var(--line-strong);border-radius:7px;padding:5px 8px}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
@@ -189,7 +197,7 @@ details.method{border-top:1px solid var(--line);padding:10px 0}
 details.method summary{cursor:pointer;font-weight:600}
 details.method[open] summary{margin-bottom:8px}
 .rpin{width:110px!important;text-align:right}
-.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin:6px 0 18px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin:6px 0 18px}
 .step{background:var(--surface-1);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;flex-direction:column;gap:8px}
 .step .num{width:30px;height:30px;border-radius:50%;background:var(--text-primary);color:var(--surface-1);display:grid;place-items:center;font-weight:700;font-size:14px}
 .step h3{margin:0;font-size:16px}
@@ -224,9 +232,11 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
 <header class="top">
   <div class="wrap">
     <div class="top-row">
-      <div class="brand"><b>MixExpo <span class="ver">v1.4 · 26.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
-      <label class="ctrl"><span data-i18n="bw"></span> <input id="bw" type="number" min="10" max="200" step="1" value="70"> kg</label>
-      <label class="ctrl"><span data-i18n="age"></span> <input id="age" type="number" min="1" max="110" step="1" placeholder="–" style="width:62px"> <span data-i18n="yrs"></span></label>
+      <div class="brand"><b>MixExpo <span class="ver">v1.5 · 26.11.2026</span></b><span data-i18n="subtitle"></span><span class="byline">German Cano-Sancho · <span data-i18n="peda_only"></span></span></div>
+      <div class="you" role="group" aria-labelledby="youH"><span class="you-h" id="youH"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5" r="3.2" fill="currentColor"/><path d="M1.8 15c.6-3.4 3.1-5.3 6.2-5.3s5.6 1.9 6.2 5.3z" fill="currentColor"/></svg><span data-i18n="you_h"></span></span>
+        <label class="ctrl"><span data-i18n="bw"></span> <input id="bw" type="number" min="10" max="200" step="1" value="70"> kg</label>
+        <label class="ctrl"><span data-i18n="age"></span> <input id="age" type="number" min="1" max="110" step="1" placeholder="–" style="width:62px"> <span data-i18n="yrs"></span></label>
+      </div>
       <div class="ctrl" id="basisCtrl"><span data-i18n="basis"></span>
         <div class="seg" id="basisSeg" role="group"><button data-x="day" data-i18n="basis_day"></button><button data-x="mean" id="basisMeanBtn"></button></div>
       </div>
@@ -262,16 +272,11 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
     <h2 data-i18n="intro_h"></h2>
     <p class="lead" data-i18n-html="intro_lead"></p>
     <div class="steps">
-      <div class="step"><div class="num">1</div><h3 data-i18n="s1_t"></h3><p data-i18n-html="s1_d"></p>
-        <div class="row"><label><span data-i18n="bw"></span> <input id="introBw" type="number" min="10" max="200" step="1"> kg</label><label><span data-i18n="age"></span> <input id="introAge" type="number" min="1" max="110" step="1" placeholder="–"> <span data-i18n="yrs"></span></label></div></div>
-      <div class="step"><div class="num">2</div><h3 data-i18n="s2_t"></h3><p data-i18n-html="s2_d"></p><div class="row"><button class="btn primary" data-go="diet" data-i18n="s2_b"></button></div></div>
-      <div class="step"><div class="num">3</div><h3 data-i18n="s3_t"></h3><p data-i18n-html="s3_d"></p><div class="row"><button class="btn" data-go="days" data-i18n="s3_b"></button></div></div>
-      <div class="step"><div class="num">4</div><h3 data-i18n="s4_t"></h3><p data-i18n-html="s4_d"></p><div class="row"><button class="btn" data-go="expo" data-i18n="s4_b"></button></div></div>
-      <div class="step"><div class="num">5</div><h3 data-i18n="s5_t"></h3><p data-i18n-html="s5_d"></p><div class="row"><button class="btn" data-go="contrib" data-i18n="s5_b"></button></div></div>
-      <div class="step"><div class="num">6</div><h3 data-i18n="s6_t"></h3><p data-i18n-html="s6_d"></p><div class="row"><button class="btn" data-go="risk" data-i18n="s6_b"></button></div></div>
-      <div class="step"><div class="num">7</div><h3 data-i18n="s7_t"></h3><p data-i18n-html="s7_d"></p><div class="row"><button class="btn" data-go="compare" data-i18n="s7_b"></button></div></div>
-      <div class="step"><div class="num">8</div><h3 data-i18n="s9_t"></h3><p data-i18n-html="s9_d"></p><div class="row"><button class="btn" data-go="occ" data-i18n="s9_b"></button></div></div>
-      <div class="step"><div class="num">9</div><h3 data-i18n="s8_t"></h3><p data-i18n-html="s8_d"></p><div class="row"><button class="btn" data-go="methods" data-i18n="s8_b"></button></div></div>
+      <div class="step"><div class="num">1</div><h3 data-i18n="s_rec_t"></h3><p data-i18n-html="s_rec_d"></p><div class="row"><button class="btn primary" data-go="diet" data-i18n="s_rec_b1"></button><button class="btn" data-go="days" data-i18n="s_rec_b2"></button></div></div>
+      <div class="step"><div class="num">2</div><h3 data-i18n="s4_t"></h3><p data-i18n-html="s4_d"></p><div class="row"><button class="btn" data-go="expo" data-i18n="s4_b"></button></div></div>
+      <div class="step"><div class="num">3</div><h3 data-i18n="s5_t"></h3><p data-i18n-html="s5_d"></p><div class="row"><button class="btn" data-go="contrib" data-i18n="s5_b"></button></div></div>
+      <div class="step"><div class="num">4</div><h3 data-i18n="s6_t"></h3><p data-i18n-html="s6_d"></p><div class="row"><button class="btn" data-go="risk" data-i18n="s6_b"></button></div></div>
+      <div class="step"><div class="num">5</div><h3 data-i18n="s7_t"></h3><p data-i18n-html="s7_d"></p><div class="row"><button class="btn" data-go="compare" data-i18n="s7_b"></button></div></div>
     </div>
     <div class="two">
       <div class="card small sec" data-i18n-html="good_html"></div>
@@ -289,6 +294,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       <span style="flex:1"></span>
       <label class="chk"><input type="checkbox" id="allFoods"> <span data-i18n="all_foods"></span></label>
     </div>
+    <div class="dtitle" id="dietTitle"></div>
     <div class="grid-diet">
       <div class="stack" id="meals"></div>
       <div class="stack side">
@@ -321,7 +327,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       <button class="btn" id="btnDelDay" data-i18n="del_day"></button>
     </div>
     <div class="grid-diet">
-      <div class="stack"><div class="note small" id="dayInfo" style="margin:0"></div><div class="stack" id="dayMeals" data-day="0"></div></div>
+      <div class="stack"><div class="dtitle" id="dayTitle" style="margin:0"></div><div class="note small" id="dayInfo" style="margin:0"></div><div class="stack" id="dayMeals" data-day="0"></div></div>
       <div class="stack side">
         <div class="card">
           <h3 data-i18n="days_live_h"></h3>
@@ -355,6 +361,16 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       <div class="chart" id="rqChart"></div>
       <div class="note" id="rankNote"></div>
       <div class="note warn" id="bpaWarnExpo"></div>
+    </div>
+    <div class="card" style="margin-bottom:18px">
+      <div class="toolbar" style="margin-bottom:4px"><h3 style="margin:0;flex:1" data-i18n="pop_h"></h3>
+        <span class="ctrl"><span data-i18n="pop_grp"></span><span class="seg" id="popSeg"><button data-g="a" data-i18n="pop_a"></button><button data-g="c" data-i18n="pop_c"></button></span></span></div>
+      <p class="small muted" style="margin:2px 0 6px" data-i18n-html="pop_lead"></p>
+      <div class="legend" id="popLegend"></div>
+      <div class="chart" id="popChart"></div>
+      <div class="note" id="popHint"></div>
+      <div class="note small" data-i18n-html="pop_caveat"></div>
+      <div class="note small" id="popNone"></div>
     </div>
     <div class="card">
       <div class="toolbar" style="margin-bottom:6px"><h3 style="margin:0;flex:1" data-i18n="expo_table_h"></h3><button class="btn small" id="btnCSV" data-i18n="export_csv"></button></div>
@@ -472,6 +488,7 @@ footer{color:var(--text-muted);font-size:12px;padding:24px 0;border-top:1px soli
       <details class="method"><summary data-i18n="m3_s"></summary><div data-i18n-html="m3"></div></details>
       <details class="method"><summary data-i18n="m4_s"></summary><div data-i18n-html="m4"></div></details>
       <details class="method"><summary data-i18n="m5_s"></summary><div data-i18n-html="m5"></div><div class="heat" id="covMatrix" style="margin-top:10px"></div></details>
+      <details class="method"><summary data-i18n="m6_s"></summary><div data-i18n-html="m6"></div></details>
     </div>
   </section>
   <footer data-i18n-html="footer"></footer>
@@ -818,8 +835,6 @@ const SUBS_DEFAULT = [
  {k:"BPA",   fam:"fcm",   u:"ng", type:"HBGV", rp:200,    grp:"immune", conf:"low"},   // BfR 2023; EFSA 2023 = 0.2 (see warning)
  {k:"SO2",   fam:"add",   u:"ng", type:"MOE",  rp:38e6, thr:80, grp:"neuro", conf:"medium"},
  {k:"TART",  fam:"add",   u:"ng", type:"HBGV", rp:240e6,  grp:"other",  conf:"high"},
- {k:"ISO",   fam:"phyto", u:"ng", type:"HBGV", rp:20000,  grp:"repro",  conf:"high"},
- {k:"LIGN",  fam:"phyto", u:"ng", type:"NONE", rp:0,      grp:"none",   conf:"low"},
  // v1.4: quantified in >= 10 % of samples overall OR in >= 10 % of the samples of at least one INCA2 food group (n >= 10)
  {k:"PFAS4", fam:"pop",   u:"ng", type:"HBGV", rp:4.4/7,  grp:"immune", conf:"high"},
  {k:"PFASLC",fam:"pop",   u:"ng", type:"NONE", rp:0,      grp:"none",   conf:"low"},
@@ -839,9 +854,8 @@ const SUBS_DEFAULT = [
  {k:"FLUD",  fam:"pest",  u:"ng", type:"HBGV", rp:370000, grp:"other",  conf:"medium"},
  {k:"OPP",   fam:"pest",  u:"ng", type:"HBGV", rp:400000, grp:"other",  conf:"medium"},
  {k:"ANN",   fam:"add",   u:"ng", type:"HBGV", rp:300000, grp:"other",  conf:"low"},
- {k:"ISO2",  fam:"phyto", u:"ng", type:"NONE", rp:0,      grp:"none",   conf:"low"},
 ];
-const FAMS = ["metal","proc","myco","pop","pest","fcm","add","phyto"];
+const FAMS = ["metal","proc","myco","pop","pest","fcm","add"];
 SUBS_DEFAULT.sort((x,y)=>FAMS.indexOf(x.fam)-FAMS.indexOf(y.fam));   // stable: keeps the order within each family
 const GROUPS = ["neuro","kidney","liver","carc","repro","immune","other"];
 const CATS = ["bread","pastry","fish","meat","dairy","fat","veg","fruit","dishes","drinks"];
@@ -908,12 +922,12 @@ es:{
  m2_s:"2. Datos censurados (LB / MB / UB)",
  m2:"<p>«ND (x)», «&lt; x» → no detectado (x = LOD): LB = 0, MB = LOD/2, UB = LOD. «NQ (x)» → detectado no cuantificado (x = LOQ): LB = 0, MB = LOQ/2, UB = LOQ. Cuando no se indica el límite se usa el de la hoja «Limites analytiques» (acrilamida LOD 4 / LOQ 10 µg/kg; DON 3/10 µg/kg en sólidos y 0,3/1 en líquidos). «NR» o celda vacía = no analizado (se excluye, no se pone a 0).</p>",
  m3_s:"3. Selección de sustancias y agregación",
- m3:"<p><b>Criterio de selección (v1.4):</b> un analito se conserva si se cuantificó en al menos el 10 % del total de muestras de la EAT2, <b>o</b> en al menos el 10 % de las muestras de al menos un grupo de alimentos INCA2 con 10 o más muestras analizadas. La segunda condición conserva sustancias raras en el conjunto de la dieta pero frecuentes en algunos alimentos (plaguicidas en cereales almacenados y frutas, PFAS en pescado y vísceras, isoflavonas en la leche). El mínimo de 10 muestras evita seleccionar una sustancia por 1 muestra positiva de 2. De los 425 analitos examinados, 102 cumplen la regla (ver la pestaña <b>Presencia</b>) y se agrupan en las 36 sustancias de la calculadora. No se incluyen: los 14 HAP distintos de los HAP4 (visibles en Presencia; los HAP4 son el indicador de la EFSA) ni los analitos que no cumplen la regla, como la ocratoxina A, el cumestrol y la biochanina A (≥ 10 % solo en grupos con menos de 10 muestras), la carbendazima (8 % de las frutas), los nitritos (6 % de los embutidos) y el dimetoato. El arsénico total, aunque frecuente, no se evalúa porque en el pescado es casi todo arsenobetaína, no tóxica.</p><ul><li><b>Cd, Hg, Pb</b>: valores de elementos traza de EAT2 incluidos en la calculadora original (45 alimentos, µg/kg). Celdas vacías interpretadas como &lt; LOD (Cd 0,5; Hg 5; Pb 2,5 µg/kg). El Hg total se compara con la TWI del metilmercurio (conservador fuera del pescado).</li><li><b>Sumas</b>: HAP4 = BaP + BaA + BbF + CHR; PBDE = Σ BDE-28, 47, 99, 100, 153, 154, 183 (BDE-209 aparte); HBCDD = α + β + γ; PCB no dioxínicos = PCB 28, 52, 101, 138, 153, 180; dioxinas + PCB-DL en EQT-OMS 2005; PFAS4 = PFOS + PFOA + PFNA + PFHxS (definición EFSA 2020; el PFHxS apenas se cuantificó); otros PFAS de cadena larga = PFDA + PFUnDA + PFDoDA + PFTrDA; PBB = PBB 52 + 101 + 153; isoflavonas = daidzeína + genisteína + gliciteína; otras isoflavonas = equol + formononetina; lignanos = secoisolariciresinol + enterolactona + matairesinol.</li><li><b>Plaguicidas y aditivos</b> (mg/kg × 1000). Las ADI de los plaguicidas son las vigentes en la época de la EAT2 (compilación EFSA 2008), salvo el clorpirifós, para el que se usa el valor más bajo de la EFSA de 2014. Sulfitos expresados como SO₂. Para los fitoestrógenos solo se indica «NQ»: se usa el extremo superior del rango de LOQ (estimación UB conservadora).</li><li><b>Mezclas, nivel 1</b>: los tres organofosforados (pirimifós-metilo, clorpirifós-metilo, clorpirifós) comparten mecanismo (inhibición de la acetilcolinesterasa) y se agrupan en neurotoxicidad. Los demás plaguicidas se colocan en «otros efectos»: agruparlos por órgano diana requeriría los grupos de evaluación acumulativa de la EFSA, fuera del alcance de esta herramienta.</li><li><b>Bisfenol A</b>: campaña ANSES/LABERCA sobre las muestras EAT2 + aguas embotelladas (LHN). Muestras de 2007–2009, anteriores a la prohibición francesa del BPA en envases alimentarios (2015).</li></ul>",
+ m3:"<p><b>Criterio de selección:</b> un analito se conserva si se cuantificó en al menos el 10 % del total de muestras de la EAT2, <b>o</b> en al menos el 10 % de las muestras de al menos un grupo de alimentos INCA2 con 10 o más muestras analizadas. La segunda condición conserva sustancias raras en el conjunto de la dieta pero frecuentes en algunos alimentos (plaguicidas en cereales almacenados y frutas, PFAS en pescado y vísceras). El mínimo de 10 muestras evita seleccionar una sustancia por 1 muestra positiva de 2. De los 425 analitos examinados, 102 cumplen la regla (ver la pestaña <b>Presencia</b>). Los <b>fitoestrógenos</b> (isoflavonas, lignanos: 8 analitos) también la cumplen pero <b>no se incluyen</b> desde la v1.5, porque sus valores de referencia sanitaria se basan en evidencia limitada. El resto se agrupa en las 33 sustancias de la calculadora. Tampoco se incluyen: los 14 HAP distintos de los HAP4 (visibles en Presencia; los HAP4 son el indicador de la EFSA) ni los analitos que no cumplen la regla, como la ocratoxina A (≥ 10 % solo en grupos con menos de 10 muestras), la carbendazima (8 % de las frutas), los nitritos (6 % de los embutidos) y el dimetoato. El arsénico total, aunque frecuente, no se evalúa porque en el pescado es casi todo arsenobetaína, no tóxica.</p><ul><li><b>Cd, Hg, Pb</b>: valores de elementos traza de EAT2 incluidos en la calculadora original (45 alimentos, µg/kg). Celdas vacías interpretadas como &lt; LOD (Cd 0,5; Hg 5; Pb 2,5 µg/kg). El Hg total se compara con la TWI del metilmercurio (conservador fuera del pescado).</li><li><b>Sumas</b>: HAP4 = BaP + BaA + BbF + CHR; PBDE = Σ BDE-28, 47, 99, 100, 153, 154, 183 (BDE-209 aparte); HBCDD = α + β + γ; PCB no dioxínicos = PCB 28, 52, 101, 138, 153, 180; dioxinas + PCB-DL en EQT-OMS 2005; PFAS4 = PFOS + PFOA + PFNA + PFHxS (definición EFSA 2020; el PFHxS apenas se cuantificó); otros PFAS de cadena larga = PFDA + PFUnDA + PFDoDA + PFTrDA; PBB = PBB 52 + 101 + 153.</li><li><b>Plaguicidas y aditivos</b> (mg/kg × 1000). Las ADI de los plaguicidas son las vigentes en la época de la EAT2 (compilación EFSA 2008), salvo el clorpirifós, para el que se usa el valor más bajo de la EFSA de 2014. Sulfitos expresados como SO₂.</li><li><b>Mezclas, nivel 1</b>: los tres organofosforados (pirimifós-metilo, clorpirifós-metilo, clorpirifós) comparten mecanismo (inhibición de la acetilcolinesterasa) y se agrupan en neurotoxicidad. Los demás plaguicidas se colocan en «otros efectos»: agruparlos por órgano diana requeriría los grupos de evaluación acumulativa de la EFSA, fuera del alcance de esta herramienta.</li><li><b>Bisfenol A</b>: campaña ANSES/LABERCA sobre las muestras EAT2 + aguas embotelladas (LHN). Muestras de 2007–2009, anteriores a la prohibición francesa del BPA en envases alimentarios (2015).</li></ul>",
  m4_s:"4. Caracterización del riesgo y mezclas",
  m4:"<p>Sustancias con valor basado en salud (TDI/TWI/ADI): RQ = E / VBS; se muestra el % del VBS. Sustancias evaluadas con margen de exposición: MOE = BMDL / E; preocupación si MOE &lt; umbral (10 000 para carcinógenos genotóxicos, 10 para Pb, 25 para PBDE según EFSA 2024). Para combinarlas se usa RQ = umbral / MOE. HI = Σ RQ de las sustancias con umbral (nivel 0, guía MixTox de EFSA 2019); los carcinógenos genotóxicos no se suman al HI sino que se combinan con MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Los grupos de nivel 1 son una simplificación pedagógica de los grupos de evaluación acumulativa.</p><p><b>Limitaciones:</b> 1 día ≠ exposición habitual; datos de 2007–2009; no todas las sustancias se analizaron en todos los alimentos; solo exposición alimentaria (sin agua de bebida para la mayoría de sustancias, aire, polvo…).</p>",
  m5_s:"5. Cobertura analítica del catálogo",
  m5:"<p>Número de alimentos del catálogo EAT2 de esta herramienta con datos para cada sustancia.</p>",
- footer:"MixExpo v1.4 (26.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
+ footer:"MixExpo v1.5 (26.11.2026) · © German Cano-Sancho · Solo con fines pedagógicos. Herramienta docente de evaluación de la exposición a mezclas químicas a partir de los datos abiertos EAT2 (ANSES). No es un dispositivo de diagnóstico. Los valores de referencia deben verificarse con las últimas opiniones científicas de EFSA antes de cualquier otro uso.",
  preset_ph:"Cargar una dieta de ejemplo…", p_excel:"Ejemplo de la hoja Excel original", p_med:"Mediterránea con pescado", p_fast:"Comida rápida / ultraprocesados", p_veg:"Vegetariana",
  cat_bread:"Pan, cereales y féculas", cat_pastry:"Bollería, galletas y dulces", cat_fish:"Pescados y mariscos", cat_meat:"Carnes y embutidos", cat_dairy:"Lácteos y huevos", cat_fat:"Grasas y aceites", cat_veg:"Verduras y legumbres", cat_fruit:"Frutas y frutos secos", cat_dishes:"Platos preparados y salsas", cat_drinks:"Bebidas",
  u_slice:"rebanada", u_unit:"unidad", u_cup:"taza", u_serving:"ración", u_glass:"vaso", u_handful:"puñado", u_tsp:"cucharadita", u_tbsp:"cucharada", u_can:"lata", u_bowl:"plato",
@@ -991,11 +1005,11 @@ es:{
  traj_mean_above:"La media de los días supera el valor de referencia: la superación se mantiene en el tiempo.",
  traj_explain:"La media acumulada se estabiliza al añadir días: por eso las encuestas alimentarias usan varios días no consecutivos para estimar la ingesta habitual.",
  preset_days_ph:"Cargar un ejemplo de varios días…",
- d_pnns:"3 días equilibrados (PNNS)",
+ d_pnns:"3 días equilibrados (recomendaciones PNNS)",
  d_contrast:"3 días contrastados (equilibrado, comida rápida, mediterráneo con pescado)",
  p_pnns:"Día equilibrado (recomendaciones francesas PNNS)",
  intro_h:"Bienvenido/a a MixExpo",
- intro_lead:"MixExpo estima cuánto ingieres de 36 sustancias químicas a través de la dieta y qué significa para la salud cuando se combinan. Utiliza las concentraciones medidas en el <b>segundo Estudio de Dieta Total francés</b> (ANSES), en alimentos preparados «tal como se consumen». Sigue los pasos; todo funciona en tu navegador y no se envía nada.",
+ intro_lead:"MixExpo estima cuánto ingieres de 33 sustancias químicas a través de la dieta, cómo se compara con la población francesa y qué significa para la salud cuando se combinan. Utiliza las concentraciones medidas en el <b>segundo Estudio de Dieta Total francés</b> (ANSES), en alimentos preparados «tal como se consumen». Sigue los pasos; todo funciona en tu navegador y no se envía nada.",
  s1_t:"Descríbete",
  s1_d:"La exposición se expresa por kilo de peso corporal: indica tu <b>peso</b>. La <b>edad</b> es opcional: por debajo de 12 años se usa el valor más estricto de isoflavonas para niños. Las porciones y los ejemplos están pensados para adultos.",
  s2_t:"Registra tu dieta de 24 h",
@@ -1005,7 +1019,7 @@ es:{
  s3_d:"En <b>Varios días</b>, añade hasta 7 días para acercarte a tu ingesta habitual (crónica), seguir la trayectoria día a día y comparar cada día con la media.",
  s3_b:"Ir a Varios días",
  s4_t:"Observa tu exposición",
- s4_d:"<b>Exposición</b> muestra cuánto ingieres de cada sustancia (izquierda) y cómo se compara con su valor de referencia (derecha). Cambia entre LB, MB y UB para ver el efecto de los resultados no detectados.",
+ s4_d:"<b>Exposición</b> muestra cuánto ingieres de cada sustancia y cómo se compara con su valor de referencia y con la <b>población francesa</b>. Cambia entre LB, MB y UB para ver el efecto de los resultados no detectados.",
  s4_b:"Ir a Exposición",
  s5_t:"Encuentra los alimentos responsables",
  s5_d:"<b>Alimentos que contribuyen</b> muestra qué alimentos impulsan cada exposición. Las celdas rayadas indican que la sustancia no se analizó en ese alimento.",
@@ -1019,7 +1033,7 @@ es:{
  s8_t:"Guarda y comprende",
  s8_d:"Exporta tus resultados (CSV) o tu dieta (JSON) desde la pestaña Comparar y consulta <b>Métodos y datos</b> para las fuentes, hipótesis y valores de referencia.",
  s8_b:"Ir a Métodos y datos",
- good_html:"<h3>Para tener en cuenta</h3><ul><li>Uso <b>exclusivamente docente</b>: no es una herramienta de diagnóstico.</li><li>Tus datos se quedan en <b>este navegador</b>; en un ordenador compartido, vacía la dieta al terminar.</li><li>Las concentraciones son de <b>2007–2009</b> y se midieron en alimentos preparados para su consumo.</li><li>Las 36 sustancias se eligieron porque se <b>cuantificaron en al menos el 10 %</b> de las muestras del estudio, en total o en al menos un grupo de alimentos (ver <b>Presencia</b>).</li><li>Los valores de referencia son para una <b>exposición de por vida</b>: un día por encima no supone, en sí mismo, un riesgo.</li></ul>",
+ good_html:"<h3>Para tener en cuenta</h3><ul><li>Uso <b>exclusivamente docente</b>: no es una herramienta de diagnóstico.</li><li>Tus datos se quedan en <b>este navegador</b>; en un ordenador compartido, vacía la dieta al terminar.</li><li>Las concentraciones son de <b>2007–2009</b> y se midieron en alimentos preparados para su consumo.</li><li>Las 33 sustancias se eligieron porque se <b>cuantificaron en al menos el 10 %</b> de las muestras del estudio, en total o en al menos un grupo de alimentos (ver <b>Presencia</b>).</li><li>Los valores de referencia son para una <b>exposición de por vida</b>: un día por encima no supone, en sí mismo, un riesgo.</li></ul>",
  discuss_html:"<h3>Preguntas para explorar</h3><ul><li>¿La sustancia a la que más te expones es también la más peligrosa? ¿Por qué no?</li><li>¿Qué conclusiones cambian entre LB y UB? ¿Qué dice eso de los métodos analíticos?</li><li>Sustituye un alimento (p. ej. conserva por fresco, atún por otro pescado): ¿qué cambia y qué no?</li><li>¿Cómo se compara tu media de varios días con tu peor día?</li><li>Cambia el valor de referencia del bisfenol A del BfR a la EFSA: ¿cuánto depende la conclusión de la caracterización del peligro?</li></ul>",
  tab_occ:"Presencia",
  occ_h:"¿Dónde se encuentran las sustancias? Presencia en los alimentos de la EAT2",
@@ -1042,11 +1056,61 @@ es:{
  occ_scale:"Muestras cuantificadas:",
  occ_other_pah:"Otros HAP (no incluidos en la calculadora: los HAP4 son el indicador de la EFSA)",
  occ_note_grp:"Para las sumas (dioxinas, HAP4, PBDE…) una muestra cuenta como cuantificada si <b>alguno</b> de sus componentes lo está; por eso las sumas parecen más frecuentes que sus analitos. Cambia a <b>Analitos individuales</b> para verlos uno a uno. Metales: un valor por alimento en la hoja docente (porcentaje de alimentos, no de muestras). Bisfenol A: campaña ANSES aparte sobre las muestras EAT2.",
- occ_note_an:"Son los 102 analitos de la EAT2 (más metales y bisfenol A) que cumplen la regla de selección, agrupados como se suman en la calculadora. Analitos como el PFOS (9 % global pero 68 % del marisco) o el pirimifós-metilo (5 % global pero 93 % del pan) se perderían con una regla basada solo en la dieta completa.",
+ occ_note_an:"Son los analitos de la EAT2 (más metales y bisfenol A) que cumplen la regla de selección y se usan en MixExpo, agrupados como se suman en la calculadora. Analitos como el PFOS (9 % global pero 68 % del marisco) o el pirimifós-metilo (5 % global pero 93 % del pan) se perderían con una regla basada solo en la dieta completa. Los 8 fitoestrógenos que también cumplen la regla no se incluyen (ver Métodos).",
  occ_note_food:"Cada alimento de la EAT2 es un compuesto de 15 submuestras compradas en una región y estación; la mayoría se analizó en pocas regiones o estaciones, así que una celda suele ser «1 de 2» o «2 de 8». Pasa el ratón por una celda para ver los recuentos.",
  s9_t:"Mira dónde están las sustancias",
  s9_d:"<b>Presencia</b> muestra, como mapa de calor, con qué frecuencia se cuantificó cada sustancia en cada grupo de alimentos del estudio y por qué se seleccionó.",
- s9_b:"Ir a Presencia"
+ s9_b:"Ir a Presencia",
+ you_h:"Tus datos",
+ s_rec_t:"Registra lo que comiste",
+ s_rec_d:"Rellena <b>tus datos</b> arriba (peso; edad para compararte con adultos o niños franceses). Después anota lo que comiste y bebiste, comida a comida, para <b>un día (24 h)</b> o para <b>varios días</b> (hasta 7) y acercarte a tu ingesta habitual. Las dietas de ejemplo te ayudan a empezar.",
+ s_rec_b1:"Un día (24 h)",
+ s_rec_b2:"Varios días",
+ d_mix:"3 días contrastados: comida rápida, vegetariano, mediterráneo (los ejemplos de 24 h)",
+ pnns_a:"Día equilibrado 1 (PNNS): pollo, lentejas",
+ pnns_b:"Día equilibrado 2 (PNNS): salmón, huevos",
+ pnns_c:"Día equilibrado 3 (PNNS): pescado blanco, alubias, ternera",
+ sh_p_pnns:"Equilibrado (PNNS)",
+ sh_p_med:"Mediterráneo",
+ sh_p_fast:"Comida rápida",
+ sh_p_veg:"Vegetariano",
+ sh_pnns_a:"Equilibrado 1",
+ sh_pnns_b:"Equilibrado 2",
+ sh_pnns_c:"Equilibrado 3",
+ diet_ex:"Ejemplo",
+ diet_own:"Tu propia dieta",
+ diet_edited:"modificado",
+ diet_shown:"Dieta mostrada",
+ pop_h:"Tu exposición comparada con la población francesa",
+ pop_lead:"Cada fila sitúa tu exposición respecto a la <b>exposición habitual de la población francesa</b> estimada en la EAT2 (alimentos de 2007–2009 × encuesta de consumo INCA2): la línea vertical es la media de la población y el rombo su percentil 95 (el 5 % más expuesto). La escala es logarítmica: «× 2» significa el doble de la media.",
+ pop_grp:"Comparar con",
+ pop_a:"Adultos (18–79 años)",
+ pop_c:"Niños (3–17 años)",
+ pop_you:"Tu exposición",
+ pop_mean:"Media francesa",
+ pop_p95:"Percentil 95 francés",
+ pop_below:"por debajo de la media",
+ pop_mid:"entre la media y el P95",
+ pop_above95:"por encima del percentil 95",
+ pop_abovem:"por encima de la media",
+ pop_nd:"no detectada en tus alimentos (LB = 0)",
+ pop_na:"no analizada en los alimentos consumidos",
+ pop_none:"No se incluye estimación poblacional de la EAT2 para: {list}. Estas estimaciones están en el informe 2 de la EAT2 (plaguicidas, aditivos).",
+ pop_hint:"Los valores poblacionales describen la <b>ingesta habitual durante muchos días</b>; un solo día es naturalmente más variable. Añade días en «Varios días» y elige la media para una comparación más justa.",
+ pop_caveat:"Interprétalo con cuidado: MixExpo cubre menos alimentos que la EAT2 (metales solo para 45 alimentos), así que tus totales pueden ser más bajos solo por eso; la EAT2 usó convenciones algo distintas para algunas sustancias (pasa el ratón por una fila para ver los detalles); y los valores poblacionales son de 2007–2009.",
+ th_pop:"Media francesa [P95]",
+ pop_src_r1:"ANSES 2011, informe 1 de la EAT2",
+ pop_src_tard:"Tard et al. 2012 (EAT2)",
+ pop_src_veyrand:"Veyrand et al. 2013 (EAT2)",
+ pop_src_bemrah:"Bemrah et al. 2014 (EAT2)",
+ pop_hg:"valor poblacional: metilmercurio del pescado; MixExpo cuenta el mercurio total de todos los alimentos",
+ pop_teq:"valor poblacional con TEF OMS-1998 (MixExpo: OMS-2005)",
+ pop_bde209:"valor poblacional: 8 PBDE menos 7 PBDE (solo media)",
+ pop_pfas:"suma de las 4 medias; LB = solo PFOS + PFOA (LB de PFNA y PFHxS no publicado, cercano a 0)",
+ pop_pfaslc:"solo UB (PFDA + PFUnDA + PFDoDA; PFTrDA no publicado): comparado en UB",
+ pop_bpa:"estimación probabilista; niños = 3–17 años",
+ m6_s:"6. Comparación con la población francesa",
+ m6:"<p>La pestaña Exposición compara tu exposición con la media y el percentil 95 de la <b>exposición alimentaria habitual</b> de los adultos (18–79 años) o niños (3–17 años) franceses estimada en la EAT2. El grupo sigue la edad que indiques (menos de 18: niños) y puede cambiarse. Tu valor y el poblacional usan la misma hipótesis (LB, MB o UB) cuando ambas están publicadas. Las estimaciones poblacionales combinan las concentraciones de la EAT2 con los registros alimentarios individuales de 7 días de la encuesta INCA2, por lo que representan la ingesta a largo plazo: compáralas preferentemente con la <b>media de varios días</b>. Aún no se incluyen los valores de plaguicidas y aditivos (informe 2 de la EAT2).</p><ul class=\"small\"><li>ANSES (2011). Second French Total Diet Study (TDS 2), report 1: inorganic contaminants, minerals, persistent organic pollutants, mycotoxins and phytoestrogens. <a href=\"https://www.anses.fr/fr/system/files/PASER2006sa0361Ra1EN.pdf\" target=\"_blank\" rel=\"noopener\">PDF</a></li><li>Tard A. et al. (2012) Food Chem Toxicol 50(3–4) (acrylamide). <a href=\"https://doi.org/10.1016/j.fct.2011.12.033\" target=\"_blank\" rel=\"noopener\">doi</a></li><li>Veyrand B. et al. (2013) Environ Int 54:11 (PAHs). <a href=\"https://doi.org/10.1016/j.envint.2012.12.011\" target=\"_blank\" rel=\"noopener\">doi</a></li><li>Bemrah N. et al. (2014) Food Chem Toxicol 72:90 (bisphenol A). <a href=\"https://doi.org/10.1016/j.fct.2014.07.005\" target=\"_blank\" rel=\"noopener\">doi</a></li></ul>"
 },
 en:{
  subtitle:"Chemical mixture exposure calculator · French TDS2 data (ANSES)",
@@ -1107,12 +1171,12 @@ en:{
  m2_s:"2. Left-censored data (LB / MB / UB)",
  m2:"<p>“ND (x)”, “&lt; x” → not detected (x = LOD): LB = 0, MB = LOD/2, UB = LOD. “NQ (x)” → detected, not quantified (x = LOQ): LB = 0, MB = LOQ/2, UB = LOQ. When no limit is given, the “Limites analytiques” sheet is used (acrylamide LOD 4 / LOQ 10 µg/kg; DON 3/10 µg/kg in solids, 0.3/1 in liquids). “NR” or empty = not analysed (excluded, not set to 0).</p>",
  m3_s:"3. Selection of substances and aggregation",
- m3:"<p><b>Selection criterion (v1.4):</b> an analyte is kept if it was quantified in at least 10 % of the TDS2 samples overall, <b>or</b> in at least 10 % of the samples of at least one INCA2 food group with at least 10 analysed samples. The second condition keeps chemicals that are rare in the diet as a whole but frequent in a few foods (pesticides on stored cereals and fruit, PFAS in fish and offal, isoflavones in milk). The minimum of 10 samples avoids selecting a chemical because of 1 positive sample out of 2. Of the 425 analytes screened, 102 meet the rule (see the <b>Occurrence</b> tab); they are combined into the 36 chemicals of the calculator. Not included: the 14 PAHs other than PAH4 (shown in Occurrence; PAH4 is EFSA’s indicator) and analytes that do not meet the rule, such as ochratoxin A, coumestrol and biochanin A (≥ 10 % only in groups with fewer than 10 samples), carbendazim (8 % of fruit), nitrites (6 % of cured meats) and dimethoate. Total arsenic, although frequent, is not assessed because in fish it is almost entirely non-toxic arsenobetaine.</p><ul><li><b>Cd, Hg, Pb</b>: TDS2 trace-element values included in the original spreadsheet calculator (45 foods, µg/kg). Empty cells taken as &lt; LOD (Cd 0.5; Hg 5; Pb 2.5 µg/kg). Total Hg is compared with the methylmercury TWI (conservative outside fish).</li><li><b>Sums</b>: PAH4 = BaP + BaA + BbF + CHR; PBDEs = Σ BDE-28, 47, 99, 100, 153, 154, 183 (BDE-209 separate); HBCDD = α + β + γ; non-dioxin-like PCBs = PCB 28, 52, 101, 138, 153, 180; dioxins + dl-PCBs as WHO-2005 TEQ; PFAS4 = PFOS + PFOA + PFNA + PFHxS (EFSA 2020 definition; PFHxS itself was rarely quantified); other long-chain PFAS = PFDA + PFUnDA + PFDoDA + PFTrDA; PBBs = PBB 52 + 101 + 153; isoflavones = daidzein + genistein + glycitein; other isoflavones = equol + formononetin; lignans = secoisolariciresinol + enterolactone + matairesinol.</li><li><b>Pesticides and additives</b> (mg/kg × 1000). Pesticide ADIs are those in force at the time of TDS2 (EFSA 2008 compilation), except chlorpyrifos, for which the lower 2014 EFSA value is used. Sulfites expressed as SO₂. For phytoestrogens only “NQ” is reported: the upper end of the LOQ range is used (conservative UB).</li><li><b>Mixtures, tier 1</b>: the three organophosphates (pirimiphos-methyl, chlorpyrifos-methyl, chlorpyrifos) share a mechanism (acetylcholinesterase inhibition) and are grouped under neurotoxicity. The other pesticides are placed under “other effects”: grouping them by target organ would need EFSA’s cumulative assessment groups, beyond the scope of this tool.</li><li><b>Bisphenol A</b>: ANSES/LABERCA campaign on TDS2 samples + bottled waters (LHN). Samples from 2007–2009, before the French ban of BPA in food packaging (2015).</li></ul>",
+ m3:"<p><b>Selection criterion:</b> an analyte is kept if it was quantified in at least 10 % of the TDS2 samples overall, <b>or</b> in at least 10 % of the samples of at least one INCA2 food group with at least 10 analysed samples. The second condition keeps chemicals that are rare in the diet as a whole but frequent in a few foods (pesticides on stored cereals and fruit, PFAS in fish and offal). The minimum of 10 samples avoids selecting a chemical because of 1 positive sample out of 2. Of the 425 analytes screened, 102 meet the rule (see the <b>Occurrence</b> tab). <b>Phytoestrogens</b> (isoflavones, lignans: 8 analytes) also meet it but are <b>not included</b> since v1.5, because their health reference values rest on limited evidence. The remaining analytes are combined into the 33 chemicals of the calculator. Also not included: the 14 PAHs other than PAH4 (shown in Occurrence; PAH4 is EFSA’s indicator) and analytes that do not meet the rule, such as ochratoxin A (≥ 10 % only in groups with fewer than 10 samples), carbendazim (8 % of fruit), nitrites (6 % of cured meats) and dimethoate. Total arsenic, although frequent, is not assessed because in fish it is almost entirely non-toxic arsenobetaine.</p><ul><li><b>Cd, Hg, Pb</b>: TDS2 trace-element values included in the original spreadsheet calculator (45 foods, µg/kg). Empty cells taken as &lt; LOD (Cd 0.5; Hg 5; Pb 2.5 µg/kg). Total Hg is compared with the methylmercury TWI (conservative outside fish).</li><li><b>Sums</b>: PAH4 = BaP + BaA + BbF + CHR; PBDEs = Σ BDE-28, 47, 99, 100, 153, 154, 183 (BDE-209 separate); HBCDD = α + β + γ; non-dioxin-like PCBs = PCB 28, 52, 101, 138, 153, 180; dioxins + dl-PCBs as WHO-2005 TEQ; PFAS4 = PFOS + PFOA + PFNA + PFHxS (EFSA 2020 definition; PFHxS itself was rarely quantified); other long-chain PFAS = PFDA + PFUnDA + PFDoDA + PFTrDA; PBBs = PBB 52 + 101 + 153.</li><li><b>Pesticides and additives</b> (mg/kg × 1000). Pesticide ADIs are those in force at the time of TDS2 (EFSA 2008 compilation), except chlorpyrifos, for which the lower 2014 EFSA value is used. Sulfites expressed as SO₂.</li><li><b>Mixtures, tier 1</b>: the three organophosphates (pirimiphos-methyl, chlorpyrifos-methyl, chlorpyrifos) share a mechanism (acetylcholinesterase inhibition) and are grouped under neurotoxicity. The other pesticides are placed under “other effects”: grouping them by target organ would need EFSA’s cumulative assessment groups, beyond the scope of this tool.</li><li><b>Bisphenol A</b>: ANSES/LABERCA campaign on TDS2 samples + bottled waters (LHN). Samples from 2007–2009, before the French ban of BPA in food packaging (2015).</li></ul>",
  m4_s:"4. Risk characterisation and mixtures",
  m4:"<p>Substances with a health-based guidance value (TDI/TWI/ADI): RQ = E / HBGV; shown as % of HBGV. Substances assessed by margin of exposure: MOE = BMDL / E; concern if MOE &lt; threshold (10,000 for genotoxic carcinogens, 10 for Pb, 25 for PBDEs per EFSA 2024). To combine them, RQ = threshold / MOE. HI = Σ RQ of threshold substances (tier 0, EFSA 2019 MixTox guidance); genotoxic carcinogens are not added to the HI but combined as MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Tier-1 groups are a teaching simplification of cumulative assessment groups.</p><p><b>Limitations:</b> 1 day ≠ usual exposure; data from 2007–2009; not every substance was analysed in every food; diet only (no drinking water for most substances, air, dust…).</p>",
  m5_s:"5. Analytical coverage of the catalogue",
  m5:"<p>Number of foods in this tool’s TDS2 catalogue with data for each substance.</p>",
- footer:"MixExpo v1.4 (26.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
+ footer:"MixExpo v1.5 (26.11.2026) · © German Cano-Sancho · For pedagogical purposes only. Teaching tool for chemical mixture exposure assessment based on TDS2 open data (ANSES). Not a diagnostic device. Reference values should be checked against the latest EFSA scientific opinions before any other use.",
  preset_ph:"Load an example diet…", p_excel:"Example from the original Excel sheet", p_med:"Mediterranean with fish", p_fast:"Fast food / ultra-processed", p_veg:"Vegetarian",
  cat_bread:"Bread, cereals & starches", cat_pastry:"Pastries, biscuits & sweets", cat_fish:"Fish & seafood", cat_meat:"Meat & cold cuts", cat_dairy:"Dairy & eggs", cat_fat:"Fats & oils", cat_veg:"Vegetables & pulses", cat_fruit:"Fruit & nuts", cat_dishes:"Mixed dishes & sauces", cat_drinks:"Drinks",
  u_slice:"slice", u_unit:"unit", u_cup:"cup", u_serving:"serving", u_glass:"glass", u_handful:"handful", u_tsp:"teaspoon", u_tbsp:"tablespoon", u_can:"can", u_bowl:"bowl",
@@ -1190,11 +1254,11 @@ en:{
  traj_mean_above:"The mean of the days is above the reference value: the exceedance persists over time.",
  traj_explain:"The running mean stabilises as days are added: this is why dietary surveys use several non-consecutive days to estimate usual intake.",
  preset_days_ph:"Load a multi-day example…",
- d_pnns:"3 balanced days (PNNS)",
+ d_pnns:"3 balanced days (PNNS recommendations)",
  d_contrast:"3 contrasted days (balanced, fast food, Mediterranean with fish)",
  p_pnns:"Balanced day (French PNNS recommendations)",
  intro_h:"Welcome to MixExpo",
- intro_lead:"MixExpo estimates how much of 36 food chemicals you take in through your diet, and what this means for health when they are combined. It uses the concentrations measured in the <b>second French Total Diet Study</b> (ANSES), in foods prepared “as eaten”. Follow the steps below; everything runs in your browser and nothing is sent anywhere.",
+ intro_lead:"MixExpo estimates how much of 33 food chemicals you take in through your diet, how this compares with the French population, and what it means for health when the chemicals are combined. It uses the concentrations measured in the <b>second French Total Diet Study</b> (ANSES), in foods prepared “as eaten”. Follow the steps below; everything runs in your browser and nothing is sent anywhere.",
  s1_t:"Describe yourself",
  s1_d:"Exposure is expressed per kilogram of body weight, so enter your <b>weight</b>. Your <b>age</b> is optional: under 12, the stricter isoflavone value for children is used. Portions and examples are designed for adults.",
  s2_t:"Record your 24 h diet",
@@ -1204,7 +1268,7 @@ en:{
  s3_d:"In <b>Several days</b>, add up to 7 days to approach your usual (chronic) intake, follow the trajectory day by day and compare each day with the mean.",
  s3_b:"Go to Several days",
  s4_t:"Look at your exposure",
- s4_d:"<b>Exposure</b> shows how much of each chemical you take in (left) and how this compares with its reference value (right). Switch between LB, MB and UB to see the effect of non-detected results.",
+ s4_d:"<b>Exposure</b> shows how much of each chemical you take in, how this compares with its reference value and with the <b>French population</b>. Switch between LB, MB and UB to see the effect of non-detected results.",
  s4_b:"Go to Exposure",
  s5_t:"Find the foods responsible",
  s5_d:"<b>Contributing foods</b> shows which foods drive each exposure. Hatched cells mean the chemical was not analysed in that food.",
@@ -1218,7 +1282,7 @@ en:{
  s8_t:"Save and understand",
  s8_d:"Export your results (CSV) or your diet (JSON) from the Compare tab, and read <b>Methods & data</b> for the sources, assumptions and reference values.",
  s8_b:"Go to Methods & data",
- good_html:"<h3>Good to know</h3><ul><li>For <b>teaching only</b>: not a diagnostic tool.</li><li>Your data stay in <b>this browser</b>; on a shared computer, clear the diet when you finish.</li><li>Concentrations date from <b>2007–2009</b> and were measured in foods as prepared for eating.</li><li>The 36 chemicals were chosen because they were <b>quantified in at least 10 %</b> of the study’s samples, overall or in at least one food group (see <b>Occurrence</b>).</li><li>Reference values are for <b>lifetime exposure</b>: one day above a reference value is not, in itself, a health risk.</li></ul>",
+ good_html:"<h3>Good to know</h3><ul><li>For <b>teaching only</b>: not a diagnostic tool.</li><li>Your data stay in <b>this browser</b>; on a shared computer, clear the diet when you finish.</li><li>Concentrations date from <b>2007–2009</b> and were measured in foods as prepared for eating.</li><li>The 33 chemicals were chosen because they were <b>quantified in at least 10 %</b> of the study’s samples, overall or in at least one food group (see <b>Occurrence</b>).</li><li>Reference values are for <b>lifetime exposure</b>: one day above a reference value is not, in itself, a health risk.</li></ul>",
  discuss_html:"<h3>Questions to explore</h3><ul><li>Is the chemical you are most exposed to also the riskiest one? Why not?</li><li>Which conclusions change between LB and UB? What does that say about analytical methods?</li><li>Replace one food (e.g. canned by fresh, tuna by another fish): what changes, and what does not?</li><li>How does your mean over several days compare with your worst day?</li><li>Change the bisphenol A reference value from BfR to EFSA: how much does the conclusion depend on hazard characterisation?</li></ul>",
  tab_occ:"Occurrence",
  occ_h:"Where are the chemicals found? Occurrence in TDS2 foods",
@@ -1241,11 +1305,61 @@ en:{
  occ_scale:"Samples quantified:",
  occ_other_pah:"Other PAHs (not in the calculator: PAH4 is EFSA’s indicator)",
  occ_note_grp:"For sums (e.g. dioxins, PAH4, PBDEs) a sample counts as quantified if <b>any</b> of its components was quantified, so sums look more frequent than their individual analytes. Switch to <b>Individual analytes</b> to see each one. Metals: one value per food in the teaching sheet (share of foods, not samples). Bisphenol A: separate ANSES campaign on TDS2 samples.",
- occ_note_an:"These are the 102 TDS2 analytes (plus metals and bisphenol A) that meet the selection rule, grouped as they are summed in the calculator. Analytes such as PFOS (9 % overall but 68 % of shellfish) or pirimiphos-methyl (5 % overall but 93 % of bread) would be missed by a rule based on the whole diet only.",
+ occ_note_an:"These are the TDS2 analytes (plus metals and bisphenol A) that meet the selection rule and are used in MixExpo, grouped as they are summed in the calculator. Analytes such as PFOS (9 % overall but 68 % of shellfish) or pirimiphos-methyl (5 % overall but 93 % of bread) would be missed by a rule based on the whole diet only. The 8 phytoestrogens that also meet the rule are not included (see Methods).",
  occ_note_food:"Each TDS2 food is a composite of 15 sub-samples bought in one region and season; most foods were analysed in a few regions or seasons, so here a cell is often “1 of 2” or “2 of 8”. Hover over a cell to see the counts.",
  s9_t:"See where chemicals are found",
  s9_d:"<b>Occurrence</b> shows, as a heatmap, how often each chemical was quantified in each food group of the study, and why it was selected.",
- s9_b:"Go to Occurrence"
+ s9_b:"Go to Occurrence",
+ you_h:"Your information",
+ s_rec_t:"Record what you ate",
+ s_rec_d:"Fill in <b>your information</b> at the top (weight; age to compare you with French adults or children). Then list what you ate and drank, meal by meal, for <b>one day (24 h)</b> or for <b>several days</b> (up to 7) to approach your usual intake. Example diets help you start.",
+ s_rec_b1:"One day (24 h)",
+ s_rec_b2:"Several days",
+ d_mix:"3 contrasted days: fast food, vegetarian, Mediterranean (the 24 h examples)",
+ pnns_a:"Balanced day 1 (PNNS): chicken, lentils",
+ pnns_b:"Balanced day 2 (PNNS): salmon, eggs",
+ pnns_c:"Balanced day 3 (PNNS): white fish, beans, beef",
+ sh_p_pnns:"Balanced (PNNS)",
+ sh_p_med:"Mediterranean",
+ sh_p_fast:"Fast food",
+ sh_p_veg:"Vegetarian",
+ sh_pnns_a:"Balanced 1",
+ sh_pnns_b:"Balanced 2",
+ sh_pnns_c:"Balanced 3",
+ diet_ex:"Example",
+ diet_own:"Your own diet",
+ diet_edited:"edited",
+ diet_shown:"Diet shown",
+ pop_h:"Your exposure compared with the French population",
+ pop_lead:"Each row places your exposure relative to the <b>usual exposure of the French population</b> estimated in TDS2 (2007–2009 foods × INCA2 consumption survey): the vertical line is the population mean, the diamond its 95th percentile (the 5 % most exposed). The scale is logarithmic: “× 2” means twice the mean.",
+ pop_grp:"Compare with",
+ pop_a:"Adults (18–79 y)",
+ pop_c:"Children (3–17 y)",
+ pop_you:"Your exposure",
+ pop_mean:"French mean",
+ pop_p95:"French 95th percentile",
+ pop_below:"below the mean",
+ pop_mid:"between mean and P95",
+ pop_above95:"above the 95th percentile",
+ pop_abovem:"above the mean",
+ pop_nd:"not detected in your foods (LB = 0)",
+ pop_na:"not analysed in the foods eaten",
+ pop_none:"No TDS2 population estimate is included for: {list}. These estimates are in TDS2 report 2 (pesticides, additives).",
+ pop_hint:"Population values describe <b>usual intake over many days</b>; a single day is naturally more variable. Add days in “Several days” and choose the mean for a fairer comparison.",
+ pop_caveat:"Read with care: MixExpo covers fewer foods than TDS2 (metals for 45 foods only), so your totals can be lower for that reason alone; TDS2 used slightly different conventions for some chemicals (hover a row for details); and the population values come from 2007–2009.",
+ th_pop:"French mean [P95]",
+ pop_src_r1:"ANSES 2011, TDS2 report 1",
+ pop_src_tard:"Tard et al. 2012 (TDS2)",
+ pop_src_veyrand:"Veyrand et al. 2013 (TDS2)",
+ pop_src_bemrah:"Bemrah et al. 2014 (TDS2)",
+ pop_hg:"population value: methylmercury from fish; MixExpo counts total mercury in all foods",
+ pop_teq:"population value with WHO-1998 TEFs (MixExpo: WHO-2005)",
+ pop_bde209:"population value: 8 PBDEs minus 7 PBDEs (mean only)",
+ pop_pfas:"sum of the 4 means; LB = PFOS + PFOA only (LB of PFNA and PFHxS not reported, close to 0)",
+ pop_pfaslc:"UB only (PFDA + PFUnDA + PFDoDA; PFTrDA not reported): compared on UB",
+ pop_bpa:"probabilistic estimate; children = 3–17 y",
+ m6_s:"6. Comparison with the French population",
+ m6:"<p>The Exposure tab compares your exposure with the mean and 95th percentile of the <b>usual dietary exposure</b> of French adults (18–79 y) or children (3–17 y) estimated in TDS2. The group follows the age you enter (under 18: children) and can be changed. Your value and the population value use the same bound (LB, MB or UB) when both are reported. The population estimates combine TDS2 concentrations with the individual 7-day food records of the INCA2 survey, so they represent long-term intake: compare them preferably with the <b>mean of several days</b>. Values for pesticides and additives (TDS2 report 2) are not included yet.</p><ul class=\"small\"><li>ANSES (2011). Second French Total Diet Study (TDS 2), report 1: inorganic contaminants, minerals, persistent organic pollutants, mycotoxins and phytoestrogens. <a href=\"https://www.anses.fr/fr/system/files/PASER2006sa0361Ra1EN.pdf\" target=\"_blank\" rel=\"noopener\">PDF</a></li><li>Tard A. et al. (2012) Food Chem Toxicol 50(3–4) (acrylamide). <a href=\"https://doi.org/10.1016/j.fct.2011.12.033\" target=\"_blank\" rel=\"noopener\">doi</a></li><li>Veyrand B. et al. (2013) Environ Int 54:11 (PAHs). <a href=\"https://doi.org/10.1016/j.envint.2012.12.011\" target=\"_blank\" rel=\"noopener\">doi</a></li><li>Bemrah N. et al. (2014) Food Chem Toxicol 72:90 (bisphenol A). <a href=\"https://doi.org/10.1016/j.fct.2014.07.005\" target=\"_blank\" rel=\"noopener\">doi</a></li></ul>"
 },
 fr:{
  subtitle:"Calculateur d’exposition aux mélanges chimiques · données EAT2 (ANSES)",
@@ -1306,12 +1420,12 @@ fr:{
  m2_s:"2. Données censurées (LB / MB / UB)",
  m2:"<p>« ND (x) », « &lt; x » → non détecté (x = LD) : LB = 0, MB = LD/2, UB = LD. « NQ (x) » → détecté non quantifié (x = LQ) : LB = 0, MB = LQ/2, UB = LQ. Si la limite n’est pas indiquée, on utilise l’onglet « Limites analytiques » (acrylamide LD 4 / LQ 10 µg/kg ; DON 3/10 µg/kg en solide, 0,3/1 en liquide). « NR » ou vide = non analysé (exclu, pas mis à 0).</p>",
  m3_s:"3. Sélection des substances et agrégation",
- m3:"<p><b>Critère de sélection (v1.4) :</b> un analyte est retenu s’il a été quantifié dans au moins 10 % de l’ensemble des échantillons de l’EAT2, <b>ou</b> dans au moins 10 % des échantillons d’au moins un groupe d’aliments INCA2 comptant au moins 10 échantillons analysés. La seconde condition retient des substances rares dans l’alimentation globale mais fréquentes dans quelques aliments (pesticides sur céréales stockées et fruits, PFAS dans les poissons et abats, isoflavones dans le lait). Le minimum de 10 échantillons évite de retenir une substance sur la base d’1 échantillon positif sur 2. Sur les 425 analytes examinés, 102 satisfont la règle (voir l’onglet <b>Occurrence</b>) ; ils sont regroupés dans les 36 substances du calculateur. Ne sont pas inclus : les 14 HAP autres que les HAP4 (visibles dans Occurrence ; les HAP4 sont l’indicateur de l’EFSA) et les analytes qui ne satisfont pas la règle, comme l’ochratoxine A, le coumestrol et la biochanine A (≥ 10 % seulement dans des groupes de moins de 10 échantillons), la carbendazime (8 % des fruits), les nitrites (6 % de la charcuterie) et le diméthoate. L’arsenic total, bien que fréquent, n’est pas évalué car dans le poisson il s’agit presque entièrement d’arsénobétaïne, non toxique.</p><ul><li><b>Cd, Hg, Pb</b> : valeurs d’éléments traces EAT2 incluses dans le calculateur Excel d’origine (45 aliments, µg/kg). Cellules vides considérées &lt; LD (Cd 0,5 ; Hg 5 ; Pb 2,5 µg/kg). Le Hg total est comparé à la DHT du méthylmercure (conservateur hors poisson).</li><li><b>Sommes</b> : HAP4 = BaP + BaA + BbF + CHR ; PBDE = Σ BDE-28, 47, 99, 100, 153, 154, 183 (BDE-209 à part) ; HBCDD = α + β + γ ; PCB non dioxine-like = PCB 28, 52, 101, 138, 153, 180 ; dioxines + PCB-DL en TEQ-OMS 2005 ; PFAS4 = PFOS + PFOA + PFNA + PFHxS (définition EFSA 2020 ; le PFHxS lui-même a rarement été quantifié) ; autres PFAS à chaîne longue = PFDA + PFUnDA + PFDoDA + PFTrDA ; PBB = PBB 52 + 101 + 153 ; isoflavones = daidzéine + génistéine + glycitéine ; autres isoflavones = équol + formononétine ; lignanes = sécoisolaricirésinol + entérolactone + matairésinol.</li><li><b>Pesticides et additifs</b> (mg/kg × 1000). Les DJA des pesticides sont celles en vigueur à l’époque de l’EAT2 (compilation EFSA 2008), sauf pour le chlorpyriphos, pour lequel la valeur plus basse de l’EFSA de 2014 est utilisée. Sulfites exprimés en SO₂. Pour les phyto-œstrogènes seul « NQ » est indiqué : on retient la borne haute de la plage de LQ (UB conservatrice).</li><li><b>Mélanges, palier 1</b> : les trois organophosphorés (pirimiphos-méthyl, chlorpyriphos-méthyl, chlorpyriphos) partagent un mécanisme (inhibition de l’acétylcholinestérase) et sont regroupés en neurotoxicité. Les autres pesticides sont placés dans « autres effets » : les regrouper par organe cible nécessiterait les groupes d’évaluation cumulative de l’EFSA, hors du champ de cet outil.</li><li><b>Bisphénol A</b> : campagne ANSES/LABERCA sur les échantillons EAT2 + eaux embouteillées (LHN). Échantillons 2007–2009, antérieurs à l’interdiction française du BPA dans les contenants alimentaires (2015).</li></ul>",
+ m3:"<p><b>Critère de sélection :</b> un analyte est retenu s’il a été quantifié dans au moins 10 % de l’ensemble des échantillons de l’EAT2, <b>ou</b> dans au moins 10 % des échantillons d’au moins un groupe d’aliments INCA2 comptant au moins 10 échantillons analysés. La seconde condition retient des substances rares dans l’alimentation globale mais fréquentes dans quelques aliments (pesticides sur céréales stockées et fruits, PFAS dans les poissons et abats). Le minimum de 10 échantillons évite de retenir une substance sur la base d’1 échantillon positif sur 2. Sur les 425 analytes examinés, 102 satisfont la règle (voir l’onglet <b>Occurrence</b>). Les <b>phyto-œstrogènes</b> (isoflavones, lignanes : 8 analytes) la satisfont aussi mais <b>ne sont plus inclus</b> depuis la v1.5, car leurs valeurs de référence sanitaires reposent sur des données limitées. Les autres analytes sont regroupés dans les 33 substances du calculateur. Ne sont pas inclus non plus : les 14 HAP autres que les HAP4 (visibles dans Occurrence ; les HAP4 sont l’indicateur de l’EFSA) et les analytes qui ne satisfont pas la règle, comme l’ochratoxine A (≥ 10 % seulement dans des groupes de moins de 10 échantillons), la carbendazime (8 % des fruits), les nitrites (6 % de la charcuterie) et le diméthoate. L’arsenic total, bien que fréquent, n’est pas évalué car dans le poisson il s’agit presque entièrement d’arsénobétaïne, non toxique.</p><ul><li><b>Cd, Hg, Pb</b> : valeurs d’éléments traces EAT2 incluses dans le calculateur Excel d’origine (45 aliments, µg/kg). Cellules vides considérées &lt; LD (Cd 0,5 ; Hg 5 ; Pb 2,5 µg/kg). Le Hg total est comparé à la DHT du méthylmercure (conservateur hors poisson).</li><li><b>Sommes</b> : HAP4 = BaP + BaA + BbF + CHR ; PBDE = Σ BDE-28, 47, 99, 100, 153, 154, 183 (BDE-209 à part) ; HBCDD = α + β + γ ; PCB non dioxine-like = PCB 28, 52, 101, 138, 153, 180 ; dioxines + PCB-DL en TEQ-OMS 2005 ; PFAS4 = PFOS + PFOA + PFNA + PFHxS (définition EFSA 2020 ; le PFHxS lui-même a rarement été quantifié) ; autres PFAS à chaîne longue = PFDA + PFUnDA + PFDoDA + PFTrDA ; PBB = PBB 52 + 101 + 153.</li><li><b>Pesticides et additifs</b> (mg/kg × 1000). Les DJA des pesticides sont celles en vigueur à l’époque de l’EAT2 (compilation EFSA 2008), sauf pour le chlorpyriphos, pour lequel la valeur plus basse de l’EFSA de 2014 est utilisée. Sulfites exprimés en SO₂.</li><li><b>Mélanges, palier 1</b> : les trois organophosphorés (pirimiphos-méthyl, chlorpyriphos-méthyl, chlorpyriphos) partagent un mécanisme (inhibition de l’acétylcholinestérase) et sont regroupés en neurotoxicité. Les autres pesticides sont placés dans « autres effets » : les regrouper par organe cible nécessiterait les groupes d’évaluation cumulative de l’EFSA, hors du champ de cet outil.</li><li><b>Bisphénol A</b> : campagne ANSES/LABERCA sur les échantillons EAT2 + eaux embouteillées (LHN). Échantillons 2007–2009, antérieurs à l’interdiction française du BPA dans les contenants alimentaires (2015).</li></ul>",
  m4_s:"4. Caractérisation du risque et mélanges",
  m4:"<p>Substances avec valeur toxicologique de référence (DJT/DHT/DJA) : QR = E / VTR ; affiché en % de la VTR. Substances évaluées par marge d’exposition : MOE = BMDL / E ; préoccupation si MOE &lt; seuil (10 000 pour les cancérogènes génotoxiques, 10 pour le Pb, 25 pour les PBDE selon l’EFSA 2024). Pour les combiner : QR = seuil / MOE. HI = Σ QR des substances à seuil (palier 0, guide MixTox EFSA 2019) ; les cancérogènes génotoxiques ne sont pas ajoutés au HI mais combinés via MOE<sub>T</sub> = 1/Σ(1/MOE<sub>i</sub>). Les groupes du palier 1 sont une simplification pédagogique des groupes d’évaluation cumulée.</p><p><b>Limites :</b> 1 jour ≠ exposition habituelle ; données 2007–2009 ; toutes les substances n’ont pas été analysées dans tous les aliments ; voie alimentaire uniquement (pas d’eau de boisson pour la plupart des substances, air, poussières…).</p>",
  m5_s:"5. Couverture analytique du catalogue",
  m5:"<p>Nombre d’aliments du catalogue EAT2 de l’outil disposant de données pour chaque substance.</p>",
- footer:"MixExpo v1.4 (26.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
+ footer:"MixExpo v1.5 (26.11.2026) · © German Cano-Sancho · À des fins pédagogiques uniquement. Outil pédagogique d’évaluation de l’exposition aux mélanges chimiques à partir des données ouvertes EAT2 (ANSES). Ce n’est pas un outil de diagnostic. Les valeurs de référence doivent être vérifiées au regard des derniers avis scientifiques de l’EFSA avant tout autre usage.",
  preset_ph:"Charger un régime exemple…", p_excel:"Exemple de la feuille Excel d’origine", p_med:"Méditerranéen avec poisson", p_fast:"Restauration rapide / ultra-transformés", p_veg:"Végétarien",
  cat_bread:"Pain, céréales et féculents", cat_pastry:"Viennoiseries, biscuits et sucreries", cat_fish:"Poissons et fruits de mer", cat_meat:"Viandes et charcuteries", cat_dairy:"Produits laitiers et œufs", cat_fat:"Matières grasses", cat_veg:"Légumes et légumineuses", cat_fruit:"Fruits et fruits à coque", cat_dishes:"Plats composés et sauces", cat_drinks:"Boissons",
  u_slice:"tranche", u_unit:"unité", u_cup:"bol", u_serving:"portion", u_glass:"verre", u_handful:"poignée", u_tsp:"cuillère à café", u_tbsp:"cuillère à soupe", u_can:"canette", u_bowl:"assiette",
@@ -1389,11 +1503,11 @@ fr:{
  traj_mean_above:"La moyenne des jours dépasse la valeur de référence : le dépassement persiste dans le temps.",
  traj_explain:"La moyenne cumulée se stabilise à mesure que l’on ajoute des jours : c’est pourquoi les enquêtes alimentaires utilisent plusieurs jours non consécutifs pour estimer l’apport habituel.",
  preset_days_ph:"Charger un exemple sur plusieurs jours…",
- d_pnns:"3 jours équilibrés (PNNS)",
+ d_pnns:"3 jours équilibrés (recommandations du PNNS)",
  d_contrast:"3 jours contrastés (équilibré, restauration rapide, méditerranéen avec poisson)",
  p_pnns:"Journée équilibrée (recommandations du PNNS)",
  intro_h:"Bienvenue dans MixExpo",
- intro_lead:"MixExpo estime la quantité de 36 substances chimiques que vous ingérez par l’alimentation et ce que cela signifie pour la santé lorsqu’elles sont combinées. Il utilise les concentrations mesurées dans la <b>deuxième Étude de l’alimentation totale</b> (ANSES), sur des aliments préparés « tels que consommés ». Suivez les étapes ; tout fonctionne dans votre navigateur et rien n’est envoyé.",
+ intro_lead:"MixExpo estime la quantité de 33 substances chimiques que vous ingérez par l’alimentation, la compare à celle de la population française et indique ce que cela signifie pour la santé lorsqu’elles sont combinées. Il utilise les concentrations mesurées dans la <b>deuxième Étude de l’alimentation totale</b> (ANSES), sur des aliments préparés « tels que consommés ». Suivez les étapes ; tout fonctionne dans votre navigateur et rien n’est envoyé.",
  s1_t:"Décrivez-vous",
  s1_d:"L’exposition s’exprime par kilo de poids corporel : indiquez votre <b>poids</b>. L’<b>âge</b> est facultatif : en dessous de 12 ans, la valeur plus stricte des isoflavones pour les enfants est utilisée. Les portions et exemples sont conçus pour des adultes.",
  s2_t:"Saisissez votre alimentation de 24 h",
@@ -1403,7 +1517,7 @@ fr:{
  s3_d:"Dans <b>Plusieurs jours</b>, ajoutez jusqu’à 7 jours pour approcher votre apport habituel (chronique), suivre la trajectoire jour après jour et comparer chaque jour à la moyenne.",
  s3_b:"Aller à Plusieurs jours",
  s4_t:"Observez votre exposition",
- s4_d:"<b>Exposition</b> montre la quantité ingérée de chaque substance (à gauche) et sa comparaison avec la valeur de référence (à droite). Passez de LB à MB et UB pour voir l’effet des résultats non détectés.",
+ s4_d:"<b>Exposition</b> montre la quantité de chaque substance ingérée, et la compare à sa valeur de référence et à la <b>population française</b>. Passez de LB à MB et UB pour voir l’effet des résultats non détectés.",
  s4_b:"Aller à Exposition",
  s5_t:"Repérez les aliments en cause",
  s5_d:"<b>Aliments contributeurs</b> montre quels aliments pilotent chaque exposition. Les cellules hachurées signifient que la substance n’a pas été analysée dans cet aliment.",
@@ -1417,7 +1531,7 @@ fr:{
  s8_t:"Enregistrez et comprenez",
  s8_d:"Exportez vos résultats (CSV) ou votre régime (JSON) depuis l’onglet Comparer, et lisez <b>Méthodes et données</b> pour les sources, hypothèses et valeurs de référence.",
  s8_b:"Aller à Méthodes",
- good_html:"<h3>À savoir</h3><ul><li>Usage <b>pédagogique uniquement</b> : ce n’est pas un outil de diagnostic.</li><li>Vos données restent dans <b>ce navigateur</b> ; sur un ordinateur partagé, videz le régime en fin de séance.</li><li>Les concentrations datent de <b>2007–2009</b> et ont été mesurées sur des aliments préparés pour être consommés.</li><li>Les 36 substances ont été retenues car <b>quantifiées dans au moins 10 %</b> des échantillons de l’étude, au global ou dans au moins un groupe d’aliments (voir <b>Occurrence</b>).</li><li>Les valeurs de référence portent sur une <b>exposition vie entière</b> : un jour au-dessus n’est pas, en soi, un risque.</li></ul>",
+ good_html:"<h3>À savoir</h3><ul><li>Usage <b>pédagogique uniquement</b> : ce n’est pas un outil de diagnostic.</li><li>Vos données restent dans <b>ce navigateur</b> ; sur un ordinateur partagé, videz le régime en fin de séance.</li><li>Les concentrations datent de <b>2007–2009</b> et ont été mesurées sur des aliments préparés pour être consommés.</li><li>Les 33 substances ont été retenues car <b>quantifiées dans au moins 10 %</b> des échantillons de l’étude, au global ou dans au moins un groupe d’aliments (voir <b>Occurrence</b>).</li><li>Les valeurs de référence portent sur une <b>exposition vie entière</b> : un jour au-dessus n’est pas, en soi, un risque.</li></ul>",
  discuss_html:"<h3>Questions à explorer</h3><ul><li>La substance à laquelle vous êtes le plus exposé est-elle aussi la plus préoccupante ? Pourquoi pas ?</li><li>Quelles conclusions changent entre LB et UB ? Qu’est-ce que cela dit des méthodes analytiques ?</li><li>Remplacez un aliment (conserve par frais, thon par un autre poisson…) : qu’est-ce qui change, et qu’est-ce qui ne change pas ?</li><li>Comment votre moyenne sur plusieurs jours se compare-t-elle à votre pire journée ?</li><li>Passez la valeur de référence du bisphénol A du BfR à l’EFSA : à quel point la conclusion dépend-elle de la caractérisation du danger ?</li></ul>",
  tab_occ:"Occurrence",
  occ_h:"Où trouve-t-on les substances ? Occurrence dans les aliments de l’EAT2",
@@ -1440,11 +1554,61 @@ fr:{
  occ_scale:"Échantillons quantifiés :",
  occ_other_pah:"Autres HAP (absents du calculateur : les HAP4 sont l’indicateur de l’EFSA)",
  occ_note_grp:"Pour les sommes (dioxines, HAP4, PBDE…), un échantillon compte comme quantifié si <b>l’un</b> de ses composants l’est ; les sommes paraissent donc plus fréquentes que leurs analytes. Passez à <b>Analytes individuels</b> pour les voir un par un. Métaux : une valeur par aliment dans la feuille pédagogique (part d’aliments, pas d’échantillons). Bisphénol A : campagne ANSES distincte sur les échantillons EAT2.",
- occ_note_an:"Ce sont les 102 analytes de l’EAT2 (plus les métaux et le bisphénol A) qui satisfont la règle de sélection, regroupés comme ils sont sommés dans le calculateur. Des analytes comme le PFOS (9 % au global mais 68 % des crustacés et mollusques) ou le pirimiphos-méthyl (5 % au global mais 93 % du pain) seraient manqués par une règle fondée sur l’alimentation entière.",
+ occ_note_an:"Ce sont les analytes de l’EAT2 (plus les métaux et le bisphénol A) qui satisfont la règle de sélection et sont utilisés dans MixExpo, regroupés comme ils sont sommés dans le calculateur. Des analytes comme le PFOS (9 % au global mais 68 % des crustacés et mollusques) ou le pirimiphos-méthyl (5 % au global mais 93 % du pain) seraient manqués par une règle fondée sur l’alimentation entière. Les 8 phyto-œstrogènes qui satisfont aussi la règle ne sont pas inclus (voir Méthodes).",
  occ_note_food:"Chaque aliment de l’EAT2 est un composite de 15 sous-échantillons achetés dans une région et une saison ; la plupart ont été analysés dans quelques régions ou saisons, si bien qu’une cellule vaut souvent « 1 sur 2 » ou « 2 sur 8 ». Survolez une cellule pour voir les effectifs.",
  s9_t:"Voyez où sont les substances",
  s9_d:"<b>Occurrence</b> montre, sous forme de carte de chaleur, la fréquence de quantification de chaque substance dans chaque groupe d’aliments de l’étude, et pourquoi elle a été retenue.",
- s9_b:"Aller à Occurrence"
+ s9_b:"Aller à Occurrence",
+ you_h:"Vos informations",
+ s_rec_t:"Notez ce que vous avez mangé",
+ s_rec_d:"Remplissez <b>vos informations</b> en haut (poids ; âge pour vous comparer aux adultes ou enfants français). Notez ensuite ce que vous avez mangé et bu, repas par repas, pour <b>une journée (24 h)</b> ou pour <b>plusieurs jours</b> (jusqu’à 7) afin d’approcher votre apport habituel. Des régimes exemples vous aident à démarrer.",
+ s_rec_b1:"Une journée (24 h)",
+ s_rec_b2:"Plusieurs jours",
+ d_mix:"3 jours contrastés : restauration rapide, végétarien, méditerranéen (les exemples 24 h)",
+ pnns_a:"Journée équilibrée 1 (PNNS) : poulet, lentilles",
+ pnns_b:"Journée équilibrée 2 (PNNS) : saumon, œufs",
+ pnns_c:"Journée équilibrée 3 (PNNS) : poisson blanc, haricots, bœuf",
+ sh_p_pnns:"Équilibré (PNNS)",
+ sh_p_med:"Méditerranéen",
+ sh_p_fast:"Restauration rapide",
+ sh_p_veg:"Végétarien",
+ sh_pnns_a:"Équilibré 1",
+ sh_pnns_b:"Équilibré 2",
+ sh_pnns_c:"Équilibré 3",
+ diet_ex:"Exemple",
+ diet_own:"Votre propre alimentation",
+ diet_edited:"modifié",
+ diet_shown:"Régime affiché",
+ pop_h:"Votre exposition comparée à celle de la population française",
+ pop_lead:"Chaque ligne situe votre exposition par rapport à l’<b>exposition habituelle de la population française</b> estimée dans l’EAT2 (aliments 2007–2009 × enquête de consommation INCA2) : la ligne verticale est la moyenne de la population, le losange son 95e centile (les 5 % les plus exposés). L’échelle est logarithmique : « × 2 » signifie deux fois la moyenne.",
+ pop_grp:"Comparer avec",
+ pop_a:"Adultes (18–79 ans)",
+ pop_c:"Enfants (3–17 ans)",
+ pop_you:"Votre exposition",
+ pop_mean:"Moyenne française",
+ pop_p95:"95e centile français",
+ pop_below:"sous la moyenne",
+ pop_mid:"entre la moyenne et le P95",
+ pop_above95:"au-dessus du 95e centile",
+ pop_abovem:"au-dessus de la moyenne",
+ pop_nd:"non détectée dans vos aliments (LB = 0)",
+ pop_na:"non analysée dans les aliments consommés",
+ pop_none:"Aucune estimation de population EAT2 n’est incluse pour : {list}. Ces estimations figurent dans le rapport 2 de l’EAT2 (pesticides, additifs).",
+ pop_hint:"Les valeurs de population décrivent l’<b>apport habituel sur de nombreux jours</b> ; une seule journée est naturellement plus variable. Ajoutez des jours dans « Plusieurs jours » et choisissez la moyenne pour une comparaison plus juste.",
+ pop_caveat:"À lire avec prudence : MixExpo couvre moins d’aliments que l’EAT2 (métaux pour 45 aliments seulement), vos totaux peuvent donc être plus bas pour cette seule raison ; l’EAT2 a utilisé des conventions un peu différentes pour certaines substances (survolez une ligne pour le détail) ; et les valeurs de population datent de 2007–2009.",
+ th_pop:"Moyenne française [P95]",
+ pop_src_r1:"ANSES 2011, rapport 1 de l’EAT2",
+ pop_src_tard:"Tard et al. 2012 (EAT2)",
+ pop_src_veyrand:"Veyrand et al. 2013 (EAT2)",
+ pop_src_bemrah:"Bemrah et al. 2014 (EAT2)",
+ pop_hg:"valeur de population : méthylmercure du poisson ; MixExpo compte le mercure total de tous les aliments",
+ pop_teq:"valeur de population avec les TEF OMS-1998 (MixExpo : OMS-2005)",
+ pop_bde209:"valeur de population : 8 PBDE moins 7 PBDE (moyenne seulement)",
+ pop_pfas:"somme des 4 moyennes ; LB = PFOS + PFOA seulement (LB du PFNA et du PFHxS non publié, proche de 0)",
+ pop_pfaslc:"UB seulement (PFDA + PFUnDA + PFDoDA ; PFTrDA non publié) : comparé en UB",
+ pop_bpa:"estimation probabiliste ; enfants = 3–17 ans",
+ m6_s:"6. Comparaison avec la population française",
+ m6:"<p>L’onglet Exposition compare votre exposition à la moyenne et au 95e centile de l’<b>exposition alimentaire habituelle</b> des adultes (18–79 ans) ou des enfants (3–17 ans) français estimée dans l’EAT2. Le groupe suit l’âge indiqué (moins de 18 ans : enfants) et peut être changé. Votre valeur et celle de la population utilisent la même hypothèse (LB, MB ou UB) quand les deux sont publiées. Les estimations de population combinent les concentrations de l’EAT2 avec les carnets alimentaires individuels de 7 jours de l’enquête INCA2 : elles représentent l’apport à long terme, à comparer de préférence avec la <b>moyenne de plusieurs jours</b>. Les valeurs des pesticides et additifs (rapport 2 de l’EAT2) ne sont pas encore incluses.</p><ul class=\"small\"><li>ANSES (2011). Second French Total Diet Study (TDS 2), report 1: inorganic contaminants, minerals, persistent organic pollutants, mycotoxins and phytoestrogens. <a href=\"https://www.anses.fr/fr/system/files/PASER2006sa0361Ra1EN.pdf\" target=\"_blank\" rel=\"noopener\">PDF</a></li><li>Tard A. et al. (2012) Food Chem Toxicol 50(3–4) (acrylamide). <a href=\"https://doi.org/10.1016/j.fct.2011.12.033\" target=\"_blank\" rel=\"noopener\">doi</a></li><li>Veyrand B. et al. (2013) Environ Int 54:11 (PAHs). <a href=\"https://doi.org/10.1016/j.envint.2012.12.011\" target=\"_blank\" rel=\"noopener\">doi</a></li><li>Bemrah N. et al. (2014) Food Chem Toxicol 72:90 (bisphenol A). <a href=\"https://doi.org/10.1016/j.fct.2014.07.005\" target=\"_blank\" rel=\"noopener\">doi</a></li></ul>"
 }};
 const SUBTXT = {
  PFASLC:{sh:{es:"Otros PFAS de cadena larga",en:"Other long-chain PFAS",fr:"Autres PFAS à chaîne longue"}, n:{es:"Otros ácidos perfluorados de cadena larga (PFDA, PFUnDA, PFDoDA, PFTrDA)",en:"Other long-chain perfluoroalkyl acids (PFDA, PFUnDA, PFDoDA, PFTrDA)",fr:"Autres acides perfluorés à chaîne longue (PFDA, PFUnDA, PFDoDA, PFTrDA)"}, ep:{es:"Fuera de la suma de 4 PFAS en la que la EFSA basa su TWI: solo se describe la exposición. Sobre todo pescado, marisco y vísceras",en:"Not part of the sum of 4 PFAS on which EFSA based its TWI: exposure only. Mainly fish, shellfish and offal",fr:"Hors de la somme des 4 PFAS sur laquelle l’EFSA a fondé sa DHT : exposition seule. Surtout poissons, crustacés et abats"}},
@@ -1515,24 +1679,37 @@ const PRESETS = {
 /* ---------------------------------------------------------------- state */
 const PRESETS_DAYS = {
  d_pnns: [PNNS_A, PNNS_B, PNNS_C],
- d_contrast: [PNNS_A, PRESETS.p_fast, PRESETS.p_med],
+ d_mix: [PRESETS.p_fast, PRESETS.p_veg, PRESETS.p_med],
 };
+const PRESETS_DAYS_LBL = { d_pnns:["pnns_a","pnns_b","pnns_c"], d_mix:["p_fast","p_veg","p_med"] };
+// title of the example loaded in each day; "edited" once the foods differ from the example
+const sigOf = m => JSON.stringify(packM(m));
+const mkLabel = (k, m) => ({k, sig:sigOf(m)});
+function dayLabel(d){
+  const L = (S.labels||[])[d]; if(!L || !L.k) return null;
+  return {k:L.k, edited: L.sig !== sigOf(dayMeals(d))};
+}
+function dietTitleHTML(d){
+  const L = dayLabel(d);
+  if(!L) return `<span class="tag">${esc(t("diet_shown"))}</span><b>${esc(t("diet_own"))}</b>`;
+  return `<span class="tag">${esc(t("diet_ex"))}</span><b>${esc(t(L.k))}</b>${L.edited?`<span class="ed">(${esc(t("diet_edited"))})</span>`:""}`;
+}
+const dayShort = d => { const L = dayLabel(d); return L ? t("sh_"+L.k) + (L.edited?"*":"") : ""; };
 const byFr = {}; FOODS.forEach(f => byFr[f.fr] = f);
 const byId = {}; FOODS.forEach(f => byId[f.id] = f);
 const LS = "mixexpo.v2";
 const packM = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({fr:byId[it.id].fr, g:+it.g}))); return o; };
 const unpackM = m => { const o={}; MEALS.forEach(k=>o[k]=[]); MEALS.forEach(k=>((m&&m[k])||[]).forEach(it=>{ const f=byFr[it.fr||it.food]; if(f) o[k].push({id:f.id, g:+it.g||0}); })); return o; };
-function store(){ try{ localStorage.setItem(LS, JSON.stringify({bw:S.bw,age:S.age,basis:S.basis,traj:S.traj,extra:S.extra.map(packM),bound:S.bound,meals:packM(S.meals),scen:S.scen.map(x=>({name:x.name,bw:x.bw,meals:packM(x.meals)})),rp:S.rp,all:S.all,sort:S.sort})); }catch(e){} }
+function store(){ try{ localStorage.setItem(LS, JSON.stringify({bw:S.bw,age:S.age,basis:S.basis,traj:S.traj,extra:S.extra.map(packM),bound:S.bound,meals:packM(S.meals),scen:S.scen.map(x=>({name:x.name,bw:x.bw,meals:packM(x.meals)})),rp:S.rp,all:S.all,sort:S.sort,labels:S.labels,popg:S.popg})); }catch(e){} }
 function emptyMeals(){ const m={}; MEALS.forEach(k=>m[k]=[]); return m; }
 const MAXDAYS = 7;
-let S = {lang:"en", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"intro", sel:"Cd", sort:"fam", extra:[], dsel:0, basis:"day", age:null, traj:"HI"};
+let S = {lang:"en", bw:70, bound:"lb", meals:emptyMeals(), scen:[], rp:{}, all:false, view:"intro", sel:"Cd", sort:"fam", extra:[], dsel:0, basis:"day", age:null, traj:"HI", labels:[], popg:null};
 try{ const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ Object.assign(S, s); S.meals = unpackM(s.meals); S.scen = (s.scen||[]).map(x=>({name:x.name,bw:x.bw,meals:unpackM(x.meals)})); S.extra = (s.extra||[]).slice(0,MAXDAYS-1).map(unpackM); S.view="intro"; S.dsel=0; } }catch(e){ S.meals = emptyMeals(); S.scen = []; S.extra = []; }
 if(!S.meals || !Object.values(S.meals).some(a=>a.length)) { if(!localStorage.getItem || true) {} }
 
 function subs(){
   return SUBS_DEFAULT.map(s => {
     const o = Object.assign({}, s);
-    if(s.k==="ISO" && S.age && S.age < 12) o.rp = 10000;   // ANSES 2025: 0.01 mg/kg bw/day for prepubertal children
     return Object.assign(o, S.rp[s.k]||{});
   });
 }
@@ -1865,15 +2042,20 @@ document.addEventListener("mousedown", e => { if(!e.target.closest(".adder")) cl
 
 /* ---------------------------------------------------------------- 2 · several days (towards chronic exposure) */
 function dayStatus(r, b){ if(r.s.type==="NONE") return "na"; return r.RQ.ub < 1 ? "ok" : (r.RQ.lb >= 1 ? "hi" : "unc"); }
+function renderDayChips(){
+  document.getElementById("dayChips").innerHTML = allDays().map((m,i)=>`<button data-d="${i}" aria-pressed="${i===S.dsel}">${esc(t("day_n"))} ${i+1}${dayShort(i)?` <span class="small" style="opacity:.8">· ${esc(dayShort(i))}</span>`:""}</button>`).join("");
+  document.getElementById("dayTitle").innerHTML = dietTitleHTML(S.dsel);
+}
 function renderDays(){
   const D = allDays(), N = D.length, b = S.bound;
   if(S.dsel > N-1) S.dsel = N-1;
   // chips
-  document.getElementById("dayChips").innerHTML = D.map((m,i)=>`<button data-d="${i}" aria-pressed="${i===S.dsel}">${esc(t("day_n"))} ${i+1}</button>`).join("");
+  renderDayChips();
   document.getElementById("btnAddDay").disabled = N >= MAXDAYS;
   document.getElementById("btnDupDay").disabled = N >= MAXDAYS;
   document.getElementById("btnDelDay").disabled = S.dsel === 0;
   document.getElementById("dayInfo").innerHTML = S.dsel===0 ? t("day1_is") : t("dayk_is").replace("{k}", S.dsel+1);
+  document.getElementById("dayTitle").innerHTML = dietTitleHTML(S.dsel);
   const box = document.getElementById("dayMeals"); box.dataset.day = S.dsel;
   renderMeals(box, dayMeals(S.dsel));
   renderDaysResults();
@@ -1945,13 +2127,14 @@ function renderTraj(R, M){
   document.getElementById("trajNote").innerHTML = note + " " + t("traj_explain");
 }
 document.getElementById("dayChips").addEventListener("click", e => { const x=e.target.closest("button"); if(x){ S.dsel=+x.dataset.d; renderDays(); } });
-document.getElementById("btnAddDay").addEventListener("click", () => { if(allDays().length>=MAXDAYS) return; S.extra.push(emptyMeals()); S.dsel = S.extra.length; update(); });
-document.getElementById("btnDupDay").addEventListener("click", () => { if(allDays().length>=MAXDAYS) return; S.extra.push(JSON.parse(JSON.stringify(dayMeals(S.dsel)))); S.dsel = S.extra.length; update(); });
-document.getElementById("btnDelDay").addEventListener("click", () => { if(S.dsel===0) return; S.extra.splice(S.dsel-1,1); S.dsel = Math.min(S.dsel, S.extra.length); if(!S.extra.length) S.basis="day"; update(); });
+document.getElementById("btnAddDay").addEventListener("click", () => { if(allDays().length>=MAXDAYS) return; S.extra.push(emptyMeals()); S.dsel = S.extra.length; S.labels[S.dsel] = null; update(); });
+document.getElementById("btnDupDay").addEventListener("click", () => { if(allDays().length>=MAXDAYS) return; const lb = S.labels[S.dsel] || null; S.extra.push(JSON.parse(JSON.stringify(dayMeals(S.dsel)))); S.dsel = S.extra.length; S.labels[S.dsel] = lb ? Object.assign({}, lb) : null; update(); });
+document.getElementById("btnDelDay").addEventListener("click", () => { if(S.dsel===0) return; S.extra.splice(S.dsel-1,1); S.labels.splice(S.dsel,1); S.dsel = Math.min(S.dsel, S.extra.length); if(!S.extra.length) S.basis="day"; update(); });
 document.getElementById("trajSel").addEventListener("change", e => { S.traj = e.target.value; renderDaysResults(); store(); });
 document.getElementById("presetDays").addEventListener("change", e => {
   const P = PRESETS_DAYS[e.target.value]; if(!P) return;
   S.meals = loadPreset(P[0]); S.extra = P.slice(1).map(loadPreset); S.dsel = 0;
+  S.labels = PRESETS_DAYS_LBL[e.target.value].map((k,i)=>mkLabel(k, dayMeals(i)));
   e.target.value = ""; update();
 });
 
@@ -1977,29 +2160,106 @@ function renderExpo(res){
   const b = S.bound;
   document.getElementById("rqLegend").innerHTML = FAMS.map(f=>`<span><i style="background:${famColor(f)}"></i>${esc(t("fam_"+f))}</span>`).join("") + `<span style="flex-basis:100%;height:0"></span>` + ["ok","unc","hi"].map(st=>`<span>${statusHTML(st)}</span>`).join("") + `<span><svg width="26" height="10"><line x1="1" x2="25" y1="5" y2="5" stroke="var(--text-primary)"/><line x1="1" x2="1" y1="1" y2="9" stroke="var(--text-primary)"/><line x1="25" x2="25" y1="1" y2="9" stroke="var(--text-primary)"/></svg>LB – UB</span><span><svg width="22" height="10"><line class="thr" x1="11" x2="11" y1="0" y2="10" stroke="var(--text-primary)" stroke-dasharray="3 2"/></svg>RQ = 1</span><span><svg width="30" height="10"><line x1="1" x2="24" y1="5" y2="5" stroke="var(--text-primary)" stroke-dasharray="3 2"/><circle cx="25" cy="5" r="4" fill="var(--text-secondary)"/></svg>${esc(t("leg_lbzero"))}</span>`;
   dualChart(document.getElementById("rqChart"), res, {w:1000, labW:190, rowH:28, sort:S.sort});
+  popChart(document.getElementById("popChart"), res);
   document.querySelectorAll("#sortSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.s===S.sort));
   document.getElementById("rankNote").innerHTML = rankNote(res);
   document.getElementById("bpaWarnExpo").innerHTML = bpaWarn(res);
-  let h = `<thead><tr><th>${t("th_sub")}</th><th class="num">${t("th_expo")} (${b.toUpperCase()})</th><th class="num">${t("th_range")}</th><th>${t("th_unit")}</th><th>${t("th_ref")}</th><th class="num">${t("th_metric")}</th><th>${t("th_status")}</th><th class="num">${t("th_cov")}</th></tr></thead><tbody>`;
+  let h = `<thead><tr><th>${t("th_sub")}</th><th class="num">${t("th_expo")} (${b.toUpperCase()})</th><th class="num">${t("th_range")}</th><th class="num">${t("th_pop")}<br><span class="muted small" style="font-weight:400">${esc(t(popGroup()==="a"?"pop_a":"pop_c"))}</span></th><th>${t("th_unit")}</th><th>${t("th_ref")}</th><th class="num">${t("th_metric")}</th><th>${t("th_status")}</th><th class="num">${t("th_cov")}</th></tr></thead><tbody>`;
   FAMS.forEach(fm => {
     const ss = subs().filter(s=>s.fam===fm);
-    h += `<tr class="fam"><td colspan="8"><i class="fdot" style="background:${famColor(fm)}"></i>${esc(t("fam_"+fm))}</td></tr>`;
+    h += `<tr class="fam"><td colspan="9"><i class="fdot" style="background:${famColor(fm)}"></i>${esc(t("fam_"+fm))}</td></tr>`;
     ss.forEach(s => { const r = res.S[s.k];
       const nf = res.foods.length, na = nf - r.missing.length;
-      h += `<tr><td><b>${esc(sname(s.k))}</b></td><td class="num">${fmt(r.E[b])}</td><td class="num muted">${fmt(r.E.lb)} – ${fmt(r.E.ub)}</td><td class="small muted">${unitOf(s)}</td><td class="small">${refText(s)}</td><td class="num">${metricText(r)}</td><td>${statusHTML(r.status)}</td><td class="num small ${r.missing.length?"":"muted"}" data-tip="${esc(t("contrib_cov").replace(/<[^>]+>/g,""))}${esc(r.missing.map(id=>fname(byId[id])).join(", ")||"—")}">${na}/${nf}</td></tr>`;
+      h += `<tr><td><b>${esc(sname(s.k))}</b></td><td class="num">${fmt(r.E[b])}</td><td class="num muted">${fmt(r.E.lb)} – ${fmt(r.E.ub)}</td><td class="num small">${popText(s.k, b)}</td><td class="small muted">${unitOf(s)}</td><td class="small">${refText(s)}</td><td class="num">${metricText(r)}</td><td>${statusHTML(r.status)}</td><td class="num small ${r.missing.length?"":"muted"}" data-tip="${esc(t("contrib_cov").replace(/<[^>]+>/g,""))}${esc(r.missing.map(id=>fname(byId[id])).join(", ")||"—")}">${na}/${nf}</td></tr>`;
     });
   });
   document.getElementById("expoTable").innerHTML = h + "</tbody>";
 }
+/* ---------------------------------------------------------------- 2b · comparison with the French population (TDS2) */
+// Mean and 95th percentile of usual dietary exposure in TDS2 (2007-2009 foods x INCA2 consumption), in MixExpo units
+// (ng/kg bw/day; pg TEQ for dioxins). [LB, UB]; null = not reported. a = adults 18-79 y, c = children 3-17 y.
+const POP = {
+ Cd:    {a:{m:[160,160],   p:[270,270]},     c:{m:[240,240],   p:[450,450]},     src:"r1"},
+ Hg:    {a:{m:[17,17],     p:[61,61]},       c:{m:[22,22],     p:[97,97]},       src:"r1", note:"pop_hg"},
+ Pb:    {a:{m:[200,200],   p:[350,350]},     c:{m:[270,270],   p:[570,570]},     src:"r1"},
+ ACR:   {a:{m:[430,430]},                    c:{m:[690,690]},                    src:"tard"},
+ PAH4:  {a:{m:[1.48,1.48]},                  c:{m:[2.26,2.26]},                  src:"veyrand"},
+ DON:   {a:{m:[373.1,378.9],p:[715.2,721.8]},c:{m:[543.5,555.9],p:[1018,1028.8]},src:"r1"},
+ TEQ:   {a:{m:[0.47,0.47], p:[1.00,1.00]},   c:{m:[0.76,0.76], p:[1.69,1.69]},   src:"r1", note:"pop_teq"},
+ NDLPCB:{a:{m:[1.83,1.83], p:[5.05,5.05]},   c:{m:[2.84,2.84], p:[6.86,6.86]},   src:"r1"},
+ PBDE:  {a:{m:[0.202,0.212],p:[0.636,0.643]},c:{m:[0.313,0.331],p:[0.868,0.894]},src:"r1"},
+ HBCDD: {a:{m:[0.165,0.211],p:[0.391,0.448]},c:{m:[0.237,0.320],p:[0.616,0.734]},src:"r1"},
+ PFAS4: {a:{m:[0.05,2.27]},                  c:{m:[0.06,4.93]},                  src:"r1", note:"pop_pfas"},
+ PFASLC:{a:{m:[null,4.38]},                  c:{m:[null,10.21]},                 src:"r1", note:"pop_pfaslc"},
+ PBB:   {a:{m:[0.001,0.017],p:[0.006,0.028]},c:{m:[0.001,0.030],p:[0.008,0.059]},src:"r1"},
+ BDE209:{a:{m:[0.338,0.338]},                c:{m:[0.695,0.695]},                src:"r1", note:"pop_bde209"},
+ BPA:   {a:{m:[38,40]},                      c:{m:[50,60]},                      src:"bemrah", note:"pop_bpa"},
+};
+const popGroup = () => S.popg || (S.age && S.age < 18 ? "c" : "a");
+// bound actually used for a substance: UB on both sides when the population LB was not reported
+const popBound = (k, b) => { const P = POP[k] && POP[k][popGroup()]; return P && P.m[0]==null ? "ub" : b; };
+function popVal(arr, b){
+  if(!arr) return null;
+  const lb = arr[0]==null ? arr[1] : arr[0], ub = arr[1];
+  return b==="lb" ? lb : b==="ub" ? ub : (lb+ub)/2;
+}
+function popText(k, b){
+  const P = POP[k] && POP[k][popGroup()]; if(!P) return "–";
+  const eb = popBound(k, b), m = popVal(P.m, eb), p = popVal(P.p, eb);
+  return `${fmt(m)}${p!=null?` [${fmt(p)}]`:""}${eb!==b?" (UB)":""}`;
+}
+function popChart(el, res){
+  const b = S.bound, g = popGroup(), SU = subs().filter(s=>POP[s.k]);
+  const W = 1000, labW = 200, txtW = 210, rowH = 30, top = 26, x0 = labW, x1 = W - txtW;
+  const L0 = -2, L1 = 2, X = v => x0 + (Math.max(L0, Math.min(L1, v)) - L0) / (L1 - L0) * (x1 - x0);
+  const H = top + SU.length*rowH + 8;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(t("pop_h"))}">`;
+  [-2,-1,0,1,2].forEach(v => {
+    s += `<line x1="${X(v)}" x2="${X(v)}" y1="${top-6}" y2="${H-6}" stroke="${v===0?"var(--text-secondary)":"var(--grid)"}" stroke-width="${v===0?1.5:1}"/>`;
+    s += `<text x="${X(v)}" y="${top-11}" text-anchor="middle" >${v===0?esc(t("pop_mean")):"× "+fmt(Math.pow(10,v))}</text>`;
+  });
+  SU.forEach((su, i) => {
+    const k = su.k, P = POP[k][g], r = res.S[k], y = top + i*rowH + rowH/2;
+    const eb = popBound(k, b), mean = popVal(P.m, eb), p95 = popVal(P.p, eb), E = r.E[eb];
+    const unit = unitOf(su), grpName = t(g==="a"?"pop_a":"pop_c");
+    const notIn = res.foods.length && r.missing.length === res.foods.length;
+    let tip = `<b>${esc(sname(k))}</b><br>${esc(t("pop_you"))}: ${fmt(E)} ${unit} (${eb.toUpperCase()})<br>${esc(grpName)} – ${esc(t("pop_mean"))}: ${fmt(mean)}${p95!=null?` · P95: ${fmt(p95)}`:""} ${unit}<br><span class='muted'>${esc(t("pop_src_"+POP[k].src))}${POP[k].note?" · "+esc(t(POP[k].note)):""}</span>`;
+    s += `<g data-tip="${esc(tip)}"><rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" class="hit"/>`;
+    s += `<circle cx="10" cy="${y}" r="4.5" fill="${famColor(su.fam)}"/><text x="20" y="${y+4}" class="lbl">${esc(trunc(shname(k),26))}</text>`;
+    s += `<line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}" stroke="var(--line)"/>`;
+    if(p95!=null){ const xp = X(Math.log10(p95/mean)); s += `<path d="M${xp} ${y-6} L${xp+6} ${y} L${xp} ${y+6} L${xp-6} ${y} Z" fill="var(--surface-1)" stroke="var(--text-secondary)" stroke-width="1.5"/>`; }
+    let txt;
+    if(notIn || !res.foods.length){ txt = t("pop_na"); }
+    else if(!(E > 0)){ s += `<circle cx="${X(L0)}" cy="${y}" r="5" fill="var(--surface-1)" stroke="${famColor(su.fam)}" stroke-width="2"/>`; txt = t("pop_nd"); }
+    else {
+      const lr = Math.log10(E/mean), xr = X(lr);
+      s += `<line x1="${X(0)}" x2="${xr}" y1="${y}" y2="${y}" stroke="${famColor(su.fam)}" stroke-width="3" stroke-linecap="round" opacity=".45"/>`;
+      s += `<circle cx="${xr}" cy="${y}" r="6.5" fill="${famColor(su.fam)}" stroke="var(--surface-1)" stroke-width="2"/>`;
+      if(lr > L1) s += `<path d="M${x1+4} ${y-5} L${x1+11} ${y} L${x1+4} ${y+5} Z" fill="${famColor(su.fam)}"/>`;
+      if(lr < L0) s += `<path d="M${x0-4} ${y-5} L${x0-11} ${y} L${x0-4} ${y+5} Z" fill="${famColor(su.fam)}"/>`;
+      const pos = p95!=null ? (E > p95 ? "pop_above95" : E > mean ? "pop_mid" : "pop_below") : (E > mean ? "pop_abovem" : "pop_below");
+      txt = `× ${fmt(E/mean, E/mean<10?2:0)} · ${t(pos)}`;
+    }
+    s += `<text x="${x1+18}" y="${y+4}">${esc(txt)}${eb!==b?" (UB)":""}</text></g>`;
+  });
+  el.innerHTML = s + `</svg>`;
+  const missing = subs().filter(s=>!POP[s.k]).map(s=>shname(s.k));
+  document.getElementById("popNone").innerHTML = missing.length ? t("pop_none").replace("{list}", esc(missing.join(", "))) : "";
+  document.querySelectorAll("#popSeg button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.g===g));
+  document.getElementById("popLegend").innerHTML = `<span><svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="var(--text-secondary)"/></svg>${esc(t("pop_you"))} (${b.toUpperCase()})</span><span><svg width="12" height="14"><line x1="6" x2="6" y1="0" y2="14" stroke="var(--text-secondary)" stroke-width="1.5"/></svg>${esc(t("pop_mean"))}</span><span><svg width="14" height="14"><path d="M7 1 L13 7 L7 13 L1 7 Z" fill="var(--surface-1)" stroke="var(--text-secondary)" stroke-width="1.5"/></svg>${esc(t("pop_p95"))}</span>`;
+  document.getElementById("popHint").innerHTML = (!useMean() && allDays().length < 2) ? t("pop_hint") : "";
+}
+document.getElementById("popSeg").addEventListener("click", e => { const x = e.target.closest("button"); if(x){ S.popg = x.dataset.g; update(false); } });
 function csvExport(){
   const res = compute(analysed(), S.bw), rows = [], D = allDays();
-  rows.push(["# MixExpo v1.4 (26.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
+  rows.push(["# MixExpo v1.5 (26.11.2026) - German Cano-Sancho - for pedagogical purposes only"]);
   rows.push(["section","item","value_LB","value_MB","value_UB","unit","reference","metric_selected_bound","status"]);
   D.forEach((day,d)=>MEALS.forEach(m=>day[m].forEach(it=>rows.push([`diet_day${d+1}_${m}`, byId[it.id].fr+" | "+fname(byId[it.id]), it.g, it.g, it.g, "g/day","","",""]))));
   rows.push(["body_weight","",S.bw,S.bw,S.bw,"kg","","",""]);
   rows.push(["age","",S.age||"",S.age||"",S.age||"","years","","",""]);
   rows.push(["results_basis", useMean() ? `mean of ${D.length} days` : "day 1 (24 h recall)", "","","","","","",""]);
   subs().forEach(s=>{ const r=res.S[s.k]; rows.push(["exposure", sname(s.k), r.E.lb, r.E.mb, r.E.ub, unitOf(s), refText(s), metricText(r), t("st_"+r.status)]); });
+  subs().filter(s=>POP[s.k]).forEach(s=>{ const P=POP[s.k][popGroup()]; rows.push([`french_population_mean_${popGroup()==="a"?"adults_18_79":"children_3_17"}`, sname(s.k), popVal(P.m,"lb"), popVal(P.m,"mb"), popVal(P.m,"ub"), unitOf(s), t("pop_src_"+POP[s.k].src), "", ""]); });
   subs().forEach(s=>{ const r=res.S[s.k]; rows.push(["risk_quotient", sname(s.k), r.RQ.lb, r.RQ.mb, r.RQ.ub, "", "", "", ""]); });
   rows.push(["hazard_index_threshold_substances","",hi(res,"lb"),hi(res,"mb"),hi(res,"ub"),"","","",t("st_"+hiStatus(res))]);
   rows.push(["MOET_genotoxic_carcinogens","",moet(res,"lb"),moet(res,"mb"),moet(res,"ub"),"","MOET >= 10000","",t("st_"+moetStatus(res))]);
@@ -2143,7 +2403,7 @@ document.getElementById("scenList").addEventListener("click", e => {
 document.getElementById("scenList").addEventListener("change", e => { if(e.target.dataset.i!==undefined){ S.scen[+e.target.dataset.i].name = e.target.value; update(); } });
 document.getElementById("btnExport").addEventListener("click", () => {
   const pack = m => { const o={}; MEALS.forEach(k=>o[k]=(m[k]||[]).map(it=>({food:byId[it.id].fr, g:+it.g}))); return o; };
-  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1.4 (26.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, age:S.age, meals:pack(S.meals), extraDays:S.extra.map(pack), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
+  download("mixexpo_diet.json", JSON.stringify({app:"MixExpo", version:"v1.5 (26.11.2026)", author:"German Cano-Sancho", note:"For pedagogical purposes only", bw:S.bw, age:S.age, meals:pack(S.meals), extraDays:S.extra.map(pack), scenarios:S.scen.map(s=>({name:s.name,bw:s.bw,meals:pack(s.meals)}))}, null, 1), "application/json");
 });
 document.getElementById("fileIn").addEventListener("change", e => {
   const f = e.target.files[0]; if(!f) return;
@@ -2151,7 +2411,7 @@ document.getElementById("fileIn").addEventListener("change", e => {
   rd.onload = () => { try{
     const d = JSON.parse(rd.result);
     const unpack = m => { const o=emptyMeals(); MEALS.forEach(k=>(m&&m[k]||[]).forEach(it=>{ const fd=byFr[it.food]; if(fd) o[k].push({id:fd.id, g:+it.g||0}); })); return o; };
-    S.meals = unpack(d.meals); S.extra = (d.extraDays||[]).slice(0,MAXDAYS-1).map(unpack); S.dsel = 0; S.age = +d.age||null; S.bw = +d.bw||70; S.scen = (d.scenarios||[]).slice(0,4).map(s=>({name:String(s.name||"?"), bw:+s.bw||70, meals:unpack(s.meals)}));
+    S.meals = unpack(d.meals); S.extra = (d.extraDays||[]).slice(0,MAXDAYS-1).map(unpack); S.dsel = 0; S.labels = []; S.age = +d.age||null; S.bw = +d.bw||70; S.scen = (d.scenarios||[]).slice(0,4).map(s=>({name:String(s.name||"?"), bw:+s.bw||70, meals:unpack(s.meals)}));
     setBw(S.bw); setAge(S.age); update(); ioMsg(t("imported"));
   }catch(err){ ioMsg(t("import_err")); } };
   rd.readAsText(f); e.target.value="";
@@ -2343,11 +2603,9 @@ function setView(v){
 document.getElementById("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ setView(b.dataset.v); window.scrollTo({top:0}); } });
 document.getElementById("langSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.lang=b.dataset.l; try{ localStorage.setItem(LS+".lang", S.lang); }catch(err){} applyI18n(); update(); } });
 document.getElementById("basisSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b && !b.disabled){ S.basis=b.dataset.x; update(false); } });
-function setAge(v){ S.age = (v>=1 && v<=110) ? v : null; document.getElementById("age").value = S.age||""; document.getElementById("introAge").value = S.age||""; update(false); }
-function setBw(v){ if(v>=10 && v<=250){ S.bw=v; document.getElementById("bw").value=v; document.getElementById("introBw").value=v; update(false); } }
+function setAge(v){ S.age = (v>=1 && v<=110) ? v : null; document.getElementById("age").value = S.age||""; update(false); }
+function setBw(v){ if(v>=10 && v<=250){ S.bw=v; document.getElementById("bw").value=v; update(false); } }
 document.getElementById("age").addEventListener("change", e => setAge(+e.target.value));
-document.getElementById("introAge").addEventListener("change", e => setAge(+e.target.value));
-document.getElementById("introBw").addEventListener("input", e => setBw(+e.target.value));
 document.getElementById("v-intro").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if(b){ setView(b.dataset.go); window.scrollTo({top:0}); } });
 document.getElementById("boundSeg").addEventListener("click", e => { const b=e.target.closest("button"); if(b){ S.bound=b.dataset.b; applyI18n(); update(false); } });
 document.getElementById("bw").addEventListener("input", e => setBw(+e.target.value));
@@ -2355,13 +2613,13 @@ document.getElementById("allFoods").addEventListener("change", e => { S.all = e.
 let clearArmed = 0;
 document.getElementById("btnClear").addEventListener("click", e => {
   const btn = e.currentTarget;
-  if(Date.now() - clearArmed < 4000){ clearArmed = 0; btn.textContent = t("clear"); S.meals = emptyMeals(); update(); return; }
+  if(Date.now() - clearArmed < 4000){ clearArmed = 0; btn.textContent = t("clear"); S.meals = emptyMeals(); S.labels[0] = null; update(); return; }
   clearArmed = Date.now(); btn.textContent = t("confirm_clear");
   setTimeout(()=>{ if(clearArmed && Date.now()-clearArmed>=3900){ clearArmed=0; btn.textContent=t("clear"); } }, 4000);
 });
 document.getElementById("preset").addEventListener("change", e => {
   const p = PRESETS[e.target.value]; if(!p) return;
-  S.meals = loadPreset(p);
+  S.meals = loadPreset(p); S.labels[0] = mkLabel(e.target.value, S.meals);
   e.target.value = ""; update();
 });
 document.getElementById("btnCSV").addEventListener("click", csvExport);
@@ -2383,8 +2641,10 @@ function update(full=true){
   const bb = document.getElementById("basisBanner");
   const showB = ["expo","contrib","risk","compare"].includes(S.view);
   bb.style.display = showB ? "block" : "none";
-  if(showB) bb.innerHTML = useMean() ? t("basis_banner_mean").replace("{n}", N) : (N>1 ? t("basis_banner_day").replace("{n}", N) : t("basis_banner_one"));
-  if(S.view==="days") { if(full) renderDays(); else renderDaysResults(); }
+  if(showB) bb.innerHTML = (useMean() ? t("basis_banner_mean").replace("{n}", N) : (N>1 ? t("basis_banner_day").replace("{n}", N) : t("basis_banner_one")))
+    + (useMean() ? "" : (()=>{ const L = dayLabel(0); return L ? ` <span class="muted">· ${esc(t("diet_ex"))}: ${esc(t(L.k))}${L.edited?" ("+esc(t("diet_edited"))+")":""}</span>` : ""; })());
+  if(S.view==="diet") document.getElementById("dietTitle").innerHTML = dietTitleHTML(0);
+  if(S.view==="days") { if(full) renderDays(); else { renderDayChips(); renderDaysResults(); } }
   if(S.view==="expo") renderExpo(res);
   if(S.view==="contrib") renderContrib(res);
   if(S.view==="risk") renderRisk(res);
@@ -2396,7 +2656,8 @@ function update(full=true){
 
 let rzT; addEventListener("resize", () => { clearTimeout(rzT); rzT = setTimeout(()=>update(false), 150); });
 /* ---------------------------------------------------------------- boot */
-if(!Object.values(S.meals).some(a=>a.length)) S.meals = loadPreset(PRESETS.p_pnns);
+if(!Object.values(S.meals).some(a=>a.length)){ S.meals = loadPreset(PRESETS.p_pnns); S.labels = [mkLabel("p_pnns", S.meals)]; }
+if(!Array.isArray(S.labels)) S.labels = [];
 // language: ?lang=xx or #xx in the link > user's saved choice > English
 (function(){
   const ok = l => ["es","fr","en"].includes(l) ? l : null;
@@ -2404,8 +2665,8 @@ if(!Object.values(S.meals).some(a=>a.length)) S.meals = loadPreset(PRESETS.p_pnn
   let saved = null; try{ saved = ok(localStorage.getItem(LS+".lang")); }catch(e){}   // only set by an explicit click
   S.lang = fromUrl || saved || "en";
 })();
-document.getElementById("bw").value = S.bw; document.getElementById("introBw").value = S.bw;
-document.getElementById("age").value = S.age||""; document.getElementById("introAge").value = S.age||"";
+document.getElementById("bw").value = S.bw;
+document.getElementById("age").value = S.age||"";
 document.getElementById("allFoods").checked = !!S.all;
 applyI18n();
 setView("intro");
